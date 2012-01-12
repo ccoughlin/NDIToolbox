@@ -1,7 +1,7 @@
-'''thumbnail_ctrl.py - controller for the thumbnail_panel
+"""thumbnail_ctrl.py - controller for the thumbnail_panel
 
 Chris R. Coughlin (TRI/Austin, Inc.)
-'''
+"""
 
 __author__ = 'Chris R. Coughlin'
 
@@ -13,19 +13,19 @@ import hashlib
 import os.path
 
 class ThumbnailPanelController(object):
-    '''Controller class for the ThumbnailPanel'''
+    """Controller class for the ThumbnailPanel"""
 
     def __init__(self, view):
         self.view = view
 
     def empty_bitmap(self, width, height):
-        '''Creates and returns an empty wxBitmap of the given width and height'''
+        """Creates and returns an empty wxBitmap of the given width and height"""
         fg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
         return wx.EmptyBitmapRGBA(width, height, fg_color.Red(), fg_color.Green(), fg_color.Blue())
 
     def plot_thumb(self, data_fname, width, height):
-        '''Creates (if necessary) and retrieves a matplotlib plot of the specified
-        data file, returning a wx Bitmap'''
+        """Creates (if necessary) and retrieves a matplotlib plot of the specified
+        data file, returning a wx Bitmap"""
         thumbnail = self.empty_bitmap(width, height)
         if data_fname:
             m = hashlib.md5(data_fname)
@@ -49,5 +49,5 @@ class ThumbnailPanelController(object):
         return thumbnail
 
     def plot_blank(self):
-        '''Returns a wx Bitmap placeholder to display when thumbnails are disabled'''
+        """Returns a wx Bitmap placeholder to display when thumbnails are disabled"""
         return wx.Bitmap(os.path.join(pathfinder.bitmap_path(), 'thumbs_disabled.png'))

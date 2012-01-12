@@ -1,11 +1,11 @@
-'''pathfinder.py - specifies paths and common filenames'''
+"""pathfinder.py - specifies paths and common filenames"""
 __author__ = 'Chris R. Coughlin'
 
 import os.path
 import sys
 
 def app_path():
-    '''Returns the base application path.'''
+    """Returns the base application path."""
     if hasattr(sys, 'frozen'):
         # Handles PyInstaller
         entry_point = sys.executable
@@ -21,23 +21,23 @@ def app_path():
     return entry_point
 
 def resource_path():
-    '''Returns the path to resources - home folder
-    for icons, bitmaps, etc.'''
+    """Returns the path to resources - home folder
+    for icons, bitmaps, etc."""
     return os.path.join(app_path(), 'resources')
 
 def icon_path():
-    '''Returns the path to application icons'''
+    """Returns the path to application icons"""
     return os.path.join(resource_path(), 'icons')
 
 def bitmap_path():
-    '''Returns the path to application bitmaps'''
+    """Returns the path to application bitmaps"""
     return os.path.join(resource_path(), 'bitmaps')
 
 def data_path():
     return os.path.join(app_path(), 'data')
 
 def thumbnails_path():
-    '''Returns the path to data thumbnails'''
+    """Returns the path to data thumbnails"""
     return os.path.join(app_path(), 'thumbnails')
 
   
