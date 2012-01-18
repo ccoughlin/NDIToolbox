@@ -7,6 +7,8 @@ __author__ = 'Chris R. Coughlin'
 
 from models import mainmodel
 import views.plotwindow as plotwindow
+import views.preview_window as preview_window
+import views.dialogs as dlg
 import pathfinder
 import wx
 import os.path
@@ -86,7 +88,16 @@ class MainUIController(object):
 
     def on_preview_data(self, evt):
         """Handles request to preview data"""
-        pass
+        if self.view.data_panel.data is not None:
+            import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
+            if import_dlg.ShowModal() == wx.ID_OK:
+                wait_dlg = dlg.progressDialog(dlg_title='Loading Data',
+                                          dlg_msg='Please wait, loading data...')
+                read_parameters = import_dlg.get_import_parameters()
+                data_window = preview_window.PreviewWindow(parent=self.view, data_file=self.view.data_panel.data, **read_parameters)
+                wait_dlg.close()
+                data_window.Show()
+            import_dlg.Destroy()
 
     def on_plot_data(self, evt):
         """Handles request to generate X-Y plot of selected data"""
