@@ -16,17 +16,20 @@ class DataPanel(wx.Panel):
 
     def __init__(self, parent):
         self.parent = parent
-        self.data = None
         self.controller = DataPanelController(self)
         wx.Panel.__init__(self, id=wx.ID_ANY, name='', parent=self.parent)
         self.init_ui()
+
+    @property
+    def data(self):
+        return self.controller.data
 
     def init_ui(self):
         """Generates the data panel"""
         self.panel_sizer = wx.BoxSizer(wx.VERTICAL)
         self.data_tree = wx.TreeCtrl(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize)
         self.data_tree_root = self.data_tree.AddRoot("Data")
-        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.on_tree_selection_changed, self.data_tree)
+        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.controller.on_tree_selection_changed, self.data_tree)
         self.controller.populate_tree()
         self.panel_sizer.Add(self.data_tree, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
                              ui_defaults.widget_margin)
@@ -36,13 +39,7 @@ class DataPanel(wx.Panel):
                              ui_defaults.widget_margin)
         self.SetSizer(self.panel_sizer)
 
-    # Event Handlers
-    def on_tree_selection_changed(self, evt):
-        """Updates the currently selected data set"""
-        item = evt.GetItem()
-        if item:
-            self.data = self.data_tree.GetItemPyData(item)
-        evt.Skip()
+
 
 
   

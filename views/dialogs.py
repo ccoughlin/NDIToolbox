@@ -6,6 +6,7 @@ __author__ = 'Chris R. Coughlin'
 import views.ui_defaults as ui_defaults
 import wx
 from wx.lib.masked.numctrl import NumCtrl
+from wx import ProgressDialog
 import sys
 
 class ImportTextDialog(wx.Dialog):
@@ -189,7 +190,7 @@ class FloatRangeDialog(wx.Dialog):
         msg_text = wx.StaticText(self, wx.ID_ANY, dlg_msg)
         vbox.Add(msg_text, 0, ui_defaults.sizer_flags, ui_defaults.widget_margin)
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.start_ctrl = NumCtrl(self, wx.ID_ANY, value=0, pos=wx.DefaultPosition,
+        self.start_ctrl = NumCtrl(self, wx.ID_ANY, pos=wx.DefaultPosition,
                                   size=wx.DefaultSize)
         if start_min is not None:
             self.start_ctrl.SetMin(start_min)
@@ -199,7 +200,7 @@ class FloatRangeDialog(wx.Dialog):
                   ui_defaults.widget_margin)
         hbox1.Add(self.start_ctrl, 0, ui_defaults.sizer_flags, ui_defaults.widget_margin)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-        self.finish_ctrl = NumCtrl(self, wx.ID_ANY, value=0, pos=wx.DefaultPosition,
+        self.finish_ctrl = NumCtrl(self, wx.ID_ANY, pos=wx.DefaultPosition,
                                    size=wx.DefaultSize)
         if finish_min is not None:
             self.finish_ctrl.SetMin(finish_min)
@@ -220,3 +221,20 @@ class FloatRangeDialog(wx.Dialog):
     def GetValue(self):
         """Returns the tuple (start,finish) if the dialog was accepted."""
         return (self.start_ctrl.GetValue(), self.finish_ctrl.GetValue())
+
+class progressDialog(object):
+    """Simple wrapper for wxPython's ProgressDialog,
+    creates a pulsing progress bar to indicate busy status.
+    Call close() when complete.  Recommended only when a
+    very simple wait message is required.
+    """
+    def __init__(self,dlg_title,dlg_msg="Please wait..."):
+        self.pdlg=ProgressDialog(message=dlg_msg,
+            title=dlg_title,
+            maximum=100#,
+        )
+        self.pdlg.Pulse()
+
+    def close(self):
+        self.pdlg.Update(100)
+        self.pdlg.Destroy()

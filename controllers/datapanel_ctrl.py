@@ -6,6 +6,7 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 from controllers import pathfinder
+from models.datapanel_model import DataPanelModel
 import os.path
 
 class DataPanelController(object):
@@ -13,11 +14,13 @@ class DataPanelController(object):
 
     def __init__(self, view):
         self.view = view
+        self.model = DataPanelModel(self)
+        self.data = None
 
     def populate_tree(self):
         """Populates the view's tree with the contents in the data folder."""
         self.clear_tree()
-        for file in self.find_data():
+        for file in self.model.find_data():
             data_item = self.view.data_tree.AppendItem(self.view.data_tree_root,
                                                        os.path.basename(file))
             self.view.data_tree.SetPyData(data_item, file)
@@ -26,10 +29,10 @@ class DataPanelController(object):
         """Removes the contents of the view's data tree"""
         self.view.data_tree.DeleteChildren(self.view.data_tree_root)
 
-    def find_data(self):
-        """Returns a list of the files found in the data folder"""
-        data_list = []
-        for root, dirs, files in os.walk(pathfinder.data_path()):
-            for name in files:
-                data_list.append(os.path.join(root, name))
-        return data_list
+        # Event Handlers
+    def on_tree_selection_changed(self, evt):
+        """Updates the currently selected data set"""
+        item = evt.GetItem()
+        if item:
+            self.data = self.view.data_tree.GetItemPyData(item)
+        evt.Skip()

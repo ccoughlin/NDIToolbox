@@ -6,6 +6,7 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 from models import mainmodel
+import views.plotwindow as plotwindow
 import pathfinder
 import wx
 import os.path
@@ -37,3 +38,64 @@ class MainUIController(object):
             panel.plot_thumb(data_file)
         else:
             panel.plot_blank()
+
+        # Event Handlers
+    def on_quit(self, evt):
+        """Handles the Quit event"""
+        self.view._mgr.UnInit()
+        self.view.Destroy()
+
+    def on_about(self, evt):
+        """Handles the About This Program event"""
+        pass
+
+    def on_about_tri(self, evt):
+        """Handles the About TRI event"""
+        pass
+
+    def on_about_icons(self, evt):
+        """Handles the About Icons event"""
+        pass
+
+    def on_data_select(self, evt):
+        """Handles a change in data file selection by providing a preview plot
+        of the data"""
+        self.set_thumb(panel=self.view.thumbnail_panel, data_file=self.view.data_panel.data,
+                                  enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
+        if self.view.data_panel.data:
+            self.view.enable_data_tools()
+        else:
+            self.view.disable_data_tools()
+
+    def on_preview_toggle(self, evt):
+        """Handles toggling data thumbnail plot previews"""
+        self.set_thumb(panel=self.view.thumbnail_panel, data_file=self.view.data_panel.data,
+                                  enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
+
+    def on_refresh_data(self, evt):
+        """Handles request to update contents of data folder"""
+        pass
+
+    def on_add_data(self, evt):
+        """Handles request to add data to data folder"""
+        pass
+
+    def on_remove_data(self, evt):
+        """Handles request to remove data from data folder"""
+        pass
+
+    def on_preview_data(self, evt):
+        """Handles request to preview data"""
+        pass
+
+    def on_plot_data(self, evt):
+        """Handles request to generate X-Y plot of selected data"""
+        if self.view.data_panel.data is not None:
+            plt_window = plotwindow.PlotWindow(self.view, self.view.data_panel.data)
+            plt_window.Show()
+
+    def on_imageplot_data(self, evt):
+        """Handles request to generate image plot of selected data"""
+        if self.view.data_panel.data is not None:
+            plt_window = plotwindow.ImgPlotWindow(self.view, self.view.data_panel.data)
+            plt_window.Show()
