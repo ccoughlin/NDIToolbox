@@ -2,13 +2,14 @@
 
 Chris R. Coughlin (TRI/Austin, Inc.)
 """
-from matplotlib import cm
 
 __author__ = 'Chris R. Coughlin'
 
 from views import dialogs
 from models import mainmodel
 import models.plotwindow_model as model
+import matplotlib
+from matplotlib import cm
 import wx
 import wx.lib.dialogs
 from functools import wraps
@@ -34,6 +35,16 @@ class BasicPlotWindowController(object):
         self.view = view
         self.axes_grid = True
         self.model = model.BasicPlotWindowModel(self)
+        self.init_plot_defaults()
+
+    def init_plot_defaults(self):
+        """Sets some basic matplotlib configuration parameters
+        to sane defaults."""
+        matplotlib.rcParams['font.size'] = 14
+        matplotlib.rcParams['axes.titlesize'] = 12
+        matplotlib.rcParams['axes.labelsize'] = 12
+        matplotlib.rcParams['xtick.labelsize'] = 11
+        matplotlib.rcParams['ytick.labelsize'] = 11
 
     @property
     def data(self):
@@ -129,6 +140,7 @@ class PlotWindowController(BasicPlotWindowController):
         self.view = view
         self.axes_grid = True
         self.model = model.PlotWindowModel(self)
+        self.init_plot_defaults()
 
     def plot(self, data):
         """Plots the dataset"""
@@ -175,8 +187,12 @@ class ImgPlotWindowController(BasicPlotWindowController):
         self.view = view
         self.axes_grid = True
         self.model = model.ImgPlotWindowModel(self)
-        self.colormap = cm.get_cmap('Spectral')
         self.colorbar = None
+        self.init_plot_defaults()
+
+    def init_plot_defaults(self):
+        super(ImgPlotWindowController, self).init_plot_defaults()
+        self.colormap = cm.get_cmap('Spectral')
 
     def plot(self, data):
         """Plots the dataset"""

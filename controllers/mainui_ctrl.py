@@ -22,7 +22,7 @@ class MainUIController(object):
 
     def init_model(self):
         """Creates and connects the model"""
-        self.model = mainmodel.MainModel()
+        self.model = mainmodel.MainModel(self)
 
     def get_bitmap(self, bitmap_name):
         """Returns a wx.Bitmap instance of the given bitmap's name if
@@ -76,15 +76,25 @@ class MainUIController(object):
 
     def on_refresh_data(self, evt):
         """Handles request to update contents of data folder"""
-        pass
+        self.model.remove_thumbs()
+        self.view.data_panel.populate()
 
     def on_add_data(self, evt):
         """Handles request to add data to data folder"""
-        pass
+        file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file', style=wx.FD_OPEN)
+        if file_dlg.ShowModal() == wx.ID_OK:
+            self.model.copy_data(file_dlg.GetPath())
+            self.view.data_panel.populate()
 
     def on_remove_data(self, evt):
         """Handles request to remove data from data folder"""
-        pass
+        if self.view.data_panel.data is not None:
+            confirm_deletion_dlg = wx.MessageDialog(parent=self.view.parent, caption="Delete File?",
+                                                    message="Are you sure you want to delete this file?",
+                                                    style=wx.OK|wx.CANCEL)
+            if confirm_deletion_dlg.ShowModal() == wx.ID_OK:
+                self.model.remove_data(self.view.data_panel.data)
+                self.view.data_panel.populate()
 
     def on_preview_data(self, evt):
         """Handles request to preview data"""
