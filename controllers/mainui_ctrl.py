@@ -12,6 +12,7 @@ import views.dialogs as dlg
 import pathfinder
 import wx
 import os.path
+import textwrap
 
 class MainUIController(object):
     """Controller for the main user interface"""
@@ -41,7 +42,8 @@ class MainUIController(object):
         else:
             panel.plot_blank()
 
-        # Event Handlers
+            # Event Handlers
+
     def on_quit(self, evt):
         """Handles the Quit event"""
         self.view._mgr.UnInit()
@@ -53,17 +55,35 @@ class MainUIController(object):
 
     def on_about_tri(self, evt):
         """Handles the About TRI event"""
-        pass
+        tri_logo = os.path.join(pathfinder.bitmap_path(), "tri_austin_logo.png")
+        tri_msg = ' '.join(("Texas Research Institute Austin, Inc. (TRI/Austin) is TRI's flagship company",
+                            "and conducts materials research and development projects. TRI is committed to",
+                            "providing the highest quality materials science products and services."))
+        about_tri_dlg = dlg.AboutDialog(parent=self.view, title="About TRI",
+                                        msg=tri_msg,
+                                        url="www.tri-austin.com",
+                                        logobmp_fname=tri_logo)
+        about_tri_dlg.ShowModal()
+        about_tri_dlg.Destroy()
 
     def on_about_icons(self, evt):
         """Handles the About Icons event"""
-        pass
+        axialis_logo = os.path.join(pathfinder.bitmap_path(), "axialis_logo.png")
+        axialis_msg = ' '.join(("Some icons courtesy Axialis Software and the",
+                                "Axialis Team, and were created by",
+                                "Axialis IconWorkshop."))
+        about_axialisicons_dlg = dlg.AboutDialog(parent=self.view, title="About Axialis Icons",
+                                                 msg=axialis_msg,
+                                                 url="www.axialis.com",
+                                                 logobmp_fname=axialis_logo)
+        about_axialisicons_dlg.ShowModal()
+        about_axialisicons_dlg.Destroy()
 
     def on_data_select(self, evt):
         """Handles a change in data file selection by providing a preview plot
         of the data"""
         self.set_thumb(panel=self.view.thumbnail_panel, data_file=self.view.data_panel.data,
-                                  enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
+                       enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
         if self.view.data_panel.data:
             self.view.enable_data_tools()
         else:
@@ -72,7 +92,7 @@ class MainUIController(object):
     def on_preview_toggle(self, evt):
         """Handles toggling data thumbnail plot previews"""
         self.set_thumb(panel=self.view.thumbnail_panel, data_file=self.view.data_panel.data,
-                                  enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
+                       enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
 
     def on_refresh_data(self, evt):
         """Handles request to update contents of data folder"""
@@ -91,7 +111,7 @@ class MainUIController(object):
         if self.view.data_panel.data is not None:
             confirm_deletion_dlg = wx.MessageDialog(parent=self.view.parent, caption="Delete File?",
                                                     message="Are you sure you want to delete this file?",
-                                                    style=wx.OK|wx.CANCEL)
+                                                    style=wx.OK | wx.CANCEL)
             if confirm_deletion_dlg.ShowModal() == wx.ID_OK:
                 self.model.remove_data(self.view.data_panel.data)
                 self.view.data_panel.populate()
@@ -102,9 +122,10 @@ class MainUIController(object):
             import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
             if import_dlg.ShowModal() == wx.ID_OK:
                 wait_dlg = dlg.progressDialog(dlg_title='Loading Data',
-                                          dlg_msg='Please wait, loading data...')
+                                              dlg_msg='Please wait, loading data...')
                 read_parameters = import_dlg.get_import_parameters()
-                data_window = preview_window.PreviewWindow(parent=self.view, data_file=self.view.data_panel.data, **read_parameters)
+                data_window = preview_window.PreviewWindow(parent=self.view, data_file=self.view.data_panel.data,
+                                                           **read_parameters)
                 wait_dlg.close()
                 data_window.Show()
             import_dlg.Destroy()

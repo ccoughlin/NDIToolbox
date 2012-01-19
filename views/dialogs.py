@@ -1,4 +1,5 @@
 """dialogs.py - customized wxPython dialogs and convenience functions"""
+import os
 import sys
 
 __author__ = 'Chris R. Coughlin'
@@ -6,8 +7,12 @@ __author__ = 'Chris R. Coughlin'
 import views.ui_defaults as ui_defaults
 import wx
 from wx.lib.masked.numctrl import NumCtrl
+from wx.lib import statbmp, wordwrap
 from wx import ProgressDialog
+import os.path
 import sys
+import textwrap
+import webbrowser
 
 class ImportTextDialog(wx.Dialog):
     """Specify import parameters for loading ASCII-delimited text files."""
@@ -222,19 +227,79 @@ class FloatRangeDialog(wx.Dialog):
         """Returns the tuple (start,finish) if the dialog was accepted."""
         return (self.start_ctrl.GetValue(), self.finish_ctrl.GetValue())
 
+
 class progressDialog(object):
     """Simple wrapper for wxPython's ProgressDialog,
     creates a pulsing progress bar to indicate busy status.
     Call close() when complete.  Recommended only when a
     very simple wait message is required.
     """
-    def __init__(self,dlg_title,dlg_msg="Please wait..."):
-        self.pdlg=ProgressDialog(message=dlg_msg,
-            title=dlg_title,
-            maximum=100#,
+
+    def __init__(self, dlg_title, dlg_msg="Please wait..."):
+        self.pdlg = ProgressDialog(message=dlg_msg,
+                                   title=dlg_title,
+                                   maximum=100#,
         )
         self.pdlg.Pulse()
 
     def close(self):
         self.pdlg.Update(100)
         self.pdlg.Destroy()
+
+
+class AboutDialog(wx.Dialog):
+    """Simple About dialog that displays a bitmap logo and provides
+    an option to go to a specified website."""
+
+    def __init__(self, parent, id=-1, title='About This Program', pos=None,
+                 size=wx.DefaultSize, style=wx.DEFAULT_DIALOG_STYLE, name=wx.DialogNameStr,
+                 msg=None, logobmp_fname=None, url=None):
+        self.parent = parent
+        super(AboutDialog, self).__init__(parent, id, title, pos, size, style, name)
+        self.msg = msg
+        self.logo_fn = logobmp_fname
+        self.url = url
+        self.generate()
+
+    def generate(self):
+        """Creates the UI"""
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        logo = self.get_bmp()
+        if logo is not None:
+            self.bitmap_logo = statbmp.GenStaticBitmap(self, wx.ID_ANY, logo,
+                                                       style=wx.ALIGN_CENTRE,
+                                                       size=(logo.GetWidth(), logo.GetHeight()))
+            if self.url is not None:
+                self.bitmap_logo.SetToolTipString("Visit {0}".format(self.url))
+                self.bitmap_logo.Bind(wx.EVT_LEFT_DOWN, self.on_click, self.bitmap_logo)
+            self.sizer.Add(self.bitmap_logo, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
+                           ui_defaults.widget_margin)
+        if self.msg is not None:
+            dc = wx.ClientDC(self)
+            if logo is not None:
+                wrap_width = logo.GetWidth()
+            else:
+                wrap_width = self.GetClientSizeTuple()[0]
+            self.msg = wordwrap.wordwrap(textwrap.dedent(self.msg), wrap_width, dc)
+            self.msg_lbl = wx.StaticText(self, wx.ID_ANY, self.msg,
+                                         pos=wx.DefaultPosition,
+                                         size=wx.DefaultSize)
+            self.sizer.Add(self.msg_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
+                           ui_defaults.widget_margin)
+        self.SetSizerAndFit(self.sizer)
+        self.Centre()
+
+    def get_bmp(self):
+        """Loads the specified bitmap into the UI"""
+        if os.path.exists(self.logo_fn):
+            return wx.Bitmap(name=self.logo_fn, type=wx.BITMAP_TYPE_PNG)
+        return None
+
+    def on_click(self, evt):
+        """Handles the click event in the About Dialog by
+        loading the specified URL in the user's default
+        web browser."""
+        if self.url is not None:
+            webbrowser.open(self.url)
+        
+    

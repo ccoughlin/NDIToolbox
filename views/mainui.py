@@ -47,7 +47,7 @@ class UI(wx.Frame):
     def init_help_menu(self):
         """Creates the Help menu"""
         self.help_mnu = wx.Menu()
-        about_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="About This Program",
+        about_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="About This Program...",
                                  help="About This Program")
         self.help_mnu.AppendItem(about_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_about, id=about_mnui.GetId())
@@ -55,8 +55,8 @@ class UI(wx.Frame):
                                      help="About TRI/Austin's NDE Division")
         self.help_mnu.AppendItem(about_tri_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_about_tri, id=about_tri_mnui.GetId())
-        about_icons_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="About Icons",
-                                       help="About the icons used in this project")
+        about_icons_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="About Axialis Icons...",
+                                       help="About the Axialis icons used in this project")
         self.help_mnu.AppendItem(about_icons_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_about_icons, id=about_icons_mnui.GetId())
         self.menubar.Append(self.help_mnu, "&Help")
@@ -132,6 +132,7 @@ class UI(wx.Frame):
         self.toolbar.EnableTool(self.preview_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.plot_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.imageplot_data_tool.GetId(), enable)
+
 
 def main():
     app = wx.PySimpleApp()

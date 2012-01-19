@@ -13,6 +13,7 @@ class ContextMenu(wx.Menu):
     '''Basic right-click popup menu for CSheet controls.  Currently
     implements copy-paste selected cell(s), insert row / column, delete
     row / column.'''
+
     def __init__(self, parent):
         wx.Menu.__init__(self)
         self.parent = parent
@@ -94,7 +95,7 @@ class ContextMenu(wx.Menu):
         numrows = 1
         if self.parent.GetSelectionBlockTopLeft() != []:
             numrows = self.parent.GetSelectionBlockBottomRight()[0][0] -\
-                self.parent.GetSelectionBlockTopLeft()[0][0]+1
+                      self.parent.GetSelectionBlockTopLeft()[0][0] + 1
         else:
             numrows = len(self.parent.GetSelectedRows())
         return numrows
@@ -105,16 +106,18 @@ class ContextMenu(wx.Menu):
         numcols = 1
         if self.parent.GetSelectionBlockTopLeft() != []:
             numcols = self.parent.GetSelectionBlockBottomRight()[0][1] -\
-                self.parent.GetSelectionBlockTopLeft()[0][1]+1
+                      self.parent.GetSelectionBlockTopLeft()[0][1] + 1
         else:
             numcols = len(self.parent.GetSelectedCols())
         return numcols
 
+
 class SpreadsheetTextCellEditor(wx.TextCtrl):
     """ Custom text control for cell editing """
+
     def __init__(self, parent, id, grid):
         wx.TextCtrl.__init__(self, parent, id, "",
-            style=wx.NO_BORDER | wx.TE_PROCESS_ENTER)
+                             style=wx.NO_BORDER | wx.TE_PROCESS_ENTER)
         self._grid = grid                           # Save grid reference
         self.Bind(wx.EVT_CHAR, self.OnChar)
 
@@ -136,8 +139,10 @@ class SpreadsheetTextCellEditor(wx.TextCtrl):
 
         evt.Skip()                                  # Continue event
 
+
 class SpreadsheetCellEditor(wx.lib.sheet.CCellEditor):
     """ Custom cell editor """
+
     def __init__(self, grid):
         super(SpreadsheetCellEditor, self).__init__(grid)
 
@@ -151,9 +156,11 @@ class SpreadsheetCellEditor(wx.lib.sheet.CCellEditor):
         if evtHandler:
             self._tc.PushEventHandler(evtHandler)
 
+
 class Spreadsheet(wx.lib.sheet.CSheet):
     '''Child class of CSheet (child of wxGrid) that implements a basic
     right-click popup menu.'''
+
     def __init__(self, parent):
         self.parent = parent
         super(Spreadsheet, self).__init__(self.parent)
@@ -165,13 +172,13 @@ class Spreadsheet(wx.lib.sheet.CSheet):
         self.SetGridCursor(event.GetRow(), event.GetCol())
         self.PopupMenu(ContextMenu(self), event.GetPosition())
 
-    def ReadCSV(self, csvfile, _delimiter=',' , _quotechar='#'):
+    def ReadCSV(self, csvfile, _delimiter=',', _quotechar='#'):
         '''Reads a CSV file into the current spreadsheet, replacing
         existing contents (if any).'''
         self.ClearGrid()
         with open(csvfile, 'rU') as inputfile:
             csv_reader = csv.reader(inputfile,
-                delimiter = _delimiter, quotechar = _quotechar)
+                                    delimiter=_delimiter, quotechar=_quotechar)
             try:
                 self.SetNumberRows(0)
                 self.SetNumberCols(0)
@@ -190,7 +197,7 @@ class Spreadsheet(wx.lib.sheet.CSheet):
             except csv.Error as err:
                 print("Skipping line {0}: {1}".format(csv_reader.line_num, err))
 
-    def WriteCSV(self, csvfile, _delimiter=',', _quotechar='#', _quoting = csv.QUOTE_MINIMAL):
+    def WriteCSV(self, csvfile, _delimiter=',', _quotechar='#', _quoting=csv.QUOTE_MINIMAL):
         '''Writes the current contents of the spreadsheet to a CSV file'''
         csv_writer = csv.writer(open(csvfile, 'wb'), delimiter=_delimiter, quotechar=_quotechar, quoting=_quoting)
         for rownum in range(self.GetNumberRows()):

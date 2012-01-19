@@ -54,7 +54,7 @@ class PlotWindow(wx.Frame):
             tw, th = self.toolbar.GetSizeTuple()
             fw, fh = self.canvas.GetSizeTuple()
             self.toolbar.SetSize(wx.Size(fw, th))
-            self.sizer.Add(self.toolbar, 0, wx.LEFT|wx.EXPAND, 0)
+            self.sizer.Add(self.toolbar, 0, wx.LEFT | wx.EXPAND, 0)
         self.toolbar.update()
 
     def init_menu(self):
@@ -153,7 +153,7 @@ class ImgPlotWindow(PlotWindow):
         self.Bind(wx.EVT_MENU, self.controller.on_set_ylabel, id=ylbl_mnui.GetId())
         self.plot_mnu.AppendItem(ylbl_mnui)
         cbarlbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Set Colorbar Label',
-            help='Set Colorbar Label')
+                                   help='Set Colorbar Label')
         self.Bind(wx.EVT_MENU, self.controller.on_set_cbarlbl, id=cbarlbl_mnui.GetId())
         self.plot_mnu.AppendItem(cbarlbl_mnui)
         gridtoggle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Toggle Grid",
@@ -161,11 +161,11 @@ class ImgPlotWindow(PlotWindow):
         self.plot_mnu.AppendItem(gridtoggle_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_toggle_grid, id=gridtoggle_mnui.GetId())
         self.preview_cmaps_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Preview Colormaps',
-            help='Preview available colormaps')
+                                              help='Preview available colormaps')
         self.Bind(wx.EVT_MENU, self.controller.on_preview_cmaps, id=self.preview_cmaps_mnui.GetId())
         self.plot_mnu.AppendItem(self.preview_cmaps_mnui)
         self.select_cmap_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Select Colormap...',
-            help='Selects colormap')
+                                            help='Selects colormap')
         self.Bind(wx.EVT_MENU, self.controller.on_select_cmap, id=self.select_cmap_mnui.GetId())
         self.plot_mnu.AppendItem(self.select_cmap_mnui)
         self.menubar.Append(self.plot_mnu, "&Plot")
