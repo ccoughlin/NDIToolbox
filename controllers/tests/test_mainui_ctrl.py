@@ -23,5 +23,14 @@ class TestMainUIController(unittest.TestCase):
         self.assertTrue(ctrl.view is view)
         self.assertTrue(isinstance(ctrl.model, mainmodel.MainModel))
 
+    def test_get_bitmap(self):
+        """Verify get_gitmap returns a wx.Bitmap or None if not found"""
+        view = mainui.UI()
+        ctrl = view.controller
+        no_such_bitmap = "no icon.png"
+        self.assertIsNone(ctrl.get_bitmap(no_such_bitmap))
+        bitmap_exists = "tri_austin_logo.png"
+        self.assertTrue(isinstance(ctrl.get_bitmap(bitmap_exists), wx.Bitmap))
+
 if __name__ == "__main__":
     unittest.main()

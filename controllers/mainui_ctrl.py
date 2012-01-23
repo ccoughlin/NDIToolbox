@@ -9,7 +9,7 @@ from models import mainmodel
 import views.plotwindow as plotwindow
 import views.preview_window as preview_window
 import views.dialogs as dlg
-import pathfinder
+import controllers.pathfinder as pathfinder
 import wx
 import os.path
 import textwrap
@@ -42,7 +42,7 @@ class MainUIController(object):
         else:
             panel.plot_blank()
 
-            # Event Handlers
+    # Event Handlers
 
     def on_quit(self, evt):
         """Handles the Quit event"""
