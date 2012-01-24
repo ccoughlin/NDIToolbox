@@ -42,5 +42,10 @@ class TestPathFinder(unittest.TestCase):
         thumb_path = os.path.join(self.app_path, 'thumbnails')
         self.assertEqual(thumb_path, pathfinder.thumbnails_path())
 
+    def test_plugins_path(self):
+        """Verify correct path to plugins"""
+        plugin_path = os.path.join(self.app_path, 'plugins')
+        self.assertEqual(plugin_path, pathfinder.plugins_path())
+
 if __name__ == "__main__":
     unittest.main()

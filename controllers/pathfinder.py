@@ -40,4 +40,8 @@ def thumbnails_path():
     """Returns the path to data thumbnails"""
     return os.path.join(app_path(), 'thumbnails')
 
+def plugins_path():
+    """Returnst the path to plugins"""
+    return os.path.join(app_path(), 'plugins')
+
   
