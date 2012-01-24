@@ -71,10 +71,12 @@ class CompanyPlugin(AbstractPlugin):
     url = "www.company_url.com"
     copyright = "Copyright (C) 2012 Company Name.  All rights reserved."
 
-    def __init__(self, name, description, authors=None, version=None,
+    def __init__(self, name=None, description=None, authors=None, version=None,
                  url=None, copyright=None):
-        self.name = name
-        self.description = description
+        if name is not None:
+            self.name = name
+        if description is not None:
+            self.description = description
         if authors is not None:
             self.authors = authors
         if version is not None:

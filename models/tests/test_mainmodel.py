@@ -6,6 +6,7 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 import models.mainmodel as model
+import models.abstractplugin as abstractplugin
 import controllers.pathfinder as pathfinder
 import numpy as np
 import os.path
@@ -30,6 +31,31 @@ class TestMainModel(unittest.TestCase):
         import_parameters = {'delimiter':''}
         read_data = model.get_data(self.sample_data_file, **import_parameters)
         self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
+
+    def test_load_plugins(self):
+        """Verify the main model loads available plugins"""
+        plugin_list = model.load_plugins()
+        for plugin in plugin_list:
+            plugin_name = plugin[0]
+            plugin_instance = plugin[1]
+            self.assertTrue(issubclass(plugin_instance, abstractplugin.AbstractPlugin))
+
+    def test_run_plugin(self):
+        """Verify the main model can run a loaded plugin"""
+        # The base A7117 source code comes with a normalize_plugin
+        normalize_plugin_name = "NormalizePlugin"
+        plugin_list = model.load_plugins()
+        plugin_names = [plugin[0] for plugin in plugin_list]
+        plugin_instances = [plugin[1] for plugin in plugin_list]
+        # Ensure that the normalize plugin was found
+        self.assertTrue(normalize_plugin_name in plugin_names)
+        raw_data = np.array([-1.1, -2.2, 0, 3.3, 4.4, 1.19])
+        expected_data = raw_data / np.max(raw_data)
+        normalize_plugin = plugin_instances[plugin_names.index(normalize_plugin_name)]()
+        normalize_plugin.data = raw_data
+        normalize_plugin.run()
+        generated_data = normalize_plugin.data
+        self.assertListEqual(expected_data.tolist(), generated_data.tolist())
 
     def test_copy_data(self):
         """Verify copying of sample data file to data folder"""

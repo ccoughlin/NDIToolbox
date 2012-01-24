@@ -18,7 +18,7 @@ class TRIPlugin(CompanyPlugin):
     url = "www.tri-austin.com"
     copyright = "Copyright (C) 2012 TRI/Austin, Inc.  All rights reserved."
 
-    def __init__(self, name, description, authors=None, version=None,
+    def __init__(self, name=None, description=None, authors=None, version=None,
                  url=None, copyright=None):
         super(TRIPlugin, self).__init__(name, description, authors, version,
                                         url, copyright)

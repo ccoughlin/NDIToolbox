@@ -18,7 +18,7 @@ class ComputationalToolsPlugin(CompanyPlugin):
     url = "www.computationaltools.com"
     copyright = "Copyright (C) 2012 Computational Tools.  All rights reserved."
 
-    def __init__(self, name, description, authors=None, version=None,
+    def __init__(self, name=None, description=None, authors=None, version=None,
                  url=None, copyright=None):
         super(ComputationalToolsPlugin, self).__init__(name, description, authors, version,
                                         url, copyright)
