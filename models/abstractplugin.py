@@ -21,7 +21,7 @@ class AbstractPlugin(object):
     run() method
 
     For more concrete examples, consult the TRIPlugin, ComputationalToolsPlugin,
-    and CompanyPluginTemplate modules.
+    and CompanyPlugin modules.
     """
     __metaclass__ = ABCMeta
 
@@ -58,4 +58,40 @@ class AbstractPlugin(object):
 
     @abstractmethod
     def run(self):
+        pass
+
+class CompanyPlugin(AbstractPlugin):
+    """Basic template for A7117 plugins for an institution.  Subclasses
+    should overload the placeholder plugin fields and the run() method."""
+
+    name = "Generic Company Plugin"
+    description = "A7117 Plugin By Company Name"
+    authors = "Company Inc."
+    version = "1.0"
+    url = "www.company_url.com"
+    copyright = "Copyright (C) 2012 Company Name.  All rights reserved."
+
+    def __init__(self, name, description, authors=None, version=None,
+                 url=None, copyright=None):
+        self.name = name
+        self.description = description
+        if authors is not None:
+            self.authors = authors
+        if version is not None:
+            self.version = version
+        if url is not None:
+            self.url = url
+        if copyright is not None:
+            self.copyright = copyright
+        self._data = None
+
+    @property
+    def data(self):
+        return self._data
+    @data.setter
+    def data(self, new_data):
+        self._data = new_data
+
+    def run(self):
+        """Executes the plugin"""
         pass
