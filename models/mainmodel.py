@@ -24,7 +24,7 @@ def get_data(data_fname, **import_params):
     return data
 
 class MainModel(object):
-
+    """Model for the main user interface"""
     def __init__(self, controller):
         self.controller = controller
 
