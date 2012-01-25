@@ -6,6 +6,8 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 import models.plotwindow_model as model
+import models.mainmodel as mainmodel
+import models.abstractplugin as abstractplugin
 import numpy as np
 import scipy.signal
 import unittest
@@ -13,18 +15,42 @@ import unittest
 class TestBasicPlotWindowModel(unittest.TestCase):
     """Tests the BasicPlotWindowModel class"""
 
+    def setUp(self):
+        self.mock_controller = ""
+        self.basic_model = model.BasicPlotWindowModel(self.mock_controller)
+
     def test_revert_data(self):
         """Verify data is reverted to original"""
         original_data = np.array([1, 3, 5, 7, 9])
-        mock_controller = ""
-        basic_model = model.BasicPlotWindowModel(mock_controller)
-        self.assertIsNone(basic_model.original_data)
-        self.assertIsNone(basic_model.data)
-        basic_model.original_data = original_data
-        basic_model.data = np.ones(5)
-        basic_model.revert_data()
-        self.assertListEqual(basic_model.original_data.tolist(), original_data.tolist())
-        self.assertListEqual(basic_model.original_data.tolist(), basic_model.data.tolist())
+        self.assertIsNone(self.basic_model.original_data)
+        self.assertIsNone(self.basic_model.data)
+        self.basic_model.original_data = original_data
+        self.basic_model.data = np.ones(5)
+        self.basic_model.revert_data()
+        self.assertListEqual(self.basic_model.original_data.tolist(), original_data.tolist())
+        self.assertListEqual(self.basic_model.original_data.tolist(), self.basic_model.data.tolist())
+
+    def test_get_plugins(self):
+        """Verify a list of available plugins is returned"""
+        expected_plugin_list = mainmodel.load_plugins()
+        expected_plugin_names = [plugin[0] for plugin in expected_plugin_list]
+        retrieved_plugin_list = self.basic_model.get_plugins()
+        self.assertEqual(len(expected_plugin_list), len(retrieved_plugin_list))
+        for plugin in retrieved_plugin_list:
+            plugin_name = plugin[0]
+            plugin_instance = plugin[1]
+            self.assertTrue(plugin_name in expected_plugin_names)
+            self.assertTrue(issubclass(plugin_instance, abstractplugin.AbstractPlugin))
+
+    def test_execute_plugin(self):
+        """Verify a plugin can be executed"""
+        plugin_list = self.basic_model.get_plugins()
+        # The base A7117 source code comes with a normalize_plugin
+        normalize_plugin_name = "NormalizePlugin"
+        raw_data = np.array([-1.1, -2.2, 0, 3.3, 4.4, 1.19])
+        expected_data = raw_data / np.max(raw_data)
+        generated_data = self.basic_model.run_plugin(normalize_plugin_name, raw_data)
+        self.assertListEqual(expected_data.tolist(), generated_data.tolist())
 
 class TestPlotWindowModel(unittest.TestCase):
     """Tests the PlotWindowModel class"""

@@ -62,7 +62,7 @@ class PlotWindow(wx.Frame):
         self.menubar = wx.MenuBar()
         self.init_plot_menu()
         self.init_ops_menu()
-        self.init_scripts_menu()
+        self.init_tools_menu()
         self.init_help_menu()
         self.SetMenuBar(self.menubar)
 
@@ -116,12 +116,23 @@ class PlotWindow(wx.Frame):
             self.Bind(wx.EVT_MENU, self.controller.on_apply_gate, id=gate_mnui.GetId())
         self.ops_mnu.AppendMenu(wx.ID_ANY, 'Gates', self.gate_mnu)
 
-    def init_scripts_menu(self):
-        pass
+    def init_tools_menu(self):
+        """Initializes the Tools Menu (Plugins and external scripts)"""
+        self.tools_mnu = wx.Menu()
+        self.plugins_mnu = wx.Menu()
+        plugins = self.controller.available_plugins
+        for plugin_id, plugin in plugins.items():
+            plugin_name = plugin[1].name
+            plugin_description = plugin[1].description
+            script_mnui = wx.MenuItem(self.tools_mnu, id=plugin_id, text=plugin_name,
+                                      help=plugin_description)
+            self.Bind(wx.EVT_MENU, self.controller.on_run_plugin, id=script_mnui.GetId())
+            self.plugins_mnu.AppendItem(script_mnui)
+        self.tools_mnu.AppendMenu(wx.ID_ANY, "Plugins", self.plugins_mnu)
+        self.menubar.Append(self.tools_mnu, '&Tools')
 
     def init_help_menu(self):
         pass
-
 
 class ImgPlotWindow(PlotWindow):
     """Specialized PlotWindow for handling imgplots"""

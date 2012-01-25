@@ -46,12 +46,12 @@ class TestMainModel(unittest.TestCase):
         normalize_plugin_name = "NormalizePlugin"
         plugin_list = model.load_plugins()
         plugin_names = [plugin[0] for plugin in plugin_list]
-        plugin_instances = [plugin[1] for plugin in plugin_list]
+        plugin_classes = [plugin[1] for plugin in plugin_list]
         # Ensure that the normalize plugin was found
         self.assertTrue(normalize_plugin_name in plugin_names)
         raw_data = np.array([-1.1, -2.2, 0, 3.3, 4.4, 1.19])
         expected_data = raw_data / np.max(raw_data)
-        normalize_plugin = plugin_instances[plugin_names.index(normalize_plugin_name)]()
+        normalize_plugin = plugin_classes[plugin_names.index(normalize_plugin_name)]()
         normalize_plugin.data = raw_data
         normalize_plugin.run()
         generated_data = normalize_plugin.data

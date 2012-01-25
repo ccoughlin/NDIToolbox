@@ -36,6 +36,7 @@ class BasicPlotWindowController(object):
         self.axes_grid = True
         self.model = model.BasicPlotWindowModel(self)
         self.init_plot_defaults()
+        self.available_plugins = self.generate_plugin_dict()
 
     def init_plot_defaults(self):
         """Sets some basic matplotlib configuration parameters
@@ -57,6 +58,19 @@ class BasicPlotWindowController(object):
     def refresh_plot(self):
         """Forces plot to redraw itself"""
         self.view.canvas.draw()
+
+    def on_run_plugin(self, evt):
+        """Handles request to run a plugin"""
+        self.run_plugin(evt.GetId())
+
+    @replace_plot
+    def run_plugin(self, requested_plugin_id):
+        """Runs plugin with specified ID on current data set,
+        replaces current data and refreshes plot"""
+        for plugin_id, plugin in self.available_plugins.items():
+            if requested_plugin_id == plugin_id:
+                plugin_name = plugin[0]
+                self.model.data = self.model.run_plugin(plugin_name, self.model.data)
 
     def on_revert(self, evt):
         """Handles request to revert to original data set"""
@@ -133,6 +147,20 @@ class BasicPlotWindowController(object):
             self.model.original_data = mainmodel.get_data(data_file, **readtext_parameters)
             self.model.revert_data()
 
+    def get_plugins(self):
+        """Returns a list of the available A7117 plugins"""
+        return self.model.get_plugins()
+
+    def generate_plugin_dict(self):
+        """Returns a dict (key = wx ID, val = plugin) suitable
+        for inclusion in a Menu."""
+        plugin_id = 1000
+        plugins = {}
+        for plugin in self.get_plugins():
+            plugins[plugin_id] = plugin
+            plugin_id += 1
+        return plugins
+
 class PlotWindowController(BasicPlotWindowController):
     """Controller for PlotWindow class"""
 
@@ -141,6 +169,7 @@ class PlotWindowController(BasicPlotWindowController):
         self.axes_grid = True
         self.model = model.PlotWindowModel(self)
         self.init_plot_defaults()
+        self.available_plugins = self.generate_plugin_dict()
 
     def plot(self, data):
         """Plots the dataset"""
@@ -189,6 +218,7 @@ class ImgPlotWindowController(BasicPlotWindowController):
         self.model = model.ImgPlotWindowModel(self)
         self.colorbar = None
         self.init_plot_defaults()
+        self.available_plugins = self.generate_plugin_dict()
 
     def init_plot_defaults(self):
         super(ImgPlotWindowController, self).init_plot_defaults()
