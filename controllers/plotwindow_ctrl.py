@@ -140,12 +140,17 @@ class BasicPlotWindowController(object):
         self.model.revert_data()
 
     def load_data(self, data_file):
-        """Loads the data from the specified file name"""
+        """Loads the data from the specified file name,
+        returning True if the data were successfully loaded and
+        False otherwise."""
         import_dlg = dialogs.ImportTextDialog(parent=self.view.parent)
         if import_dlg.ShowModal() == wx.ID_OK:
             readtext_parameters = import_dlg.get_import_parameters()
             self.model.original_data = mainmodel.get_data(data_file, **readtext_parameters)
             self.model.revert_data()
+            return True
+        else:
+            return False
 
     def get_plugins(self):
         """Returns a list of the available A7117 plugins"""

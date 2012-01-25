@@ -20,12 +20,13 @@ class PlotWindow(wx.Frame):
         self.parent = parent
         self.data_file = data_file
         self.controller = PlotWindowController(self)
-        self.title = 'Plot - {0}'.format(os.path.basename(self.data_file))
-        wx.Frame.__init__(self, id=wx.ID_ANY, parent=self.parent, title=self.title)
-        self.init_menu()
-        self.init_ui()
-        self.controller.load_data(self.data_file)
-        self.controller.plot(self.controller.data)
+        self.has_data = self.controller.load_data(self.data_file)
+        if self.has_data:
+            self.title = 'Plot - {0}'.format(os.path.basename(self.data_file))
+            wx.Frame.__init__(self, id=wx.ID_ANY, parent=self.parent, title=self.title)
+            self.init_menu()
+            self.init_ui()
+            self.controller.plot(self.controller.data)
 
     def init_ui(self):
         """Creates the PlotWindow UI"""
@@ -141,12 +142,13 @@ class ImgPlotWindow(PlotWindow):
         self.parent = parent
         self.data_file = data_file
         self.controller = ImgPlotWindowController(self)
-        self.title = 'Plot - {0}'.format(os.path.basename(self.data_file))
-        wx.Frame.__init__(self, id=wx.ID_ANY, parent=self.parent, title=self.title)
-        self.init_menu()
-        self.init_ui()
-        self.controller.load_data(self.data_file)
-        self.controller.plot(self.controller.data)
+        self.has_data = self.controller.load_data(self.data_file)
+        if self.has_data:
+            self.title = 'Plot - {0}'.format(os.path.basename(self.data_file))
+            wx.Frame.__init__(self, id=wx.ID_ANY, parent=self.parent, title=self.title)
+            self.init_menu()
+            self.init_ui()
+            self.controller.plot(self.controller.data)
 
     def init_plot_menu(self):
         """Creates the Plot menu"""

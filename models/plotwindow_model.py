@@ -34,7 +34,7 @@ class BasicPlotWindowModel(object):
         plugin_names = [plugin[0] for plugin in available_plugins]
         plugin_classes = [plugin[1] for plugin in available_plugins]
         if plugin_name in plugin_names:
-            plugin_class = plugin_classes[plugin_name.index(plugin_name)]
+            plugin_class = plugin_classes[plugin_names.index(plugin_name)]
             plugin_instance = plugin_class()
             plugin_instance.data = data
             plugin_instance.run()

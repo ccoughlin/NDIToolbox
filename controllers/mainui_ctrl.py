@@ -134,10 +134,12 @@ class MainUIController(object):
         """Handles request to generate X-Y plot of selected data"""
         if self.view.data_panel.data is not None:
             plt_window = plotwindow.PlotWindow(self.view, self.view.data_panel.data)
-            plt_window.Show()
+            if plt_window.has_data:
+                plt_window.Show()
 
     def on_imageplot_data(self, evt):
         """Handles request to generate image plot of selected data"""
         if self.view.data_panel.data is not None:
             plt_window = plotwindow.ImgPlotWindow(self.view, self.view.data_panel.data)
-            plt_window.Show()
+            if plt_window.has_data:
+                plt_window.Show()
