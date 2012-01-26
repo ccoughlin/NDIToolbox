@@ -166,6 +166,16 @@ class BasicPlotWindowController(object):
             plugin_id += 1
         return plugins
 
+    def configure_plugin_dlg(self, plugin_instance):
+        """Produces a ConfigurePlugin dialog to configure the
+        selected plugin"""
+        cfg = None
+        cfg_dlg = dialogs.ConfigurePluginDialog(self.view.parent, plugin_instance)
+        if cfg_dlg.ShowModal() == wx.ID_OK:
+            cfg = cfg_dlg.get_config()
+        cfg_dlg.Destroy()
+        return cfg
+
 class PlotWindowController(BasicPlotWindowController):
     """Controller for PlotWindow class"""
 

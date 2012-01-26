@@ -246,7 +246,6 @@ class progressDialog(object):
         self.pdlg.Update(100)
         self.pdlg.Destroy()
 
-
 class AboutDialog(wx.Dialog):
     """Simple About dialog that displays a bitmap logo and provides
     an option to go to a specified website."""
@@ -302,4 +301,64 @@ class AboutDialog(wx.Dialog):
         if self.url is not None:
             webbrowser.open(self.url)
         
-    
+class ConfigurePluginDialog(wx.Dialog):
+    """wxPython dialog to allow user configuration of A7117
+    Plugins"""
+
+    def __init__(self, parent, plugin_instance):
+        self.parent = parent
+        self.plugin = plugin_instance
+        title = "Configure {0}".format(self.plugin.name)
+        super(ConfigurePluginDialog, self).__init__(parent, wx.ID_ANY, title,
+                                                    wx.DefaultPosition, wx.DefaultSize,
+                                                    wx.DEFAULT_DIALOG_STYLE)
+        self.generate()
+
+    def generate(self):
+        """Lays out and builds the dialog"""
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        description_str = "{0}".format(self.plugin.description)
+        desc_lbl = wx.StaticText(self, wx.ID_ANY, description_str)
+        self.sizer.Add(desc_lbl, wx.ID_ANY, ui_defaults.ctrl_pct,
+                       ui_defaults.sizer_flags, ui_defaults.widget_margin)
+        self.config_panel = wx.ScrolledWindow(self, wx.ID_ANY)
+        self.config_panel_sizer = wx.FlexGridSizer(cols=2)
+        self.config_ctrls = self.populate_config()
+        for lbl, ctrl in self.config_ctrls.items():
+            opt_lbl = wx.StaticText(self.config_panel, wx.ID_ANY, lbl)
+            self.config_panel_sizer.Add(opt_lbl, ui_defaults.lbl_pct,
+                                        ui_defaults.lblsizer_flags,
+                                        ui_defaults.widget_margin)
+            self.config_panel_sizer.Add(ctrl, ui_defaults.ctrl_pct,
+                                        ui_defaults.sizer_flags,
+                                        ui_defaults.widget_margin)
+        self.config_panel.SetSizerAndFit(self.config_panel_sizer)
+        self.sizer.Add(self.config_panel, wx.ID_ANY, ui_defaults.ctrl_pct,
+                       ui_defaults.sizer_flags, 0)
+        self._generate_std_buttons()
+        self.SetSizerAndFit(self.sizer)
+        self.Centre()
+
+    def _generate_std_buttons(self):
+        """Generates the standard OK/Cancel dialog buttons"""
+        self.stdbtns = wx.StdDialogButtonSizer()
+        ok_btn = wx.Button(self, wx.ID_OK)
+        cancel_btn = wx.Button(self, wx.ID_CANCEL)
+        self.stdbtns.AddButton(ok_btn)
+        self.stdbtns.AddButton(cancel_btn)
+        self.stdbtns.Realize()
+        self.sizer.Add(self.stdbtns, ui_defaults.lbl_pct, ui_defaults.sizer_flags,
+                       ui_defaults.widget_margin)
+
+    def populate_config(self):
+        config_ctrls = {}
+        for opt, setting in self.plugin.config.items():
+            opt_ctrl = wx.TextCtrl(self.config_panel, wx.ID_ANY, value=str(setting))
+            config_ctrls[opt] = opt_ctrl
+        return config_ctrls
+
+    def get_config(self):
+        config = {}
+        for opt, ctrl in self.config_ctrls.items():
+            config[opt] = ctrl.GetValue()
+        return config
