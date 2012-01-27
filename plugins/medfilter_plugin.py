@@ -24,8 +24,14 @@ class MedianFilterPlugin(TRIPlugin):
     def run(self):
         """Runs the plugin, asking the user to specify a kernel size for the median filter.
         A filter of rank A where A is the specified kernel size is then applied to the
-        current data set in each dimension."""
+        current data set in each dimension.  An even kernel size is automatically
+        incremented by one to use an odd number-SciPy's medfilt function requires odd
+        numbers for kernel size.
+        """
         if self._data is not None:
             kernel_size = int(self.config.get('kernel size', 3))
+            if kernel_size % 2 == 0:
+                # medfilt function requires odd number for kernel size
+                kernel_size += 1
             self._data = scipy.signal.medfilt(self._data,
                                               kernel_size)

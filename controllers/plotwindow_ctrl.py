@@ -2,7 +2,6 @@
 
 Chris R. Coughlin (TRI/Austin, Inc.)
 """
-
 __author__ = 'Chris R. Coughlin'
 
 from views import dialogs
@@ -13,6 +12,8 @@ from matplotlib import cm
 import wx
 import wx.lib.dialogs
 from functools import wraps
+import multiprocessing
+import Queue
 
 def replace_plot(fn):
     """Decorator function - runs the specified function and updates the plot.
@@ -27,6 +28,13 @@ def replace_plot(fn):
             self.refresh_plot()
             self.view.axes.hold()
     return wrapped
+
+def plugin_wrapper(plugin_instance, model, plugin_queue):
+    """multiprocessing wrapper function, used to execute
+    plugin run() method in separate process."""
+    plugin_instance.run()
+    plugin_data = plugin_instance.data
+    plugin_queue.put(plugin_data)
 
 class BasicPlotWindowController(object):
     """Base class for PlotWindows"""
@@ -70,7 +78,41 @@ class BasicPlotWindowController(object):
         for plugin_id, plugin in self.available_plugins.items():
             if requested_plugin_id == plugin_id:
                 plugin_name = plugin[0]
-                self.model.data = self.model.run_plugin(plugin_name, self.model.data)
+                available_plugins = self.get_plugins()
+                plugin_names = [plugin[0] for plugin in available_plugins]
+                plugin_classes = [plugin[1] for plugin in available_plugins]
+                if plugin_name in plugin_names:
+                    plugin_class = plugin_classes[plugin_names.index(plugin_name)]
+                    plugin_instance = plugin_class()
+                    plugin_instance.data = self.data
+                if hasattr(plugin_instance, "config"):
+                    cfg = self.configure_plugin_dlg(plugin_instance)
+                    if cfg is not None:
+                        plugin_instance.config = cfg
+                plugin_queue = multiprocessing.Queue()
+                plugin_process = multiprocessing.Process(target=plugin_wrapper,
+                                     args=(plugin_instance, self.model, plugin_queue))
+                plugin_process.daemon = True
+                plugin_process.start()
+                keepGoing = True
+                # TODO: move progress dialog to dialogs module
+                progress_dlg = wx.ProgressDialog("Running Plugin",
+                                                 "Please wait, executing plugin...",
+                                                 parent=self.view,
+                                                 style=wx.PD_CAN_ABORT)
+                while keepGoing:
+                    wx.MilliSleep(100)
+                    (keepGoing, skip) = progress_dlg.UpdatePulse()
+                    try:
+                        returned_data = plugin_queue.get(False)
+                    except Queue.Empty:
+                        continue
+                    if returned_data is not None:
+                        self.model.data = returned_data
+                        break
+                    if not keepGoing:
+                        plugin_process.terminate()
+                progress_dlg.Destroy()
 
     def on_revert(self, evt):
         """Handles request to revert to original data set"""

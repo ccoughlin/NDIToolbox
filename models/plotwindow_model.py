@@ -26,28 +26,6 @@ class BasicPlotWindowModel(object):
         """Returns a list of available plugins"""
         return mainmodel.load_plugins()
 
-    def run_plugin(self, plugin_name, data):
-        """Runs the specified plugin_name with the provided data.
-        Returns the plugin's data."""
-        plugin_data = data
-        available_plugins = self.get_plugins()
-        plugin_names = [plugin[0] for plugin in available_plugins]
-        plugin_classes = [plugin[1] for plugin in available_plugins]
-        if plugin_name in plugin_names:
-            plugin_class = plugin_classes[plugin_names.index(plugin_name)]
-            plugin_instance = plugin_class()
-            plugin_instance.data = data
-            if hasattr(plugin_instance, "config"):
-                cfg = self.controller.configure_plugin_dlg(plugin_instance)
-                if cfg is not None:
-                    plugin_instance.config = cfg
-                    plugin_instance.run()
-                    plugin_data = plugin_instance.data
-                return plugin_data
-            plugin_instance.run()
-            plugin_data = plugin_instance.data
-        return plugin_data
-
 class PlotWindowModel(BasicPlotWindowModel):
     """Model for the PlotWindow"""
 

@@ -42,16 +42,6 @@ class TestBasicPlotWindowModel(unittest.TestCase):
             self.assertTrue(plugin_name in expected_plugin_names)
             self.assertTrue(issubclass(plugin_instance, abstractplugin.AbstractPlugin))
 
-    def test_execute_plugin(self):
-        """Verify a plugin can be executed"""
-        plugin_list = self.basic_model.get_plugins()
-        # The base A7117 source code comes with a normalize_plugin
-        normalize_plugin_name = "NormalizePlugin"
-        raw_data = np.array([-1.1, -2.2, 0, 3.3, 4.4, 1.19])
-        expected_data = raw_data / np.max(raw_data)
-        generated_data = self.basic_model.run_plugin(normalize_plugin_name, raw_data)
-        self.assertListEqual(expected_data.tolist(), generated_data.tolist())
-
 class TestPlotWindowModel(unittest.TestCase):
     """Tests the PlotWindowModel class"""
 
