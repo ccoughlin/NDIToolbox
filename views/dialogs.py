@@ -308,7 +308,7 @@ class ConfigurePluginDialog(wx.Dialog):
     def __init__(self, parent, plugin_instance):
         self.parent = parent
         self.plugin = plugin_instance
-        title = "Configure {0}".format(self.plugin.name)
+        title = "Configure Plugin"
         super(ConfigurePluginDialog, self).__init__(parent, wx.ID_ANY, title,
                                                     wx.DefaultPosition, wx.DefaultSize,
                                                     wx.DEFAULT_DIALOG_STYLE)
@@ -317,12 +317,23 @@ class ConfigurePluginDialog(wx.Dialog):
     def generate(self):
         """Lays out and builds the dialog"""
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        description_str = "{0}".format(self.plugin.description)
-        desc_lbl = wx.StaticText(self, wx.ID_ANY, description_str)
-        self.sizer.Add(desc_lbl, wx.ID_ANY, ui_defaults.ctrl_pct,
-                       ui_defaults.sizer_flags, ui_defaults.widget_margin)
-        self.config_panel = wx.ScrolledWindow(self, wx.ID_ANY)
+        desc_panel = wx.Panel(self)
+        desc_panel_sizer = wx.BoxSizer(wx.VERTICAL)
+
+        plugin_lbl = wx.StaticText(desc_panel, wx.ID_ANY, self.plugin.name)
+        plugin_lbl_font = wx.Font(18, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        plugin_lbl.SetFont(plugin_lbl_font)
+        desc_panel_sizer.Add(plugin_lbl, ui_defaults.lbl_pct,
+                             ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
+        description_lbl = wx.StaticText(desc_panel, wx.ID_ANY, self.plugin.description)
+        desc_panel_sizer.Add(description_lbl, ui_defaults.lbl_pct,
+                             ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
+        desc_panel.SetSizer(desc_panel_sizer)
+        self.sizer.Add(desc_panel, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
+                       0)
+        self.config_panel = wx.ScrolledWindow(self, wx.ID_ANY, style=wx.DOUBLE_BORDER)
         self.config_panel_sizer = wx.FlexGridSizer(cols=2)
+        self.config_panel_sizer.AddGrowableCol(1)
         self.config_ctrls = self.populate_config()
         for lbl, ctrl in self.config_ctrls.items():
             opt_lbl = wx.StaticText(self.config_panel, wx.ID_ANY, lbl)
@@ -333,19 +344,17 @@ class ConfigurePluginDialog(wx.Dialog):
                                         ui_defaults.sizer_flags,
                                         ui_defaults.widget_margin)
         self.config_panel.SetSizerAndFit(self.config_panel_sizer)
-        self.sizer.Add(self.config_panel, wx.ID_ANY, ui_defaults.ctrl_pct,
-                       ui_defaults.sizer_flags, 0)
+        #self.sizer.Add(self.fsizer, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
+        self.sizer.Add(self.config_panel, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
         self._generate_std_buttons()
         self.SetSizerAndFit(self.sizer)
-        self.Centre()
+        self.CentreOnScreen()
 
     def _generate_std_buttons(self):
         """Generates the standard OK/Cancel dialog buttons"""
         self.stdbtns = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK)
-        cancel_btn = wx.Button(self, wx.ID_CANCEL)
         self.stdbtns.AddButton(ok_btn)
-        self.stdbtns.AddButton(cancel_btn)
         self.stdbtns.Realize()
         self.sizer.Add(self.stdbtns, ui_defaults.lbl_pct, ui_defaults.sizer_flags,
                        ui_defaults.widget_margin)
