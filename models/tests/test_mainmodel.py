@@ -59,7 +59,7 @@ class TestMainModel(unittest.TestCase):
 
     def test_copy_data(self):
         """Verify copying of sample data file to data folder"""
-        self.model.copy_data(self.sample_data_basename)
+        self.model.copy_data(self.sample_data_file)
         copied_data_file = os.path.join(pathfinder.data_path(),
                                         self.sample_data_basename)
         self.assertTrue(os.path.exists(copied_data_file))
@@ -67,7 +67,7 @@ class TestMainModel(unittest.TestCase):
 
     def test_remove_data(self):
         """Verify removal of a data file from the data folder"""
-        self.model.copy_data(self.sample_data_basename)
+        self.model.copy_data(self.sample_data_file)
         copied_data_file = os.path.join(pathfinder.data_path(),
                                         self.sample_data_basename)
         self.assertTrue(os.path.exists(copied_data_file))

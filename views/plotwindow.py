@@ -61,11 +61,24 @@ class PlotWindow(wx.Frame):
     def init_menu(self):
         """Creates the main menu"""
         self.menubar = wx.MenuBar()
+        self.init_file_menu()
         self.init_plot_menu()
         self.init_ops_menu()
         self.init_tools_menu()
         self.init_help_menu()
         self.SetMenuBar(self.menubar)
+
+    def init_file_menu(self):
+        """Creates the File menu"""
+        self.file_mnu = wx.Menu()
+        savedata_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Save Current Data",
+                                    help="Save current data to disk")
+        self.Bind(wx.EVT_MENU, self.controller.on_save_data, id=savedata_mnui.GetId())
+        self.file_mnu.AppendItem(savedata_mnui)
+        close_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Close Window", help="Close the plot window")
+        self.Bind(wx.EVT_MENU, self.controller.on_close, id=close_mnui.GetId())
+        self.file_mnu.AppendItem(close_mnui)
+        self.menubar.Append(self.file_mnu, "&File")
 
     def init_plot_menu(self):
         """Creates the Plot menu"""

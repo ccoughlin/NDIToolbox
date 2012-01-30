@@ -6,6 +6,7 @@ __author__ = 'Chris R. Coughlin'
 
 from views import dialogs
 from models import mainmodel
+import pathfinder
 import models.plotwindow_model as model
 import matplotlib
 from matplotlib import cm
@@ -114,6 +115,19 @@ class BasicPlotWindowController(object):
                         plugin_process.terminate()
                     wx.Yield()
                 progress_dlg.Destroy()
+
+    def on_close(self, evt):
+        """Handles request to close plot window"""
+        self.view.Destroy()
+
+    def on_save_data(self, evt):
+        """Handles request to save current data set to disk"""
+        save_dlg = wx.FileDialog(self.view, message="Save File As...",
+                                 defaultDir=pathfinder.data_path(), style=wx.SAVE|wx.OVERWRITE_PROMPT)
+        if save_dlg.ShowModal() == wx.ID_OK:
+            export_parameters = {'delimiter':','}
+            mainmodel.save_data(save_dlg.GetPath(), self.data, **export_parameters)
+        save_dlg.Destroy()
 
     def on_revert(self, evt):
         """Handles request to revert to original data set"""
@@ -263,9 +277,17 @@ class PlotWindowController(BasicPlotWindowController):
         if self.model.data is not None:
             rng_dlg = dialogs.FloatRangeDialog("Please specify the gate region.")
             if rng_dlg.ShowModal() == wx.ID_OK:
-                start_pos, end_pos = rng_dlg.GetValue()
-                self.model.apply_gate(gate_id, start_pos, end_pos)
-            rng_dlg.Destroy()
+                try:
+                    start_pos, end_pos = rng_dlg.GetValue()
+                    self.model.apply_gate(gate_id, start_pos, end_pos)
+                except ValueError as err: # negative dimensions
+                    err_msg = "Unable to apply gate, error was:\n{0}".format(err)
+                    err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                        caption="Can't Apply Gate", style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                    err_dlg.Destroy()
+                finally:
+                    rng_dlg.Destroy()
 
 class ImgPlotWindowController(BasicPlotWindowController):
     """Controller for ImgPlotWindow class"""
@@ -285,17 +307,25 @@ class ImgPlotWindowController(BasicPlotWindowController):
     def plot(self, data):
         """Plots the dataset"""
         if data is not None:
-            # matplotlib forgets settings with replots -
-            # save current values to reapply after plot
-            titles = self.get_titles()
-            self.view.axes.cla()
-            self.view.img = self.view.axes.imshow(data, cmap=self.colormap)
-            if self.colorbar:
-                self.view.figure.delaxes(self.view.figure.axes[1])
-                self.view.figure.subplots_adjust(right=0.90)
-            self.colorbar = self.view.figure.colorbar(self.view.img)
-            self.set_titles(plot=titles['plot'], x=titles['x'], y=titles['y'])
-            self.view.axes.grid(self.axes_grid)
+            try:
+                # matplotlib forgets settings with replots -
+                # save current values to reapply after plot
+                titles = self.get_titles()
+                self.view.axes.cla()
+                self.view.img = self.view.axes.imshow(data, cmap=self.colormap)
+                if self.colorbar:
+                    self.view.figure.delaxes(self.view.figure.axes[1])
+                    self.view.figure.subplots_adjust(right=0.90)
+                self.colorbar = self.view.figure.colorbar(self.view.img)
+                self.set_titles(plot=titles['plot'], x=titles['x'], y=titles['y'])
+                self.view.axes.grid(self.axes_grid)
+            except TypeError as err: # Tried to imgplot 1D array
+                err_msg = "Unable to plot data, error was:\n{0}".format(err)
+                err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                    caption="Can't Plot Data", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+                self.view.Destroy()
 
     def on_detrend_meanx(self, evt):
         """Applies constant (mean) detrend in X"""

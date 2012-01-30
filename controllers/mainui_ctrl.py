@@ -134,12 +134,18 @@ class MainUIController(object):
         """Handles request to generate X-Y plot of selected data"""
         if self.view.data_panel.data is not None:
             plt_window = plotwindow.PlotWindow(self.view, self.view.data_panel.data)
+            wait_dlg = dlg.progressDialog(dlg_title='Plotting Data',
+                dlg_msg='Please wait, plotting data...')
             if plt_window.has_data:
                 plt_window.Show()
+            wait_dlg.close()
 
     def on_imageplot_data(self, evt):
         """Handles request to generate image plot of selected data"""
         if self.view.data_panel.data is not None:
             plt_window = plotwindow.ImgPlotWindow(self.view, self.view.data_panel.data)
+            wait_dlg = dlg.progressDialog(dlg_title='Plotting Data',
+                dlg_msg='Please wait, plotting data...')
             if plt_window.has_data:
                 plt_window.Show()
+            wait_dlg.close()
