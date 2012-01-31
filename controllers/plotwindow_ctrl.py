@@ -30,12 +30,20 @@ def replace_plot(fn):
             self.view.axes.hold()
     return wrapped
 
-def plugin_wrapper(plugin_instance, model, plugin_queue):
+def plugin_wrapper(plugin_cls, plugin_data, plugin_queue, plugin_cfg=None):
     """multiprocessing wrapper function, used to execute
-    plugin run() method in separate process."""
+    plugin run() method in separate process.  plugin_cls is the Plugin class
+    to instantiate, plugin_data is the data to run the plugin on, and
+    plugin_queue is the Queue instance the function should return the
+    results in back to the caller.  If plugin_cfg is not None, it is
+    supplied to the Plugin instance as its config dict.
+    """
+    plugin_instance = plugin_cls()
+    plugin_instance.data = plugin_data
+    if plugin_cfg is not None:
+        plugin_instance.config = plugin_cfg
     plugin_instance.run()
-    plugin_data = plugin_instance.data
-    plugin_queue.put(plugin_data)
+    plugin_queue.put(plugin_instance.data)
 
 class BasicPlotWindowController(object):
     """Base class for PlotWindows"""
@@ -78,6 +86,7 @@ class BasicPlotWindowController(object):
         replaces current data and refreshes plot"""
         for plugin_id, plugin in self.available_plugins.items():
             if requested_plugin_id == plugin_id:
+                cfg = None
                 plugin_name = plugin[0]
                 available_plugins = self.get_plugins()
                 plugin_names = [plugin[0] for plugin in available_plugins]
@@ -92,7 +101,7 @@ class BasicPlotWindowController(object):
                         plugin_instance.config = cfg
                 plugin_queue = multiprocessing.Queue()
                 plugin_process = multiprocessing.Process(target=plugin_wrapper,
-                                     args=(plugin_instance, self.model, plugin_queue))
+                                                         args=(plugin_class, self.data, plugin_queue, cfg))
                 plugin_process.daemon = True
                 plugin_process.start()
                 keepGoing = True

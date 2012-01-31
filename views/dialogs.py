@@ -331,7 +331,7 @@ class ConfigurePluginDialog(wx.Dialog):
         desc_panel.SetSizer(desc_panel_sizer)
         self.sizer.Add(desc_panel, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
                        0)
-        self.config_panel = wx.ScrolledWindow(self, wx.ID_ANY, style=wx.DOUBLE_BORDER)
+        self.config_panel = wx.ScrolledWindow(self, wx.ID_ANY)
         self.config_panel_sizer = wx.FlexGridSizer(cols=2)
         self.config_panel_sizer.AddGrowableCol(1)
         self.config_ctrls = self.populate_config()
@@ -344,7 +344,6 @@ class ConfigurePluginDialog(wx.Dialog):
                                         ui_defaults.sizer_flags,
                                         ui_defaults.widget_margin)
         self.config_panel.SetSizerAndFit(self.config_panel_sizer)
-        #self.sizer.Add(self.fsizer, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
         self.sizer.Add(self.config_panel, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
         self._generate_std_buttons()
         self.SetSizerAndFit(self.sizer)
