@@ -355,8 +355,7 @@ class ConfigurePluginDialog(wx.Dialog):
         ok_btn = wx.Button(self, wx.ID_OK)
         self.stdbtns.AddButton(ok_btn)
         self.stdbtns.Realize()
-        self.sizer.Add(self.stdbtns, ui_defaults.lbl_pct, ui_defaults.sizer_flags,
-                       ui_defaults.widget_margin)
+        self.sizer.Add(self.stdbtns, ui_defaults.lbl_pct, ui_defaults.sizer_flags, 0)
 
     def populate_config(self):
         config_ctrls = {}

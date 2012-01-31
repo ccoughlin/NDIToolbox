@@ -46,8 +46,8 @@ def load_plugins():
     for root, dir, files in os.walk(pathfinder.plugins_path()):
         for module_file in files:
             module_name, module_extension = os.path.splitext(module_file)
-            try:
-                if module_extension == os.extsep + "py":
+            if module_extension == os.extsep + "py":
+                try:
                     module_hdl, path_name, description = imp.find_module(module_name)
                     plugin_module = imp.load_module(module_name, module_hdl, path_name, description)
                     plugin_classes = inspect.getmembers(plugin_module, inspect.isclass)
@@ -56,11 +56,11 @@ def load_plugins():
                             # Load only those plugins defined in the current module
                             # (i.e. don't instantiate any parent plugins)
                             if plugin_class[1].__module__ == module_name:
-                                plugin = plugin_class[1]()
+                                #plugin = plugin_class[1]()
                                 plugins.append(plugin_class)
-            finally:
-                if module_hdl:
-                    module_hdl.close()
+                finally:
+                    if module_hdl:
+                        module_hdl.close()
     return plugins
 
 class MainModel(object):

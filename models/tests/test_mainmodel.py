@@ -32,6 +32,19 @@ class TestMainModel(unittest.TestCase):
         read_data = model.get_data(self.sample_data_file, **import_parameters)
         self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
 
+    def test_save_data(self):
+        """Verify save_data function saves NumPy array to disk"""
+        #save_data(data_fname, data, **export_params):
+        sample_filename = "test_savedata.dat"
+        sample_path = os.path.join(os.path.dirname(__file__), sample_filename)
+        export_params = {'delim_char':':'}
+        model.save_data(sample_path, self.sample_data, **export_params)
+        self.assertTrue(os.path.exists(sample_path))
+        read_data = np.loadtxt(sample_path, delimiter=export_params['delim_char'])
+        self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
+        if os.path.exists(sample_path):
+            os.remove(sample_path)
+
     def test_load_plugins(self):
         """Verify the main model loads available plugins"""
         plugin_list = model.load_plugins()

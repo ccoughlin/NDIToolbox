@@ -109,7 +109,7 @@ class BasicPlotWindowController(object):
                 progress_dlg = wx.ProgressDialog("Running Plugin",
                                                  "Please wait, executing plugin...",
                                                  parent=self.view,
-                                                 style=wx.PD_CAN_ABORT|wx.PD_APP_MODAL)
+                                                 style=wx.PD_CAN_ABORT)
                 while keepGoing:
                     wx.MilliSleep(100)
                     (keepGoing, skip) = progress_dlg.UpdatePulse()
@@ -122,7 +122,7 @@ class BasicPlotWindowController(object):
                         break
                     if not keepGoing:
                         plugin_process.terminate()
-                    wx.Yield()
+                    wx.getApp().Yield()
                 progress_dlg.Destroy()
 
     def on_close(self, evt):
