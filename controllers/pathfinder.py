@@ -10,15 +10,9 @@ def app_path():
         # Handles PyInstaller
         entry_point = sys.executable
     else:
-        # TODO- implement after basic PyCharm testing completed
-        #import __main__
-        #if hasattr(__main__, "__file__"):
-        #    entry_point = __main__.__file__
-        #else:
-        #    entry_point = sys.argv[0]
-        entry_point = '/home/ccoughlin/PycharmProjects/Bane'
-    #return os.path.dirname(entry_point)
-    return entry_point
+        import controllers
+        entry_point = os.path.dirname(controllers.__file__)
+    return os.path.dirname(entry_point)
 
 def resource_path():
     """Returns the path to resources - home folder
