@@ -25,6 +25,17 @@ class MainUIController(object):
         """Creates and connects the model"""
         self.model = mainmodel.MainModel(self)
 
+    def get_icon_bmp(self):
+        """Returns a PNG wx.Bitmap of the application's
+        default icon"""
+        icon_bmp_path = pathfinder.icon_path()
+        return wx.Bitmap(icon_bmp_path, wx.BITMAP_TYPE_PNG)
+
+    def get_icon(self):
+        """Returns a wx.Icon of the application's
+        default icon"""
+        return wx.IconFromBitmap(self.get_icon_bmp())
+
     def get_bitmap(self, bitmap_name):
         """Returns a wx.Bitmap instance of the given bitmap's name if
         found in the app's resources folder."""
@@ -103,8 +114,13 @@ class MainUIController(object):
         """Handles request to add data to data folder"""
         file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file', style=wx.FD_OPEN)
         if file_dlg.ShowModal() == wx.ID_OK:
-            self.model.copy_data(file_dlg.GetPath())
-            self.view.data_panel.populate()
+            try:
+                wait_dlg = dlg.progressDialog(dlg_title='Adding Data',
+                    dlg_msg='Please wait, adding data...')
+                self.model.copy_data(file_dlg.GetPath())
+                self.view.data_panel.populate()
+            finally:
+                wait_dlg.close()
 
     def on_remove_data(self, evt):
         """Handles request to remove data from data folder"""
@@ -121,31 +137,37 @@ class MainUIController(object):
         if self.view.data_panel.data is not None:
             import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
             if import_dlg.ShowModal() == wx.ID_OK:
-                wait_dlg = dlg.progressDialog(dlg_title='Loading Data',
-                                              dlg_msg='Please wait, loading data...')
-                read_parameters = import_dlg.get_import_parameters()
-                data_window = preview_window.PreviewWindow(parent=self.view, data_file=self.view.data_panel.data,
-                                                           **read_parameters)
-                wait_dlg.close()
+                try:
+                    wait_dlg = dlg.progressDialog(dlg_title='Loading Data',
+                                                  dlg_msg='Please wait, loading data...')
+                    read_parameters = import_dlg.get_import_parameters()
+                    data_window = preview_window.PreviewWindow(parent=self.view, data_file=self.view.data_panel.data,
+                                                               **read_parameters)
+                finally:
+                    wait_dlg.close()
                 data_window.Show()
             import_dlg.Destroy()
 
     def on_plot_data(self, evt):
         """Handles request to generate X-Y plot of selected data"""
         if self.view.data_panel.data is not None:
-            plt_window = plotwindow.PlotWindow(self.view, self.view.data_panel.data)
-            wait_dlg = dlg.progressDialog(dlg_title='Plotting Data',
-                dlg_msg='Please wait, plotting data...')
-            if plt_window.has_data:
-                plt_window.Show()
-            wait_dlg.close()
+            try:
+                plt_window = plotwindow.PlotWindow(self.view, self.view.data_panel.data)
+                wait_dlg = dlg.progressDialog(dlg_title='Plotting Data',
+                    dlg_msg='Please wait, plotting data...')
+                if plt_window.has_data:
+                    plt_window.Show()
+            finally:
+                wait_dlg.close()
 
     def on_imageplot_data(self, evt):
         """Handles request to generate image plot of selected data"""
         if self.view.data_panel.data is not None:
-            plt_window = plotwindow.ImgPlotWindow(self.view, self.view.data_panel.data)
-            wait_dlg = dlg.progressDialog(dlg_title='Plotting Data',
-                dlg_msg='Please wait, plotting data...')
-            if plt_window.has_data:
-                plt_window.Show()
-            wait_dlg.close()
+            try:
+                plt_window = plotwindow.ImgPlotWindow(self.view, self.view.data_panel.data)
+                wait_dlg = dlg.progressDialog(dlg_title='Plotting Data',
+                    dlg_msg='Please wait, plotting data...')
+                if plt_window.has_data:
+                    plt_window.Show()
+            finally:
+                wait_dlg.close()

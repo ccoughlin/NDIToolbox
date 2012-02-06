@@ -77,6 +77,7 @@ class UI(wx.Frame):
         Name("thumbnail_panel").Caption("Preview Plot").MinSize(wx.Size(300, 300)).
         Bottom().CloseButton(False).MinimizeButton(True).MaximizeButton(True).
         Floatable(True).Dockable(True))
+        self.SetIcon(self.controller.get_icon())
         self._mgr.Update()
 
     def init_tb(self):

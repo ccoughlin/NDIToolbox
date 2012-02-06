@@ -30,4 +30,5 @@ class PreviewWindow(wx.Frame):
         self.main_panel_sizer = wx.BoxSizer(wx.VERTICAL)
         self.spreadsheet = wxspreadsheet.Spreadsheet(self.main_panel)
         self.main_panel_sizer.Add(self.spreadsheet, 1, ui_defaults.sizer_flags, 0)
+        self.SetIcon(self.parent.GetIcon())
         self.main_panel.SetSizerAndFit(self.main_panel_sizer)

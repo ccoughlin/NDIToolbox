@@ -106,24 +106,26 @@ class BasicPlotWindowController(object):
                 plugin_process.start()
                 keepGoing = True
                 # TODO: move progress dialog to dialogs module
-                progress_dlg = wx.ProgressDialog("Running Plugin",
-                                                 "Please wait, executing plugin...",
-                                                 parent=self.view,
-                                                 style=wx.PD_CAN_ABORT)
-                while keepGoing:
-                    wx.MilliSleep(100)
-                    (keepGoing, skip) = progress_dlg.UpdatePulse()
-                    try:
-                        returned_data = plugin_queue.get(False)
-                    except Queue.Empty:
-                        continue
-                    if returned_data is not None:
-                        self.model.data = returned_data
-                        break
-                    if not keepGoing:
-                        plugin_process.terminate()
-                    wx.getApp().Yield()
-                progress_dlg.Destroy()
+                try:
+                    progress_dlg = wx.ProgressDialog("Running Plugin",
+                                                     "Please wait, executing plugin...",
+                                                     parent=self.view,
+                                                     style=wx.PD_CAN_ABORT)
+                    while keepGoing:
+                        wx.MilliSleep(100)
+                        (keepGoing, skip) = progress_dlg.UpdatePulse()
+                        try:
+                            returned_data = plugin_queue.get(False)
+                        except Queue.Empty:
+                            continue
+                        if returned_data is not None:
+                            self.model.data = returned_data
+                            break
+                        if not keepGoing:
+                            plugin_process.terminate()
+                        wx.getApp().Yield()
+                finally:
+                    progress_dlg.Destroy()
 
     def on_close(self, evt):
         """Handles request to close plot window"""
@@ -334,7 +336,6 @@ class ImgPlotWindowController(BasicPlotWindowController):
                     caption="Can't Plot Data", style=wx.ICON_ERROR)
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
-                self.view.Destroy()
 
     def on_detrend_meanx(self, evt):
         """Applies constant (mean) detrend in X"""

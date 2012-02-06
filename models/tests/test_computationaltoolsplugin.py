@@ -5,7 +5,7 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 
 __author__ = 'Chris R. Coughlin'
 
-from models.computationaltoolsplugin import ComputationalToolsPlugin
+from models.abstractplugin import ComputationalToolsPlugin
 import unittest
 
 class TestComputationalToolsPlugin(unittest.TestCase):

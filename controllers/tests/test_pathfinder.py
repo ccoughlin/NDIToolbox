@@ -22,9 +22,14 @@ class TestPathFinder(unittest.TestCase):
         resource_path = os.path.join(self.app_path, 'resources')
         self.assertEqual(resource_path, pathfinder.resource_path())
 
+    def test_icons_path(self):
+        """Verify correct icons path"""
+        icons_path = os.path.join(self.app_path, 'resources', 'icons')
+        self.assertEqual(icons_path, pathfinder.icons_path())
+
     def test_icon_path(self):
-        """Verify correct icon path"""
-        icon_path = os.path.join(self.app_path, 'resources', 'icons')
+        """Verify correction main application icon path"""
+        icon_path = os.path.join(self.app_path, 'resources', 'icons', 'a7117_64.png')
         self.assertEqual(icon_path, pathfinder.icon_path())
 
     def test_bitmaps_path(self):

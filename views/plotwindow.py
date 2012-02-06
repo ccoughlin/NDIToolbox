@@ -42,6 +42,7 @@ class PlotWindow(wx.Frame):
         #self.cursor = Cursor(self.axes, useblit=True, color='green', alpha=0.5, linestyle='--', linewidth=2)
         self.sizer.Add(self.canvas, 1, ui_defaults.sizer_flags, 0)
         self.add_toolbar()
+        self.SetIcon(self.parent.GetIcon())
         self.SetSizerAndFit(self.sizer)
 
     def add_toolbar(self):

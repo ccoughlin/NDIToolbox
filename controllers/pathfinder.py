@@ -19,9 +19,14 @@ def resource_path():
     for icons, bitmaps, etc."""
     return os.path.join(app_path(), 'resources')
 
-def icon_path():
+def icons_path():
     """Returns the path to application icons"""
     return os.path.join(resource_path(), 'icons')
+
+def icon_path():
+    """Returns the path to the application's default
+    PNG icon"""
+    return os.path.join(icons_path(), 'a7117_64.png')
 
 def bitmap_path():
     """Returns the path to application bitmaps"""

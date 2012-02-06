@@ -9,6 +9,7 @@ import models.mainmodel as model
 import models.abstractplugin as abstractplugin
 import controllers.pathfinder as pathfinder
 import numpy as np
+import wx
 import os.path
 import os
 import shutil
