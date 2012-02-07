@@ -7,7 +7,6 @@ __author__ = 'Chris R. Coughlin'
 
 import views.ui_defaults as ui_defaults
 from controllers.thumbnailpanel_ctrl import ThumbnailPanelController
-
 import wx
 
 class ThumbnailPanel(wx.Panel):

@@ -12,6 +12,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import NavigationToolbar2Wx
 import os.path
+import threading
 
 class PlotWindow(wx.Frame):
     """Basic wxPython UI element for displaying matplotlib plots"""
@@ -20,13 +21,27 @@ class PlotWindow(wx.Frame):
         self.parent = parent
         self.data_file = data_file
         self.controller = PlotWindowController(self)
-        self.has_data = self.controller.load_data(self.data_file)
-        if self.has_data:
-            self.title = 'Plot - {0}'.format(os.path.basename(self.data_file))
-            wx.Frame.__init__(self, id=wx.ID_ANY, parent=self.parent, title=self.title)
-            self.init_menu()
-            self.init_ui()
-            self.controller.plot(self.controller.data)
+        self.load_data()
+
+    def has_data(self):
+        """Returns True if data is not None"""
+        return self.controller.data is not None
+
+    def load_data(self):
+        """Loads the data set and plots"""
+        data_thd = threading.Thread(target=self.controller.load_data, args=(self.data_file,))
+        data_thd.setDaemon(True)
+        data_thd.start()
+        while True:
+            data_thd.join(0.125)
+            if not data_thd.is_alive():
+                break
+            wx.Yield()
+        self.title = 'Plot - {0}'.format(os.path.basename(self.data_file))
+        wx.Frame.__init__(self, id=wx.ID_ANY, parent=self.parent, title=self.title)
+        self.init_menu()
+        self.init_ui()
+        self.controller.plot(self.controller.data)
 
     def init_ui(self):
         """Creates the PlotWindow UI"""
@@ -156,13 +171,6 @@ class ImgPlotWindow(PlotWindow):
         self.parent = parent
         self.data_file = data_file
         self.controller = ImgPlotWindowController(self)
-        self.has_data = self.controller.load_data(self.data_file)
-        if self.has_data:
-            self.title = 'Plot - {0}'.format(os.path.basename(self.data_file))
-            wx.Frame.__init__(self, id=wx.ID_ANY, parent=self.parent, title=self.title)
-            self.init_menu()
-            self.init_ui()
-            self.controller.plot(self.controller.data)
 
     def init_plot_menu(self):
         """Creates the Plot menu"""

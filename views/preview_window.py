@@ -5,11 +5,11 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 
 from controllers.preview_window_ctrl import PreviewWindowController
 import ui_defaults
-import dialogs
 import wxspreadsheet
 import wx
-import numpy as np
 import os.path
+import threading
+
 
 __author__ = 'Chris R. Coughlin'
 
@@ -22,7 +22,17 @@ class PreviewWindow(wx.Frame):
         super(PreviewWindow, self).__init__(parent=self.parent, title=self.title)
         self.controller = PreviewWindowController(self, data_file, **read_text_params)
         self.init_ui()
-        self.controller.load_data()
+        self.load_data()
+
+    def load_data(self):
+        data_thd = threading.Thread(target=self.controller.load_data)
+        data_thd.setDaemon(True)
+        data_thd.start()
+        while True:
+            data_thd.join(0.125)
+            if not data_thd.is_alive():
+                break
+            wx.Yield()
 
     def init_ui(self):
         """Creates and lays out the user interface"""

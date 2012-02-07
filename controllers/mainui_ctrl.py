@@ -114,13 +114,11 @@ class MainUIController(object):
         """Handles request to add data to data folder"""
         file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file', style=wx.FD_OPEN)
         if file_dlg.ShowModal() == wx.ID_OK:
-            try:
-                wait_dlg = dlg.progressDialog(dlg_title='Adding Data',
-                    dlg_msg='Please wait, adding data...')
-                self.model.copy_data(file_dlg.GetPath())
-                self.view.data_panel.populate()
-            finally:
-                wait_dlg.close()
+            wait_dlg = dlg.progressDialog(dlg_title='Adding Data',
+                dlg_msg='Please wait, adding data...')
+            self.model.copy_data(file_dlg.GetPath())
+            self.view.data_panel.populate()
+            wait_dlg.close()
 
     def on_remove_data(self, evt):
         """Handles request to remove data from data folder"""
@@ -137,37 +135,28 @@ class MainUIController(object):
         if self.view.data_panel.data is not None:
             import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
             if import_dlg.ShowModal() == wx.ID_OK:
-                try:
-                    wait_dlg = dlg.progressDialog(dlg_title='Loading Data',
-                                                  dlg_msg='Please wait, loading data...')
-                    read_parameters = import_dlg.get_import_parameters()
-                    data_window = preview_window.PreviewWindow(parent=self.view, data_file=self.view.data_panel.data,
-                                                               **read_parameters)
-                finally:
-                    wait_dlg.close()
+                read_parameters = import_dlg.get_import_parameters()
+                data_window = preview_window.PreviewWindow(parent=self.view, data_file=self.view.data_panel.data,
+                                                           **read_parameters)
                 data_window.Show()
             import_dlg.Destroy()
 
     def on_plot_data(self, evt):
         """Handles request to generate X-Y plot of selected data"""
         if self.view.data_panel.data is not None:
-            try:
-                plt_window = plotwindow.PlotWindow(self.view, self.view.data_panel.data)
-                wait_dlg = dlg.progressDialog(dlg_title='Plotting Data',
-                    dlg_msg='Please wait, plotting data...')
-                if plt_window.has_data:
-                    plt_window.Show()
-            finally:
-                wait_dlg.close()
+            plt_window = plotwindow.PlotWindow(self.view, self.view.data_panel.data)
+            wait_dlg = dlg.progressDialog(dlg_title='Plotting Data',
+                dlg_msg='Please wait, plotting data...')
+            if plt_window.has_data:
+                plt_window.Show()
+            wait_dlg.close()
 
     def on_imageplot_data(self, evt):
         """Handles request to generate image plot of selected data"""
         if self.view.data_panel.data is not None:
-            try:
-                plt_window = plotwindow.ImgPlotWindow(self.view, self.view.data_panel.data)
-                wait_dlg = dlg.progressDialog(dlg_title='Plotting Data',
-                    dlg_msg='Please wait, plotting data...')
-                if plt_window.has_data:
-                    plt_window.Show()
-            finally:
-                wait_dlg.close()
+            plt_window = plotwindow.ImgPlotWindow(self.view, self.view.data_panel.data)
+            wait_dlg = dlg.progressDialog(dlg_title='Plotting Data',
+                dlg_msg='Please wait, plotting data...')
+            if plt_window.has_data:
+                plt_window.Show()
+            wait_dlg.close()

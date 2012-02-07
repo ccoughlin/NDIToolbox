@@ -18,27 +18,28 @@ class PreviewWindowController(object):
         """Loads the instance's data file and updates the PreviewWindow's
         spreadsheet with the contents"""
         data = self.model.load_data()
-        self.view.spreadsheet.ClearGrid()
-        self.view.spreadsheet.SetNumberRows(0)
-        self.view.spreadsheet.SetNumberCols(0)
-        rownum = 0
-        if data.ndim==2:
-            num_rows = data.shape[0]
-            num_cols = data.shape[1]
-            for row in range(num_rows):
-                self.view.spreadsheet.AppendRows(1)
-                numcols = data[row].size
-                if self.view.spreadsheet.GetNumberCols() < numcols:
-                    self.view.spreadsheet.SetNumberCols(numcols)
-                colnum = 0
-                for cell in data[row]:
-                    self.view.spreadsheet.SetCellValue(rownum, colnum, str(cell))
-                    colnum = colnum + 1
-                rownum = rownum + 1
-        elif data.ndim==1:
-            num_rows = data.shape[0]
-            self.view.spreadsheet.SetNumberCols(1)
-            for el in data:
-                self.view.spreadsheet.AppendRows(1)
-                self.view.spreadsheet.SetCellValue(rownum, 0, str(el))
-                rownum = rownum + 1
+        if data is not None:
+            self.view.spreadsheet.ClearGrid()
+            self.view.spreadsheet.SetNumberRows(0)
+            self.view.spreadsheet.SetNumberCols(0)
+            rownum = 0
+            if data.ndim==2:
+                num_rows = data.shape[0]
+                for row in range(num_rows):
+                    self.view.spreadsheet.AppendRows(1)
+                    numcols = data[row].size
+                    if self.view.spreadsheet.GetNumberCols() < numcols:
+                        self.view.spreadsheet.SetNumberCols(numcols)
+                    colnum = 0
+                    for cell in data[row]:
+                        self.view.spreadsheet.SetCellValue(rownum, colnum, str(cell))
+                        colnum += 1
+                    rownum += 1
+            elif data.ndim==1:
+                self.view.spreadsheet.SetNumberCols(1)
+                for el in data:
+                    self.view.spreadsheet.AppendRows(1)
+                    self.view.spreadsheet.SetCellValue(rownum, 0, str(el))
+                    rownum += 1
+        else:
+            self.view.Destroy()

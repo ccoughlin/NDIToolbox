@@ -10,6 +10,7 @@ import pathfinder
 import models.plotwindow_model as model
 import matplotlib
 from matplotlib import cm
+import scipy.signal
 import wx
 import wx.lib.dialogs
 from functools import wraps
@@ -257,15 +258,22 @@ class PlotWindowController(BasicPlotWindowController):
     def plot(self, data):
         """Plots the dataset"""
         if data is not None:
-            # matplotlib forgets settings with replots -
-            # save current values to reset after the replot
-            titles = self.get_titles()
-            if 2 in data.shape:
-                self.view.axes.plot(data[0], data[1])
-            elif data.ndim == 1:
-                self.view.axes.plot(data)
-            self.set_titles(plot=titles['plot'], x=titles['x'], y=titles['y'])
-            self.view.axes.grid(self.axes_grid)
+            try:
+                # matplotlib forgets settings with replots -
+                # save current values to reset after the replot
+                titles = self.get_titles()
+                if 2 in data.shape:
+                    self.view.axes.plot(data[0], data[1])
+                elif data.ndim == 1:
+                    self.view.axes.plot(data)
+                self.set_titles(plot=titles['plot'], x=titles['x'], y=titles['y'])
+                self.view.axes.grid(self.axes_grid)
+            except OverflowError as err: # Data too large to plot
+                err_msg = "{0}".format(err)
+                err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                    caption="Unable To Plot Data", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
 
     @replace_plot
     def rectify_full(self):
@@ -292,9 +300,9 @@ class PlotWindowController(BasicPlotWindowController):
                     start_pos, end_pos = rng_dlg.GetValue()
                     self.model.apply_gate(gate_id, start_pos, end_pos)
                 except ValueError as err: # negative dimensions
-                    err_msg = "Unable to apply gate, error was:\n{0}".format(err)
+                    err_msg = "{0}".format(err)
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                        caption="Can't Apply Gate", style=wx.ICON_ERROR)
+                        caption="Unable To Apply Gate", style=wx.ICON_ERROR)
                     err_dlg.ShowModal()
                     err_dlg.Destroy()
                 finally:
@@ -331,9 +339,15 @@ class ImgPlotWindowController(BasicPlotWindowController):
                 self.set_titles(plot=titles['plot'], x=titles['x'], y=titles['y'])
                 self.view.axes.grid(self.axes_grid)
             except TypeError as err: # Tried to imgplot 1D array
-                err_msg = "Unable to plot data, error was:\n{0}".format(err)
+                err_msg = err
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                    caption="Can't Plot Data", style=wx.ICON_ERROR)
+                    caption="Unable To Plot Data", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+            except OverflowError as err: # Data too large to plot
+                err_msg = "{0}".format(err)
+                err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                    caption="Unable To Plot Data", style=wx.ICON_ERROR)
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
 
