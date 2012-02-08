@@ -17,7 +17,10 @@ class TestBasicPlotWindowModel(unittest.TestCase):
 
     def setUp(self):
         self.mock_controller = ""
-        self.basic_model = model.BasicPlotWindowModel(self.mock_controller)
+        self.mock_data_file = ""
+        self.mock_read_parameters = {}
+        self.basic_model = model.BasicPlotWindowModel(self.mock_controller,
+            self.mock_data_file, **self.mock_read_parameters)
 
     def test_revert_data(self):
         """Verify data is reverted to original"""
@@ -42,12 +45,16 @@ class TestBasicPlotWindowModel(unittest.TestCase):
             self.assertTrue(plugin_name in expected_plugin_names)
             self.assertTrue(issubclass(plugin_instance, abstractplugin.AbstractPlugin))
 
+
 class TestPlotWindowModel(unittest.TestCase):
     """Tests the PlotWindowModel class"""
 
     def setUp(self):
         self.mock_controller = ""
-        self.model = model.PlotWindowModel(self.mock_controller)
+        self.mock_data_file = ""
+        self.mock_read_parameters = {}
+        self.model = model.PlotWindowModel(self.mock_controller, self.mock_data_file,
+            **self.mock_read_parameters)
 
     def test_define_gate_functions(self):
         """Verify _define_gate_functions sets up a dict of available window functions"""
@@ -66,7 +73,7 @@ class TestPlotWindowModel(unittest.TestCase):
             windowed_data = self.model.apply_window(gate_fn, original_data, 3, 21)
             self.assertTrue(isinstance(windowed_data, np.ndarray))
             self.assertEqual(original_data.size, windowed_data.size)
-            
+
     def test_apply_gate(self):
         """Verify apply_gate function"""
         original_data = np.ones(6)
@@ -78,7 +85,7 @@ class TestPlotWindowModel(unittest.TestCase):
             start_idx = 2
             end_idx = 4
             expected_data = self.model.apply_window(gate_fn, self.model.data,
-                                                    start_idx, end_idx)
+                start_idx, end_idx)
             self.model.apply_gate(gate_id, start_idx, end_idx)
             self.assertListEqual(original_data.tolist(), self.model.original_data.tolist())
             self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
@@ -94,12 +101,16 @@ class TestPlotWindowModel(unittest.TestCase):
         self.model.rectify_full()
         self.assertListEqual(np.absolute(original_data).tolist(), self.model.data.tolist())
 
+
 class TestImgPlotWindowModel(unittest.TestCase):
     """Tests the ImgPlotWindowModel class"""
 
     def setUp(self):
         self.mock_controller = ""
-        self.model = model.ImgPlotWindowModel(self.mock_controller)
+        self.mock_data_file = ""
+        self.mock_read_parameters = {}
+        self.model = model.ImgPlotWindowModel(self.mock_controller, self.mock_data_file,
+            **self.mock_read_parameters)
 
     def test_average_detrend(self):
         """Verify mean detrending along an axis"""

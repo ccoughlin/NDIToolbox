@@ -11,7 +11,7 @@ from matplotlib.figure import Figure
 import numpy as np
 import wx
 import hashlib
-from multiprocessing import Process, Pipe
+from multiprocessing import  Pipe
 import os
 import os.path
 import unittest
@@ -28,16 +28,16 @@ class TestThumbnailPanelModel(unittest.TestCase):
     def test_create_plot(self):
         """Verify plot function returns a matplotlib Figure"""
         self.assertTrue(isinstance(model.create_plot(self.sample_data,
-                                                     title="Plot Title",
-                                                     width=3, height=3),
-                                   Figure))
+            title="Plot Title",
+            width=3, height=3),
+            Figure))
 
     def test_plot_stream(self):
         """Verify plot_stream function returns a StringIO StringIO instance"""
         self.assertTrue(isinstance(model.plot_stream(self.sample_data,
-                                                     title="Plot Title",
-                                                     width=5, height=5),
-                                   StringIO.StringIO))
+            title="Plot Title",
+            width=5, height=5),
+            StringIO.StringIO))
 
     def test_plot_pipe(self):
         """Verify plot_pipe function writes a StringIO instance of the
@@ -50,10 +50,10 @@ class TestThumbnailPanelModel(unittest.TestCase):
 
     def test_multiprocess_plot(self):
         """Verify multiprocess_plot function returns a wx Bitmap instance"""
-        import_parameters = {'delimiter':''}
+        import_parameters = {'delimiter': ''}
         app = wx.PySimpleApp()
         plot_bmp = model.multiprocess_plot(self.sample_data_file, width=10,
-                                           height=19, **import_parameters)
+            height=19, **import_parameters)
         self.assertTrue(isinstance(plot_bmp, wx.Bitmap))
 
     def test_gen_thumbnail(self):
@@ -78,5 +78,6 @@ class TestThumbnailPanelModel(unittest.TestCase):
 
 if __name__ == "__main__":
     import multiprocessing
+
     multiprocessing.freeze_support()
     unittest.main()

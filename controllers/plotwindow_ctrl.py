@@ -10,7 +10,6 @@ import pathfinder
 import models.plotwindow_model as model
 import matplotlib
 from matplotlib import cm
-import scipy.signal
 import wx
 import wx.lib.dialogs
 from functools import wraps
@@ -21,6 +20,7 @@ def replace_plot(fn):
     """Decorator function - runs the specified function and updates the plot.
     Designed to work with PlotWindowController instances.
     """
+
     @wraps(fn)
     def wrapped(self, *args, **kwargs):
         if self.model.data is not None:
@@ -29,7 +29,9 @@ def replace_plot(fn):
             self.plot(self.model.data)
             self.refresh_plot()
             self.view.axes.hold()
+
     return wrapped
+
 
 def plugin_wrapper(plugin_cls, plugin_data, plugin_queue, plugin_cfg=None):
     """multiprocessing wrapper function, used to execute
@@ -45,6 +47,7 @@ def plugin_wrapper(plugin_cls, plugin_data, plugin_queue, plugin_cfg=None):
         plugin_instance.config = plugin_cfg
     plugin_instance.run()
     plugin_queue.put(plugin_instance.data)
+
 
 class BasicPlotWindowController(object):
     """Base class for PlotWindows"""
@@ -102,16 +105,16 @@ class BasicPlotWindowController(object):
                         plugin_instance.config = cfg
                 plugin_queue = multiprocessing.Queue()
                 plugin_process = multiprocessing.Process(target=plugin_wrapper,
-                                                         args=(plugin_class, self.data, plugin_queue, cfg))
+                    args=(plugin_class, self.data, plugin_queue, cfg))
                 plugin_process.daemon = True
                 plugin_process.start()
                 keepGoing = True
                 # TODO: move progress dialog to dialogs module
                 try:
                     progress_dlg = wx.ProgressDialog("Running Plugin",
-                                                     "Please wait, executing plugin...",
-                                                     parent=self.view,
-                                                     style=wx.PD_CAN_ABORT)
+                        "Please wait, executing plugin...",
+                        parent=self.view,
+                        style=wx.PD_CAN_ABORT)
                     while keepGoing:
                         wx.MilliSleep(100)
                         (keepGoing, skip) = progress_dlg.UpdatePulse()
@@ -135,9 +138,9 @@ class BasicPlotWindowController(object):
     def on_save_data(self, evt):
         """Handles request to save current data set to disk"""
         save_dlg = wx.FileDialog(self.view, message="Save File As...",
-                                 defaultDir=pathfinder.data_path(), style=wx.SAVE|wx.OVERWRITE_PROMPT)
+            defaultDir=pathfinder.data_path(), style=wx.SAVE | wx.OVERWRITE_PROMPT)
         if save_dlg.ShowModal() == wx.ID_OK:
-            export_parameters = {'delimiter':','}
+            export_parameters = {'delimiter': ','}
             mainmodel.save_data(save_dlg.GetPath(), self.data, **export_parameters)
         save_dlg.Destroy()
 
@@ -154,24 +157,24 @@ class BasicPlotWindowController(object):
     def on_set_xlabel(self, evt):
         """Handles the set x-axis label event"""
         label_dlg = wx.TextEntryDialog(parent=self.view.parent, message="Enter a new label for the X-Axis",
-                                       caption="Set X Axis Label",
-                                       defaultValue=self.get_titles()['x'])
+            caption="Set X Axis Label",
+            defaultValue=self.get_titles()['x'])
         if label_dlg.ShowModal() == wx.ID_OK:
             self.set_titles(x=label_dlg.GetValue())
 
     def on_set_ylabel(self, evt):
         """Handles the set y-axis label event"""
         label_dlg = wx.TextEntryDialog(parent=self.view.parent, message="Enter a new label for the Y-Axis",
-                                       caption="Set Y Axis Label",
-                                       defaultValue=self.get_titles()['y'])
+            caption="Set Y Axis Label",
+            defaultValue=self.get_titles()['y'])
         if label_dlg.ShowModal() == wx.ID_OK:
             self.set_titles(y=label_dlg.GetValue())
 
     def on_set_plottitle(self, evt):
         """Handles the set x-axis label event"""
         label_dlg = wx.TextEntryDialog(parent=self.view.parent, message="Enter a new title for the plot",
-                                       caption="Set Plot Title",
-                                       defaultValue=self.get_titles()['plot'])
+            caption="Set Plot Title",
+            defaultValue=self.get_titles()['plot'])
         if label_dlg.ShowModal() == wx.ID_OK:
             self.set_titles(plot=label_dlg.GetValue())
 
@@ -236,6 +239,7 @@ class BasicPlotWindowController(object):
         cfg_dlg.Destroy()
         return cfg
 
+
 class PlotWindowController(BasicPlotWindowController):
     """Controller for PlotWindow class"""
 
@@ -298,6 +302,7 @@ class PlotWindowController(BasicPlotWindowController):
                     err_dlg.Destroy()
                 finally:
                     rng_dlg.Destroy()
+
 
 class ImgPlotWindowController(BasicPlotWindowController):
     """Controller for ImgPlotWindow class"""
@@ -368,8 +373,8 @@ class ImgPlotWindowController(BasicPlotWindowController):
         """Sets the label for the imgplot's colorbar"""
         if self.colorbar is not None:
             label_dlg = wx.TextEntryDialog(parent=self.view.parent, message="Enter a new label for the colorbar",
-                                           caption="Set Colorbar Label",
-                                           defaultValue = self.get_titles()['colorbar'])
+                caption="Set Colorbar Label",
+                defaultValue=self.get_titles()['colorbar'])
             if label_dlg.ShowModal() == wx.ID_OK:
                 self.set_titles(colorbar=label_dlg.GetValue())
 
@@ -381,10 +386,10 @@ class ImgPlotWindowController(BasicPlotWindowController):
             colorbar_lbl = self.colorbar._label
         else:
             colorbar_lbl = ''
-        titles = {'plot':self.view.axes.get_title(),
-                  'x':self.view.axes.get_xlabel(),
-                  'y':self.view.axes.get_ylabel(),
-                  'colorbar':colorbar_lbl}
+        titles = {'plot': self.view.axes.get_title(),
+                  'x': self.view.axes.get_xlabel(),
+                  'y': self.view.axes.get_ylabel(),
+                  'colorbar': colorbar_lbl}
         return titles
 
     def set_titles(self, plot=None, x=None, y=None, colorbar=None):
@@ -406,17 +411,18 @@ class ImgPlotWindowController(BasicPlotWindowController):
         SciPy Cookbook http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps"""
         wx.BeginBusyCursor()
         import matplotlib.pyplot as plt
+
         colormaps = self.model.get_colormap_choices()
         colormap_strip = self.model.generate_colormap_strip()
         num_maps = len(colormaps) + 1
         figure = plt.figure(figsize=(5, 8))
         figure.subplots_adjust(top=0.99, bottom=0.01, left=0.2, right=0.99)
         for i, m in enumerate(colormaps):
-            ax = plt.subplot(num_maps, 1, i+1)
+            ax = plt.subplot(num_maps, 1, i + 1)
             plt.axis('off')
             plt.imshow(colormap_strip, aspect='auto', cmap=plt.get_cmap(m), origin='lower')
             pos = list(ax.get_position().bounds)
-            figure.text(pos[0]-0.01, pos[1], m, fontsize=10, horizontalalignment='right')
+            figure.text(pos[0] - 0.01, pos[1], m, fontsize=10, horizontalalignment='right')
         plt.show()
         wx.EndBusyCursor()
 
@@ -425,8 +431,8 @@ class ImgPlotWindowController(BasicPlotWindowController):
         colormap to the user's choice."""
         colormaps = self.model.get_colormap_choices()
         cmap_dlg = wx.lib.dialogs.singleChoiceDialog(self.view.parent, "Select Colormap",
-                                                     "Please select a colormap for this plot.",
-                                                     colormaps)
+            "Please select a colormap for this plot.",
+            colormaps)
         if cmap_dlg.accepted is True:
             colormap = cmap_dlg.selection
             if colormap == '':

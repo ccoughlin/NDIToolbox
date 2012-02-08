@@ -19,7 +19,7 @@ class UI(wx.Frame):
         self.parent = None
         self.controller = ctrl.MainUIController(self)
         wx.Frame.__init__(self, id=wx.ID_ANY, name='', parent=self.parent,
-                          size=(300, 600), title='A7117 NDE')
+            size=(300, 600), title='A7117 NDE')
         self.SetPosition((ui_defaults.widget_margin, ui_defaults.widget_margin))
         self.MinSize = (300, 400)
         self._mgr = wx.aui.AuiManager()
@@ -39,7 +39,7 @@ class UI(wx.Frame):
         """Creates the File menu"""
         self.file_mnu = wx.Menu()
         quit_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="E&xit\tCTRL+X",
-                                help="Exit The Program")
+            help="Exit The Program")
         self.file_mnu.AppendItem(quit_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_quit, id=quit_mnui.GetId())
         self.menubar.Append(self.file_mnu, "&File")
@@ -48,15 +48,15 @@ class UI(wx.Frame):
         """Creates the Help menu"""
         self.help_mnu = wx.Menu()
         about_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="About This Program...",
-                                 help="About This Program")
+            help="About This Program")
         self.help_mnu.AppendItem(about_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_about, id=about_mnui.GetId())
         about_tri_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text='About TRI/Austin...',
-                                     help="About TRI/Austin's NDE Division")
+            help="About TRI/Austin's NDE Division")
         self.help_mnu.AppendItem(about_tri_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_about_tri, id=about_tri_mnui.GetId())
         about_icons_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="About Axialis Icons...",
-                                       help="About the Axialis icons used in this project")
+            help="About the Axialis icons used in this project")
         self.help_mnu.AppendItem(about_icons_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_about_icons, id=about_icons_mnui.GetId())
         self.menubar.Append(self.help_mnu, "&Help")
@@ -72,7 +72,7 @@ class UI(wx.Frame):
         MinSize(wx.Size(300, 50)).Dockable(True))
         self.thumbnail_panel = thumbnailpanel.ThumbnailPanel(self)
         self.controller.set_thumb(panel=self.thumbnail_panel, data_file=self.data_panel.data,
-                                  enable=False)
+            enable=False)
         self._mgr.AddPane(self.thumbnail_panel, wx.aui.AuiPaneInfo().
         Name("thumbnail_panel").Caption("Preview Plot").MinSize(wx.Size(300, 300)).
         Bottom().CloseButton(False).MinimizeButton(True).MaximizeButton(True).
@@ -86,38 +86,38 @@ class UI(wx.Frame):
         self.toolbar.SetToolBitmapSize((16, 16))
         # Toggle button to enable / disable automatic previews of data
         self.gen_bitmaps_tool = self.toolbar.AddCheckTool(id=wx.ID_ANY, shortHelp='Enable Data Thumbnails',
-                                                          bitmap=self.controller.get_bitmap('Picture.png'))
+            bitmap=self.controller.get_bitmap('Picture.png'))
         self.toolbar.ToggleTool(self.gen_bitmaps_tool.GetId(), True)
         self.Bind(wx.EVT_TOOL, self.controller.on_preview_toggle, self.gen_bitmaps_tool)
         # Refresh UI with contents of data folder
         self.refresh_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Refresh',
-                                                           shortHelp='Refresh Data',
-                                                           bitmap=self.controller.get_bitmap('Refresh.png'))
+            shortHelp='Refresh Data',
+            bitmap=self.controller.get_bitmap('Refresh.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_refresh_data, self.refresh_data_tool)
         # Add data to data folder
         self.add_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Add Data',
-                                                       shortHelp='Add data to data folder',
-                                                       bitmap=self.controller.get_bitmap('Plus.png'))
+            shortHelp='Add data to data folder',
+            bitmap=self.controller.get_bitmap('Plus.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_add_data, self.add_data_tool)
         # Remove data from data folder
         self.remove_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Remove Data',
-                                                          shortHelp='Remove data from data folder',
-                                                          bitmap=self.controller.get_bitmap('Minus.png'))
+            shortHelp='Remove data from data folder',
+            bitmap=self.controller.get_bitmap('Minus.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_remove_data, self.remove_data_tool)
         # Preview data in spreadsheet
         self.preview_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Preview Data',
-                                                           shortHelp='Preview data in spreadsheet',
-                                                           bitmap=self.controller.get_bitmap('Table.png'))
+            shortHelp='Preview data in spreadsheet',
+            bitmap=self.controller.get_bitmap('Table.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_preview_data, self.preview_data_tool)
         # Plot data
         self.plot_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'X-Y Plot',
-                                                        shortHelp='Generates X-Y plot of selected data',
-                                                        bitmap=self.controller.get_bitmap('Stats2.png'))
+            shortHelp='Generates X-Y plot of selected data',
+            bitmap=self.controller.get_bitmap('Stats2.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_plot_data, self.plot_data_tool)
         # Image plot of data
         self.imageplot_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Image Plot',
-                                                             shortHelp='Generates image plot of selected data',
-                                                             bitmap=self.controller.get_bitmap('imgplt.png'))
+            shortHelp='Generates image plot of selected data',
+            bitmap=self.controller.get_bitmap('imgplt.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_imageplot_data, self.imageplot_data_tool)
         self.disable_data_tools()
         self.toolbar.Realize()

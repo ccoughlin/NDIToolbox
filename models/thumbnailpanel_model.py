@@ -12,7 +12,6 @@ import matplotlib
 import matplotlib.cm as cm
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
-import numpy as np
 import hashlib
 from multiprocessing import Process, Pipe
 import os.path
@@ -31,7 +30,7 @@ def create_plot(data, title, width, height):
     axes = figure.gca()
     if 2 in data.shape:
         axes.plot(data[0], data[1])
-    elif data.ndim==1:
+    elif data.ndim == 1:
         axes.plot(data)
     else:
         img = axes.imshow(data, cmap=cm.get_cmap('Spectral'))
@@ -39,6 +38,7 @@ def create_plot(data, title, width, height):
     axes.set_title(title)
     axes.grid(True)
     return figure
+
 
 def plot_stream(data, title, width, height):
     """Returns a StringIO stream of the data plot"""
@@ -48,6 +48,7 @@ def plot_stream(data, title, width, height):
     img_stream.seek(0)
     return img_stream
 
+
 def plot_pipe(data, title, width, height, pipe):
     """Writes the PNG StringIO stream of the specified data's plot
     to the specified pipe.  Primarily intended for multiprocessing."""
@@ -55,13 +56,15 @@ def plot_pipe(data, title, width, height, pipe):
     pipe.send(img_stream)
     pipe.close()
 
+
 def plot(data_filename, width, height, **import_params):
     """Returns a PNG plot of the specified data file's dataset"""
     data = mainmodel.get_data(data_filename, **import_params)
     return gen_thumbnail(plot_stream(data,
-                                     os.path.basename(data_filename),
-                                     width, height),
-                         data_filename)
+        os.path.basename(data_filename),
+        width, height),
+        data_filename)
+
 
 def multiprocess_plot(data_filename, width, height, **import_params):
     """Spawns a subprocess to generate the plot, and returns the result as a PNG wxBitmap.
@@ -69,11 +72,12 @@ def multiprocess_plot(data_filename, width, height, **import_params):
     data = mainmodel.get_data(data_filename, **import_params)
     in_conn, out_conn = Pipe()
     plot_proc = Process(target=plot_pipe,
-                        args=(data, os.path.basename(data_filename), width, height, out_conn))
+        args=(data, os.path.basename(data_filename), width, height, out_conn))
     plot_proc.start()
     img_stream = in_conn.recv()
     plot_proc.join()
     return gen_thumbnail(img_stream, data_filename)
+
 
 def gen_thumbnail(image_stream, data_filename):
     """Returns a wxBitmap of the given image stream.  If the bitmap doesn't exist
@@ -85,6 +89,7 @@ def gen_thumbnail(image_stream, data_filename):
             # Cache the PNG for reuse
             img.SaveStream(img_file, type=wx.BITMAP_TYPE_PNG)
     return wx.BitmapFromImage(img)
+
 
 def thumbnail_name(data_filename):
     """Returns the name of the thumbnail corresponding to the specified data file."""

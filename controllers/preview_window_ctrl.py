@@ -23,7 +23,7 @@ class PreviewWindowController(object):
             self.view.spreadsheet.SetNumberRows(0)
             self.view.spreadsheet.SetNumberCols(0)
             rownum = 0
-            if data.ndim==2:
+            if data.ndim == 2:
                 num_rows = data.shape[0]
                 for row in range(num_rows):
                     self.view.spreadsheet.AppendRows(1)
@@ -35,7 +35,7 @@ class PreviewWindowController(object):
                         self.view.spreadsheet.SetCellValue(rownum, colnum, str(cell))
                         colnum += 1
                     rownum += 1
-            elif data.ndim==1:
+            elif data.ndim == 1:
                 self.view.spreadsheet.SetNumberCols(1)
                 for el in data:
                     self.view.spreadsheet.AppendRows(1)

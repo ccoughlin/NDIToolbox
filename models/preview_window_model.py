@@ -13,6 +13,7 @@ def load_data_wrapper(data_filename, plugin_queue, read_parameters):
     data = mainmodel.get_data(data_filename, **read_parameters)
     plugin_queue.put(data)
 
+
 class PreviewWindowModel(object):
     """Model for the PreviewWindow"""
 

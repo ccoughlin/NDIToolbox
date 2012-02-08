@@ -9,8 +9,6 @@ import models.mainmodel as model
 import models.abstractplugin as abstractplugin
 import controllers.pathfinder as pathfinder
 import numpy as np
-import wx
-import os.path
 import os
 import shutil
 import unittest
@@ -22,14 +20,14 @@ class TestMainModel(unittest.TestCase):
         self.sample_data = np.ones(912)
         self.sample_data_basename = "sample.dat"
         self.sample_data_file = os.path.join(os.path.dirname(__file__),
-                                             self.sample_data_basename)
+            self.sample_data_basename)
         np.savetxt(self.sample_data_file, self.sample_data)
         self.mock_controller = ""
         self.model = model.MainModel(self.mock_controller)
 
     def test_get_data(self):
         """Verify get_data function returns a NumPy array"""
-        import_parameters = {'delimiter':''}
+        import_parameters = {'delimiter': ''}
         read_data = model.get_data(self.sample_data_file, **import_parameters)
         self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
 
@@ -38,7 +36,7 @@ class TestMainModel(unittest.TestCase):
         #save_data(data_fname, data, **export_params):
         sample_filename = "test_savedata.dat"
         sample_path = os.path.join(os.path.dirname(__file__), sample_filename)
-        export_params = {'delim_char':':'}
+        export_params = {'delim_char': ':'}
         model.save_data(sample_path, self.sample_data, **export_params)
         self.assertTrue(os.path.exists(sample_path))
         read_data = np.loadtxt(sample_path, delimiter=export_params['delim_char'])
@@ -75,7 +73,7 @@ class TestMainModel(unittest.TestCase):
         """Verify copying of sample data file to data folder"""
         self.model.copy_data(self.sample_data_file)
         copied_data_file = os.path.join(pathfinder.data_path(),
-                                        self.sample_data_basename)
+            self.sample_data_basename)
         self.assertTrue(os.path.exists(copied_data_file))
         os.remove(copied_data_file)
 
@@ -83,7 +81,7 @@ class TestMainModel(unittest.TestCase):
         """Verify removal of a data file from the data folder"""
         self.model.copy_data(self.sample_data_file)
         copied_data_file = os.path.join(pathfinder.data_path(),
-                                        self.sample_data_basename)
+            self.sample_data_basename)
         self.assertTrue(os.path.exists(copied_data_file))
         self.model.remove_data(copied_data_file)
         self.assertFalse(os.path.exists(copied_data_file))
@@ -92,7 +90,7 @@ class TestMainModel(unittest.TestCase):
         """Verify remove_thumbs method deletes all files in the thumbnail
         folder"""
         shutil.copy(__file__, pathfinder.thumbnails_path())
-        self.assertTrue(len(os.listdir(pathfinder.thumbnails_path()))>0)
+        self.assertTrue(len(os.listdir(pathfinder.thumbnails_path())) > 0)
         self.model.remove_thumbs()
         self.assertListEqual(os.listdir(pathfinder.thumbnails_path()), [])
 

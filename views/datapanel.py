@@ -36,11 +36,11 @@ class DataPanel(wx.Panel):
         self.data_tree_root = self.data_tree.AddRoot("Data")
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.controller.on_tree_selection_changed, self.data_tree)
         self.panel_sizer.Add(self.data_tree, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-                             ui_defaults.widget_margin)
+            ui_defaults.widget_margin)
         self.figure_bmp = wx.StaticBitmap(self, wx.ID_ANY, bitmap=wx.NullBitmap,
-                                          pos=wx.DefaultPosition, size=wx.DefaultSize)
+            pos=wx.DefaultPosition, size=wx.DefaultSize)
         self.panel_sizer.Add(self.figure_bmp, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-                             ui_defaults.widget_margin)
+            ui_defaults.widget_margin)
         self.SetSizer(self.panel_sizer)
 
 

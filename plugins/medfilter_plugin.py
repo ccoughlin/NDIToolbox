@@ -18,12 +18,12 @@ class MedianFilterPlugin(TRIPlugin):
 
     def __init__(self):
         super(MedianFilterPlugin, self).__init__(self.name, self.description,
-                                                 self.authors, self.url, self.copyright)
+            self.authors, self.url, self.copyright)
         # If a config dict is defined in a Plugin, the UI will present the user
         # with a dialog box allowing run-time configuration (populated with the
         # default values set here).  Although vals can be of any pickle-able type,
         # they are returned as str.
-        self.config = {'kernel size':'3'}
+        self.config = {'kernel size': '3'}
 
     def run(self):
         """Runs the plugin, asking the user to specify a kernel size for the median filter.
@@ -40,4 +40,4 @@ class MedianFilterPlugin(TRIPlugin):
                 # medfilt function requires odd number for kernel size
                 kernel_size += 1
             self._data = scipy.signal.medfilt(self._data,
-                                              kernel_size)
+                kernel_size)

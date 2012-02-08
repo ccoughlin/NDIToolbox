@@ -28,6 +28,7 @@ class AbstractPlugin(object):
     @abstractproperty
     def data(self):
         pass
+
     @data.setter
     def data(self, newdata):
         pass
@@ -60,6 +61,7 @@ class AbstractPlugin(object):
     def run(self):
         pass
 
+
 class CompanyPlugin(AbstractPlugin):
     """Basic template for A7117 plugins for an institution.  Subclasses
     should overload the placeholder plugin fields and the run() method."""
@@ -90,6 +92,7 @@ class CompanyPlugin(AbstractPlugin):
     @property
     def data(self):
         return self._data
+
     @data.setter
     def data(self, new_data):
         self._data = new_data
@@ -97,6 +100,7 @@ class CompanyPlugin(AbstractPlugin):
     def run(self):
         """Executes the plugin"""
         pass
+
 
 class TRIPlugin(CompanyPlugin):
     """Basic template for A7117 plugins for TRI/Austin personnel"""
@@ -112,6 +116,7 @@ class TRIPlugin(CompanyPlugin):
                  url=None, copyright=None):
         super(TRIPlugin, self).__init__(name, description, authors, version,
             url, copyright)
+
 
 class ComputationalToolsPlugin(CompanyPlugin):
     """Basic template for A7117 plugins for Computational Tools personnel"""

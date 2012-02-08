@@ -33,6 +33,7 @@ class BasicPlotWindowModel(object):
         """Returns a list of available plugins"""
         return mainmodel.load_plugins()
 
+
 class PlotWindowModel(BasicPlotWindowModel):
     """Model for the PlotWindow"""
 
@@ -47,9 +48,9 @@ class PlotWindowModel(BasicPlotWindowModel):
         id to assign to the menu item
         """
         self.gates = dict(boxcar=('Boxcar', 1000), triang=('Triangular', 1001), blackman=('Blackman', 1002),
-                          hamming=('Hamming', 1003), hanning=('Hann (Hanning)', 1004), bartlett=('Bartlett', 1005),
-                          parzen=('Parzen', 1006), bohman=('Bohman', 1007), blackmanharris=('Blackman-Harris', 1008),
-                          nuttall=('Nuttall', 1009), barthann=('Barthann', 1010))
+            hamming=('Hamming', 1003), hanning=('Hann (Hanning)', 1004), bartlett=('Bartlett', 1005),
+            parzen=('Parzen', 1006), bohman=('Bohman', 1007), blackmanharris=('Blackman-Harris', 1008),
+            nuttall=('Nuttall', 1009), barthann=('Barthann', 1010))
 
     def apply_window(self, window_type, original_data, start_idx, end_idx):
         """Returns the specified type of window for the range
@@ -57,12 +58,12 @@ class PlotWindowModel(BasicPlotWindowModel):
         the given range."""
         left = np.zeros(start_idx)
         windows = ['boxcar', 'triang', 'blackman', 'hamming', 'hanning', 'bartlett',
-            'parzen', 'bohman', 'blackmanharris', 'nuttall', 'barthann']
+                   'parzen', 'bohman', 'blackmanharris', 'nuttall', 'barthann']
         if window_type not in windows:
-            middle = np.ones(end_idx-start_idx)
+            middle = np.ones(end_idx - start_idx)
         else:
-            middle = scipy.signal.get_window(window_type, end_idx-start_idx)
-        right = np.zeros(original_data.shape[0]-end_idx)
+            middle = scipy.signal.get_window(window_type, end_idx - start_idx)
+        right = np.zeros(original_data.shape[0] - end_idx)
         winder = np.concatenate((left, middle, right))
         data = np.multiply(original_data, winder)
         return data
@@ -89,6 +90,7 @@ class PlotWindowModel(BasicPlotWindowModel):
         """Sets current data set to absolute value
         (full rectification in ultrasonics parlance)"""
         self.data = np.absolute(self.data)
+
 
 class ImgPlotWindowModel(BasicPlotWindowModel):
     """Model for the ImgPlotWindow"""

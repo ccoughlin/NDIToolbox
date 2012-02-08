@@ -70,9 +70,9 @@ class MainUIController(object):
                             "and conducts materials research and development projects. TRI is committed to",
                             "providing the highest quality materials science products and services."))
         about_tri_dlg = dlg.AboutDialog(parent=self.view, title="About TRI",
-                                        msg=tri_msg,
-                                        url="www.tri-austin.com",
-                                        logobmp_fname=tri_logo)
+            msg=tri_msg,
+            url="www.tri-austin.com",
+            logobmp_fname=tri_logo)
         about_tri_dlg.ShowModal()
         about_tri_dlg.Destroy()
 
@@ -83,9 +83,9 @@ class MainUIController(object):
                                 "Axialis Team, and were created by",
                                 "Axialis IconWorkshop."))
         about_axialisicons_dlg = dlg.AboutDialog(parent=self.view, title="About Axialis Icons",
-                                                 msg=axialis_msg,
-                                                 url="www.axialis.com",
-                                                 logobmp_fname=axialis_logo)
+            msg=axialis_msg,
+            url="www.axialis.com",
+            logobmp_fname=axialis_logo)
         about_axialisicons_dlg.ShowModal()
         about_axialisicons_dlg.Destroy()
 
@@ -93,7 +93,7 @@ class MainUIController(object):
         """Handles a change in data file selection by providing a preview plot
         of the data"""
         self.set_thumb(panel=self.view.thumbnail_panel, data_file=self.view.data_panel.data,
-                       enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
+            enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
         if self.view.data_panel.data:
             self.view.enable_data_tools()
         else:
@@ -102,7 +102,7 @@ class MainUIController(object):
     def on_preview_toggle(self, evt):
         """Handles toggling data thumbnail plot previews"""
         self.set_thumb(panel=self.view.thumbnail_panel, data_file=self.view.data_panel.data,
-                       enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
+            enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
 
     def on_refresh_data(self, evt):
         """Handles request to update contents of data folder"""
@@ -122,8 +122,8 @@ class MainUIController(object):
         """Handles request to remove data from data folder"""
         if self.view.data_panel.data is not None:
             confirm_deletion_dlg = wx.MessageDialog(parent=self.view.parent, caption="Delete File?",
-                                                    message="Are you sure you want to delete this file?",
-                                                    style=wx.OK | wx.CANCEL)
+                message="Are you sure you want to delete this file?",
+                style=wx.OK | wx.CANCEL)
             if confirm_deletion_dlg.ShowModal() == wx.ID_OK:
                 self.model.remove_data(self.view.data_panel.data)
                 self.view.data_panel.populate()
@@ -136,7 +136,7 @@ class MainUIController(object):
                 read_parameters = import_dlg.get_import_parameters()
                 wx.BeginBusyCursor()
                 data_window = preview_window.PreviewWindow(parent=self.view, data_file=self.view.data_panel.data,
-                                                           **read_parameters)
+                    **read_parameters)
                 data_window.Show()
                 wx.EndBusyCursor()
             import_dlg.Destroy()
@@ -149,7 +149,7 @@ class MainUIController(object):
                 read_parameters = import_dlg.get_import_parameters()
                 wx.BeginBusyCursor()
                 plt_window = plotwindow.PlotWindow(self.view, data_file=self.view.data_panel.data,
-                **read_parameters)
+                    **read_parameters)
                 if plt_window.has_data:
                     plt_window.Show()
                 wx.EndBusyCursor()

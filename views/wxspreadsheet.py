@@ -117,7 +117,7 @@ class SpreadsheetTextCellEditor(wx.TextCtrl):
 
     def __init__(self, parent, id, grid):
         wx.TextCtrl.__init__(self, parent, id, "",
-                             style=wx.NO_BORDER | wx.TE_PROCESS_ENTER)
+            style=wx.NO_BORDER | wx.TE_PROCESS_ENTER)
         self._grid = grid                           # Save grid reference
         self.Bind(wx.EVT_CHAR, self.OnChar)
 
@@ -178,7 +178,7 @@ class Spreadsheet(wx.lib.sheet.CSheet):
         self.ClearGrid()
         with open(csvfile, 'rU') as inputfile:
             csv_reader = csv.reader(inputfile,
-                                    delimiter=_delimiter, quotechar=_quotechar)
+                delimiter=_delimiter, quotechar=_quotechar)
             try:
                 self.SetNumberRows(0)
                 self.SetNumberCols(0)

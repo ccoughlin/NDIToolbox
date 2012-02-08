@@ -28,11 +28,13 @@ def get_data(data_fname, **import_params):
         unpack=transpose_data)
     return data
 
+
 def save_data(data_fname, data, **export_params):
     """Saves the data to data_fname using the specified ASCII
      formatting parameters."""
     delim_char = export_params.get('delimiter', None)
     np.savetxt(data_fname, data, delimiter=delim_char)
+
 
 def load_plugins():
     """Searches the plugins folder and imports all valid plugins,
@@ -63,8 +65,10 @@ def load_plugins():
                         module_hdl.close()
     return plugins
 
+
 class MainModel(object):
     """Model for the main user interface"""
+
     def __init__(self, controller):
         self.controller = controller
 

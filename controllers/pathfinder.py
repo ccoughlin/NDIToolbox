@@ -14,30 +14,37 @@ def app_path():
         entry_point = os.path.dirname(controllers.__file__)
     return os.path.dirname(entry_point)
 
+
 def resource_path():
     """Returns the path to resources - home folder
     for icons, bitmaps, etc."""
     return os.path.join(app_path(), 'resources')
 
+
 def icons_path():
     """Returns the path to application icons"""
     return os.path.join(resource_path(), 'icons')
+
 
 def icon_path():
     """Returns the path to the application's default
     PNG icon"""
     return os.path.join(icons_path(), 'a7117_64.png')
 
+
 def bitmap_path():
     """Returns the path to application bitmaps"""
     return os.path.join(resource_path(), 'bitmaps')
 
+
 def data_path():
     return os.path.join(app_path(), 'data')
+
 
 def thumbnails_path():
     """Returns the path to data thumbnails"""
     return os.path.join(app_path(), 'thumbnails')
+
 
 def plugins_path():
     """Returnst the path to plugins"""
