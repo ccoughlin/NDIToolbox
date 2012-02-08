@@ -13,10 +13,17 @@ import scipy.signal
 class BasicPlotWindowModel(object):
     """Model for the BasicPlotWindow"""
 
-    def __init__(self, controller):
+    def __init__(self, controller, data_file, **read_text_params):
         self.controller = controller
+        self.data_file = data_file
+        self.read_parameters = read_text_params
         self.original_data = None
         self.data = None
+
+    def load_data(self):
+        """Loads the data from the instance's data file"""
+        self.original_data = mainmodel.get_data(self.data_file, **self.read_parameters)
+        self.revert_data()
 
     def revert_data(self):
         """Reverts to original data set"""
@@ -29,8 +36,8 @@ class BasicPlotWindowModel(object):
 class PlotWindowModel(BasicPlotWindowModel):
     """Model for the PlotWindow"""
 
-    def __init__(self, controller):
-        super(PlotWindowModel, self).__init__(controller)
+    def __init__(self, controller, data_file, **read_text_params):
+        super(PlotWindowModel, self).__init__(controller, data_file, **read_text_params)
         self._define_gate_functions()
 
     def _define_gate_functions(self):
@@ -86,8 +93,8 @@ class PlotWindowModel(BasicPlotWindowModel):
 class ImgPlotWindowModel(BasicPlotWindowModel):
     """Model for the ImgPlotWindow"""
 
-    def __init__(self, controller):
-        super(ImgPlotWindowModel, self).__init__(controller)
+    def __init__(self, controller, data_file, **read_text_params):
+        super(ImgPlotWindowModel, self).__init__(controller, data_file, **read_text_params)
 
     def detrend_data(self, axis, type):
         """Applies a detrend (where type is 'constant' for average or 'linear')

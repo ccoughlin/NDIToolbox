@@ -10,7 +10,6 @@ import wx
 import os.path
 import threading
 
-
 __author__ = 'Chris R. Coughlin'
 
 class PreviewWindow(wx.Frame):

@@ -12,7 +12,6 @@ import views.dialogs as dlg
 import controllers.pathfinder as pathfinder
 import wx
 import os.path
-import textwrap
 
 class MainUIController(object):
     """Controller for the main user interface"""
@@ -114,11 +113,10 @@ class MainUIController(object):
         """Handles request to add data to data folder"""
         file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file', style=wx.FD_OPEN)
         if file_dlg.ShowModal() == wx.ID_OK:
-            wait_dlg = dlg.progressDialog(dlg_title='Adding Data',
-                dlg_msg='Please wait, adding data...')
+            wx.BeginBusyCursor()
             self.model.copy_data(file_dlg.GetPath())
             self.view.data_panel.populate()
-            wait_dlg.close()
+            wx.EndBusyCursor()
 
     def on_remove_data(self, evt):
         """Handles request to remove data from data folder"""
@@ -136,27 +134,37 @@ class MainUIController(object):
             import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
             if import_dlg.ShowModal() == wx.ID_OK:
                 read_parameters = import_dlg.get_import_parameters()
+                wx.BeginBusyCursor()
                 data_window = preview_window.PreviewWindow(parent=self.view, data_file=self.view.data_panel.data,
                                                            **read_parameters)
                 data_window.Show()
+                wx.EndBusyCursor()
             import_dlg.Destroy()
 
     def on_plot_data(self, evt):
         """Handles request to generate X-Y plot of selected data"""
         if self.view.data_panel.data is not None:
-            plt_window = plotwindow.PlotWindow(self.view, self.view.data_panel.data)
-            wait_dlg = dlg.progressDialog(dlg_title='Plotting Data',
-                dlg_msg='Please wait, plotting data...')
-            if plt_window.has_data:
-                plt_window.Show()
-            wait_dlg.close()
+            import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
+            if import_dlg.ShowModal() == wx.ID_OK:
+                read_parameters = import_dlg.get_import_parameters()
+                wx.BeginBusyCursor()
+                plt_window = plotwindow.PlotWindow(self.view, data_file=self.view.data_panel.data,
+                **read_parameters)
+                if plt_window.has_data:
+                    plt_window.Show()
+                wx.EndBusyCursor()
+            import_dlg.Destroy()
 
     def on_imageplot_data(self, evt):
         """Handles request to generate image plot of selected data"""
         if self.view.data_panel.data is not None:
-            plt_window = plotwindow.ImgPlotWindow(self.view, self.view.data_panel.data)
-            wait_dlg = dlg.progressDialog(dlg_title='Plotting Data',
-                dlg_msg='Please wait, plotting data...')
-            if plt_window.has_data:
-                plt_window.Show()
-            wait_dlg.close()
+            import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
+            if import_dlg.ShowModal() == wx.ID_OK:
+                read_parameters = import_dlg.get_import_parameters()
+                wx.BeginBusyCursor()
+                plt_window = plotwindow.ImgPlotWindow(parent=self.view, data_file=self.view.data_panel.data,
+                    **read_parameters)
+                if plt_window.has_data:
+                    plt_window.Show()
+                wx.EndBusyCursor()
+            import_dlg.Destroy()

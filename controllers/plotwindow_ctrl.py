@@ -49,10 +49,10 @@ def plugin_wrapper(plugin_cls, plugin_data, plugin_queue, plugin_cfg=None):
 class BasicPlotWindowController(object):
     """Base class for PlotWindows"""
 
-    def __init__(self, view):
+    def __init__(self, view, data_file, **read_text_params):
         self.view = view
         self.axes_grid = True
-        self.model = model.BasicPlotWindowModel(self)
+        self.model = model.BasicPlotWindowModel(self, data_file, **read_text_params)
         self.init_plot_defaults()
         self.available_plugins = self.generate_plugin_dict()
 
@@ -208,18 +208,9 @@ class BasicPlotWindowController(object):
         """Reverts data to original"""
         self.model.revert_data()
 
-    def load_data(self, data_file):
-        """Loads the data from the specified file name,
-        returning True if the data were successfully loaded and
-        False otherwise."""
-        import_dlg = dialogs.ImportTextDialog(parent=self.view.parent)
-        if import_dlg.ShowModal() == wx.ID_OK:
-            readtext_parameters = import_dlg.get_import_parameters()
-            self.model.original_data = mainmodel.get_data(data_file, **readtext_parameters)
-            self.model.revert_data()
-            return True
-        else:
-            return False
+    def load_data(self):
+        """Loads the data from the specified file name"""
+        self.model.load_data()
 
     def get_plugins(self):
         """Returns a list of the available A7117 plugins"""
@@ -248,10 +239,10 @@ class BasicPlotWindowController(object):
 class PlotWindowController(BasicPlotWindowController):
     """Controller for PlotWindow class"""
 
-    def __init__(self, view):
+    def __init__(self, view, data_file, **read_text_params):
         self.view = view
         self.axes_grid = True
-        self.model = model.PlotWindowModel(self)
+        self.model = model.PlotWindowModel(self, data_file, **read_text_params)
         self.init_plot_defaults()
         self.available_plugins = self.generate_plugin_dict()
 
@@ -311,10 +302,10 @@ class PlotWindowController(BasicPlotWindowController):
 class ImgPlotWindowController(BasicPlotWindowController):
     """Controller for ImgPlotWindow class"""
 
-    def __init__(self, view):
+    def __init__(self, view, data_file, **read_text_params):
         self.view = view
         self.axes_grid = True
-        self.model = model.ImgPlotWindowModel(self)
+        self.model = model.ImgPlotWindowModel(self, data_file, **read_text_params)
         self.colorbar = None
         self.init_plot_defaults()
         self.available_plugins = self.generate_plugin_dict()
@@ -413,8 +404,7 @@ class ImgPlotWindowController(BasicPlotWindowController):
         """Generates a new dialog displaying all the built-in matplotlib
         colormaps and their reverse colormaps.  Original code courtesy
         SciPy Cookbook http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps"""
-        wait_dlg = dialogs.progressDialog(dlg_title='Creating Colormap Preview',
-                                          dlg_msg='Please wait, generating colormaps...')
+        wx.BeginBusyCursor()
         import matplotlib.pyplot as plt
         colormaps = self.model.get_colormap_choices()
         colormap_strip = self.model.generate_colormap_strip()
@@ -427,8 +417,8 @@ class ImgPlotWindowController(BasicPlotWindowController):
             plt.imshow(colormap_strip, aspect='auto', cmap=plt.get_cmap(m), origin='lower')
             pos = list(ax.get_position().bounds)
             figure.text(pos[0]-0.01, pos[1], m, fontsize=10, horizontalalignment='right')
-        wait_dlg.close()
         plt.show()
+        wx.EndBusyCursor()
 
     def on_select_cmap(self, evt):
         """Generates a list of available matplotlib colormaps and sets the plot's
