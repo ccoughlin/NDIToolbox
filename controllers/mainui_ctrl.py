@@ -52,10 +52,27 @@ class MainUIController(object):
         else:
             panel.plot_blank()
 
+    def get_default_position(self):
+        """Returns the default (x, y) coordinates of the
+        main application window"""
+        coordinates = self.model.get_coords()
+        if coordinates == []:
+            return (0, 0)
+        return coordinates
+
+    def get_preview_state(self):
+        """Returns the current enable/disable thumbnail
+        previews setting from the application's config file"""
+        preview_state = self.model.get_preview_state()
+        if preview_state is None:
+            return True
+        return preview_state
+
     # Event Handlers
 
     def on_quit(self, evt):
         """Handles the Quit event"""
+        self.model.set_coords(list(self.view.GetPosition()))
         self.view._mgr.UnInit()
         self.view.Destroy()
 
@@ -101,8 +118,10 @@ class MainUIController(object):
 
     def on_preview_toggle(self, evt):
         """Handles toggling data thumbnail plot previews"""
+        preview_state = self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId())
         self.set_thumb(panel=self.view.thumbnail_panel, data_file=self.view.data_panel.data,
-            enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
+            enable=preview_state)
+        self.model.set_preview_state(preview_state)
 
     def on_refresh_data(self, evt):
         """Handles request to update contents of data folder"""

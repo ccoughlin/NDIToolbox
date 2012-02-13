@@ -20,7 +20,7 @@ class UI(wx.Frame):
         self.controller = ctrl.MainUIController(self)
         wx.Frame.__init__(self, id=wx.ID_ANY, name='', parent=self.parent,
             size=(300, 600), title='A7117 NDE')
-        self.SetPosition((ui_defaults.widget_margin, ui_defaults.widget_margin))
+        self.SetPosition(self.controller.get_default_position())
         self.MinSize = (300, 400)
         self._mgr = wx.aui.AuiManager()
         self._mgr.SetManagedWindow(self)
@@ -87,7 +87,8 @@ class UI(wx.Frame):
         # Toggle button to enable / disable automatic previews of data
         self.gen_bitmaps_tool = self.toolbar.AddCheckTool(id=wx.ID_ANY, shortHelp='Enable Data Thumbnails',
             bitmap=self.controller.get_bitmap('Picture.png'))
-        self.toolbar.ToggleTool(self.gen_bitmaps_tool.GetId(), True)
+        self.toolbar.ToggleTool(self.gen_bitmaps_tool.GetId(),
+            self.controller.get_preview_state())
         self.Bind(wx.EVT_TOOL, self.controller.on_preview_toggle, self.gen_bitmaps_tool)
         # Refresh UI with contents of data folder
         self.refresh_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Refresh',

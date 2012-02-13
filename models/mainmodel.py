@@ -7,6 +7,7 @@ __author__ = 'Chris R. Coughlin'
 
 from controllers import pathfinder
 from models import abstractplugin
+from models import config
 import numpy as np
 import imp
 import inspect
@@ -65,6 +66,10 @@ def load_plugins():
                         module_hdl.close()
     return plugins
 
+def get_config():
+    """Returns a Configure instance pointing to the application's
+    default configuration file."""
+    return config.Configure(pathfinder.config_path())
 
 class MainModel(object):
     """Model for the main user interface"""
@@ -85,3 +90,32 @@ class MainModel(object):
         thumbnail_path = pathfinder.thumbnails_path()
         for thumbnail in os.listdir(thumbnail_path):
             os.remove(os.path.join(thumbnail_path, thumbnail))
+
+    def set_preview_state(self, preview_state):
+        """Writes an entry into the configuration file
+        indicating whether thumbnails should be enabled
+        or disabled."""
+        config = get_config()
+        config.set_app_option({"Enable Preview":preview_state})
+
+    def get_preview_state(self):
+        """Returns the current setting for whether
+        thumbnail previews are enabled or disabled"""
+        config = get_config()
+        return config.get_app_option_boolean("Enable Preview")
+
+    def set_coords(self, coordinate_list):
+        """Writes the specified coordinate list
+        to the default configuration file."""
+        config = get_config()
+        config.set_app_option({"Coordinates":coordinate_list})
+
+    def get_coords(self):
+        """Returns the default (x, y)
+        coordinates from the configuration file."""
+        config = get_config()
+        str_coords = config.get_app_option_list("Coordinates")
+        coords = (0, 0)
+        if str_coords is not None:
+            coords = [int(coord) for coord in config.get_app_option_list("Coordinates")]
+        return coords

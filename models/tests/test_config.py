@@ -95,7 +95,7 @@ class TestConfigure(unittest.TestCase):
         self.assertIsNone(self.config.get_app_option_int('path'))
         self.assertIsNone(self.config.get_app_option_float('path'))
         self.assertIsNone(self.config.get_app_option_list('Potato'))
-        self.assertIsNone(self.config.get('Plugins', "Collander"))
+        self.assertIsNone(self.config.get('Plugins', "Colander"))
 
     def tearDown(self):
         if os.path.exists(self.config_path):
