@@ -44,6 +44,35 @@ class TestMainModel(unittest.TestCase):
         if os.path.exists(sample_path):
             os.remove(sample_path)
 
+    def test_import_dicom(self):
+        """Verify import of DICOM / DICONDE data"""
+        try:
+            import dicom
+            # Load the ASTM DICONDE example files,
+            # save, then ensure the resulting arrays
+            # are identical
+            diconde_folder = os.path.join(os.path.dirname(__file__), 'support_files')
+            for root, dirs, files in os.walk(diconde_folder):
+                for fname in files:
+                    dicom_data_file = os.path.join(root, fname)
+                    #dicom_data_file = os.path.join(os.path.dirname(__file__), 'support_files',
+                    #    'dicondeDxExampleImage000.dcm')
+                    dicom_data = dicom.read_file(dicom_data_file)
+                    dicom_arr = dicom_data.pixel_array
+                    try:
+                        self.model.import_dicom(dicom_data_file)
+                    except TypeError:
+                        print(dicom_data_file)
+                    dest_file = os.path.join(pathfinder.data_path(),
+                        os.path.basename(dicom_data_file))
+                    self.assertTrue(os.path.exists(dest_file))
+                    read_data = np.loadtxt(dest_file, delimiter=',')
+                    self.assertListEqual(dicom_arr.tolist(), read_data.tolist())
+                    if os.path.exists(dest_file):
+                        os.remove(dest_file)
+        except ImportError:
+            return
+
     def test_load_plugins(self):
         """Verify the main model loads available plugins"""
         plugin_list = model.load_plugins()

@@ -12,6 +12,7 @@ import views.dialogs as dlg
 import controllers.pathfinder as pathfinder
 import wx
 import os.path
+import threading
 
 class MainUIController(object):
     """Controller for the main user interface"""
@@ -136,6 +137,36 @@ class MainUIController(object):
             self.model.copy_data(file_dlg.GetPath())
             self.view.data_panel.populate()
             wx.EndBusyCursor()
+
+    def on_import_dicom(self, evt):
+        """Handles request to add DICOM/DICONDE data to data folder"""
+        file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file', style=wx.FD_OPEN)
+        if file_dlg.ShowModal() == wx.ID_OK:
+            try:
+                wx.BeginBusyCursor()
+                imp_dicom_thd = threading.Thread(target=self.model.import_dicom,
+                    args=(file_dlg.GetPath(), ))
+                imp_dicom_thd.setDaemon(True)
+                imp_dicom_thd.start()
+                while True:
+                    imp_dicom_thd.join(0.125)
+                    if not imp_dicom_thd.is_alive():
+                        break
+                    wx.Yield()
+                self.view.data_panel.populate()
+            except ImportError: # pydicom not installed
+                err_dlg = wx.MessageDialog(self.view, message="Please install the pydicom module.",
+                    caption="Unable To Import Data", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+            except TypeError: # 3D array not implemented
+                err_dlg = wx.MessageDialog(self.view,
+                    message="3D Arrays are not supported in this version.",
+                    caption="Unable To Import Data", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+            finally:
+                wx.EndBusyCursor()
 
     def on_remove_data(self, evt):
         """Handles request to remove data from data folder"""

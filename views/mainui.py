@@ -38,6 +38,10 @@ class UI(wx.Frame):
     def init_file_menu(self):
         """Creates the File menu"""
         self.file_mnu = wx.Menu()
+        dicom_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Import DICOM/DICONDE...",
+            help="Imports a DICOM / DICONDE data file")
+        self.file_mnu.AppendItem(dicom_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_import_dicom, id=dicom_mnui.GetId())
         quit_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="E&xit\tCTRL+X",
             help="Exit The Program")
         self.file_mnu.AppendItem(quit_mnui)

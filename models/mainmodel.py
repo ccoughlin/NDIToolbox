@@ -81,6 +81,19 @@ class MainModel(object):
         """Adds the specified data file to the data folder"""
         shutil.copy(data_file, pathfinder.data_path())
 
+    def import_dicom(self, data_file):
+        """Imports a DICOM/DICONDE pixel map"""
+        import dicom
+        di_struct = dicom.read_file(data_file)
+        export_parameters = {'delimiter': ','}
+        di_fname = os.path.join(pathfinder.data_path(),
+            os.path.basename(data_file))
+        # TODO - implement support for 3D arrays
+        # when data format is finalized
+        if di_struct.pixel_array.ndim > 2:
+            return
+        save_data(di_fname, di_struct.pixel_array, **export_parameters)
+
     def remove_data(self, data_file):
         """Removes specified file from the device"""
         os.remove(data_file)
