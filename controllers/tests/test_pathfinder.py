@@ -10,8 +10,9 @@ class TestPathFinder(unittest.TestCase):
     """Tests the pathfinder module"""
 
     def setUp(self):
-        import __main__
-        self.app_path = '/home/ccoughlin/PycharmProjects/Bane'
+        #import __main__
+        self.app_path = os.path.join(os.path.expanduser('~'), 'PycharmProjects', 'Bane')
+        #self.app_path = '/home/ccoughlin/PycharmProjects/Bane'
 
     def test_app_path(self):
         """Verify pathfinder reports the correct application path"""
@@ -51,6 +52,11 @@ class TestPathFinder(unittest.TestCase):
         """Verify correct path to plugins"""
         plugin_path = os.path.join(self.app_path, 'plugins')
         self.assertEqual(plugin_path, pathfinder.plugins_path())
+
+    def test_config_path(self):
+        """Verify correct path to configuration file"""
+        config_path = os.path.expanduser("~/a7117.cfg")
+        self.assertEqual(config_path, pathfinder.config_path())
 
 if __name__ == "__main__":
     unittest.main()

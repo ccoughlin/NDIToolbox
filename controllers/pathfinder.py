@@ -47,7 +47,10 @@ def thumbnails_path():
 
 
 def plugins_path():
-    """Returnst the path to plugins"""
+    """Returns the path to plugins"""
     return os.path.join(app_path(), 'plugins')
 
-  
+
+def config_path():
+    """Returns the path to the configuration file"""
+    return os.path.expanduser("~/a7117.cfg")
