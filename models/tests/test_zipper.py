@@ -90,6 +90,20 @@ class TestUnzipper(unittest.TestCase):
                     file_name = os.path.join(root, fname)
                     self.assertTrue(filecmp.cmp(file_name, original_files[fname]))
 
+    def test_extract(self):
+        """Verify extraction of a single file"""
+        unzipper = zipper.UnZipper(zip_file=self.zip_file_path)
+        original_files = {os.path.basename(orig_file):orig_file for orig_file in
+                          self.generate_file_list()}
+        for each in unzipper.list_contents():
+            unzipper.extract(each, self.destination_folder)
+        for root, dirs, files in os.walk(self.destination_folder):
+            for fname in files:
+                basename, ext = os.path.splitext(fname)
+                if ext.lower() in ('.png', '.jpg'):
+                    file_name = os.path.join(root, fname)
+                    self.assertTrue(filecmp.cmp(file_name, original_files[fname]))
+
     def test_read(self):
         """Verify reading a single file from the ZIP"""
         unzipper = zipper.UnZipper(zip_file=self.zip_file_path)

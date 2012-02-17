@@ -36,6 +36,11 @@ class UnZipper(object):
         to the specified path."""
         self.zip.extractall(output_path)
 
+    def extract(self, file_name, output_path):
+        """Extracts the file file_name to the
+        specified path."""
+        self.zip.extract(file_name, path=output_path)
+
     def read(self, file_name):
         """Returns the bytes of the specified file from
         the ZIP archive."""
