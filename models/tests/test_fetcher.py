@@ -29,7 +29,6 @@ class TestFetcher(unittest.TestCase):
         # Handle server path differences between running these
         # tests directly vs. running the project test suite
         cur_dir = os.getcwd()
-        print(cur_dir)
         if os.path.normcase(cur_dir) == os.path.normcase(os.path.dirname(__file__)):
             # Running this test module directly
             cls.local_file = os.path.join('support_files', 'LAHMPlogo.png')

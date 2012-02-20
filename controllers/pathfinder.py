@@ -11,6 +11,7 @@ def app_path():
         entry_point = sys.executable
     else:
         import controllers
+
         entry_point = os.path.dirname(controllers.__file__)
     return os.path.dirname(entry_point)
 

@@ -11,7 +11,7 @@ from matplotlib.figure import Figure
 import numpy as np
 import wx
 import hashlib
-from multiprocessing import  Pipe
+from multiprocessing import Process, Pipe, freeze_support
 import os
 import os.path
 import unittest
@@ -22,7 +22,7 @@ class TestThumbnailPanelModel(unittest.TestCase):
 
     def setUp(self):
         self.sample_data = np.ones(88)
-        self.sample_data_file = os.path.join(os.path.dirname(__file__), "sample.dat")
+        self.sample_data_file = os.path.normpath(os.path.join(os.path.dirname(__file__), "sample.dat"))
         np.savetxt(self.sample_data_file, self.sample_data)
 
     def test_create_plot(self):
@@ -44,8 +44,12 @@ class TestThumbnailPanelModel(unittest.TestCase):
         plot to a specified multiprocess Pipe.
         """
         in_conn, out_conn = Pipe()
-        model.plot_pipe(self.sample_data, "Plot Title", width=7, height=2, pipe=out_conn)
+        plot_proc = Process(target=model.plot_pipe,
+            args=(self.sample_data, os.path.basename(self.sample_data_file)),
+            kwargs={'width': 7, 'height': 2, 'pipe': out_conn})
+        plot_proc.start()
         img_stream = in_conn.recv()
+        plot_proc.join()
         self.assertTrue(isinstance(img_stream, StringIO.StringIO))
 
     def test_multiprocess_plot(self):
@@ -77,7 +81,5 @@ class TestThumbnailPanelModel(unittest.TestCase):
             os.remove(thumbnail_name)
 
 if __name__ == "__main__":
-    import multiprocessing
-
-    multiprocessing.freeze_support()
+    freeze_support()
     unittest.main()

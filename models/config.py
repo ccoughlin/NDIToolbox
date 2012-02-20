@@ -55,7 +55,7 @@ class Configure(object):
         option_val = None
         self.config.read(self.config_file)
         if self.has_option(section, option_key):
-                option_val = self.config.get(section, option_key)
+            option_val = self.config.get(section, option_key)
         return option_val
 
     def get_app_option(self, option_key):

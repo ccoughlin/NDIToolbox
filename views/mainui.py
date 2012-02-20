@@ -5,7 +5,6 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 
 __author__ = 'Chris R. Coughlin'
 
-import views.ui_defaults as ui_defaults
 import views.datapanel as datapanel
 import views.thumbnail_panel as thumbnailpanel
 import controllers.mainui_ctrl as ctrl

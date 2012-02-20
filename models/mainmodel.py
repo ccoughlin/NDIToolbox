@@ -66,10 +66,12 @@ def load_plugins():
                         module_hdl.close()
     return plugins
 
+
 def get_config():
     """Returns a Configure instance pointing to the application's
     default configuration file."""
     return config.Configure(pathfinder.config_path())
+
 
 class MainModel(object):
     """Model for the main user interface"""
@@ -84,6 +86,7 @@ class MainModel(object):
     def import_dicom(self, data_file):
         """Imports a DICOM/DICONDE pixel map"""
         import dicom
+
         di_struct = dicom.read_file(data_file)
         export_parameters = {'delimiter': ','}
         di_fname = os.path.join(pathfinder.data_path(),
@@ -109,7 +112,7 @@ class MainModel(object):
         indicating whether thumbnails should be enabled
         or disabled."""
         config = get_config()
-        config.set_app_option({"Enable Preview":preview_state})
+        config.set_app_option({"Enable Preview": preview_state})
 
     def get_preview_state(self):
         """Returns the current setting for whether
@@ -121,7 +124,7 @@ class MainModel(object):
         """Writes the specified coordinate list
         to the default configuration file."""
         config = get_config()
-        config.set_app_option({"Coordinates":coordinate_list})
+        config.set_app_option({"Coordinates": coordinate_list})
 
     def get_coords(self):
         """Returns the default (x, y)

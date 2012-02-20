@@ -13,21 +13,20 @@ import os
 import os.path
 
 class TestConfigure(unittest.TestCase):
-
     def setUp(self):
         self.config_path = os.path.join(os.path.dirname(__file__), "tst_config.cfg")
         self.config = config.Configure(self.config_path)
 
     def write_cfg(self):
         """Write some basic configuration options to the config file"""
-        self.config.set_app_option({'path':pathfinder.app_path()})
-        self.config.set_app_option({'Should Run':False})
-        self.config.set_app_option({'alpha':1, 'beta':-2.2})
-        self.config.set_app_option({'labels':('mon', 'wed', 'fri', 3.14)})
-        self.config.set(section='Plugins', options={'medfilter':True,
-                                                    'normalize':False})
-        self.config.set(section='Coordinates', options={'app':(21,-42)})
-        self.config.set(section='Coordinates', options={'alpha':1, 'beta':-2.2})
+        self.config.set_app_option({'path': pathfinder.app_path()})
+        self.config.set_app_option({'Should Run': False})
+        self.config.set_app_option({'alpha': 1, 'beta': -2.2})
+        self.config.set_app_option({'labels': ('mon', 'wed', 'fri', 3.14)})
+        self.config.set(section='Plugins', options={'medfilter': True,
+                                                    'normalize': False})
+        self.config.set(section='Coordinates', options={'app': (21, -42)})
+        self.config.set(section='Coordinates', options={'alpha': 1, 'beta': -2.2})
 
     def configparser_reader(self):
         """Returns a SafeConfigParser instance with the config file
@@ -81,8 +80,8 @@ class TestConfigure(unittest.TestCase):
         self.write_cfg()
         self.assertTrue(self.config.has_app_option("path"))
         self.assertFalse(self.config.has_app_option("del_path"))
-        self.config.set(section='Plugins', options={'medfilter':True,
-                                                    'normalize':False})
+        self.config.set(section='Plugins', options={'medfilter': True,
+                                                    'normalize': False})
         self.assertTrue(self.config.has_option("Plugins", "medfilter"))
         self.assertTrue(self.config.has_option("Plugins", "normalize"))
         self.assertFalse(self.config.has_option("Plugins", "meanfilter"))

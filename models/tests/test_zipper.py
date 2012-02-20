@@ -10,22 +10,26 @@ import filecmp
 import os
 import os.path
 import shutil
+import sys
 import zipfile
 from models import zipper
 
 class TestUnzipper(unittest.TestCase):
     """Tests the Unzipper class"""
 
+    @classmethod
+    def setUpClass(cls):
+        cls.file_folder = os.path.normpath(os.path.join(os.path.dirname(__file__), 'support_files'))
+        cls.destination_folder = os.path.normpath(os.path.join(os.path.dirname(__file__), 'temp_files'))
+        cls.zip_file_path = os.path.normpath(os.path.join(cls.file_folder, 'test.zip'))
+
     def setUp(self):
-        self.file_folder = os.path.join(os.path.dirname(__file__), 'support_files')
-        self.destination_folder = os.path.join(os.path.dirname(__file__), 'temp_files')
-        self.zip_file_path = os.path.join(self.file_folder, 'test.zip')
         self.generate_zip()
 
     def generate_file_list(self):
         """Returns a list of the files to be archived"""
         files_to_zip = []
-        for root, dirs, files in os.walk(self.file_folder):
+        for root, dirs, files in os.walk(TestUnzipper.file_folder):
             for fname in files:
                 basename, ext = os.path.splitext(fname)
                 if ext.lower() in ('.png', '.jpg'):
@@ -35,19 +39,19 @@ class TestUnzipper(unittest.TestCase):
 
     def generate_zip(self):
         """Creates a small ZIP archive for testing"""
-        with zipfile.ZipFile(self.zip_file_path, 'w') as zip_output:
+        with zipfile.ZipFile(TestUnzipper.zip_file_path, 'w') as zip_output:
             for file_name in self.generate_file_list():
                 zip_output.write(file_name)
 
     def get_zip(self):
         """Returns a file object handle to a small
         ZIP archive"""
-        return open(self.zip_file_path, 'r')
+        return open(TestUnzipper.zip_file_path, 'r')
 
     def test_init_path(self):
         """Verify instantiation with a path to a ZIP file"""
-        unzipper = zipper.UnZipper(zip_file=self.zip_file_path, password="123")
-        self.assertEqual(unzipper.file, self.zip_file_path)
+        unzipper = zipper.UnZipper(zip_file=TestUnzipper.zip_file_path, password="123")
+        self.assertEqual(unzipper.file, TestUnzipper.zip_file_path)
         self.assertEqual(unzipper.password, "123")
 
     def test_init_file(self):
@@ -68,22 +72,22 @@ class TestUnzipper(unittest.TestCase):
 
     def test_list_contents(self):
         """Verify listing of ZIP contents"""
-        unzipper = zipper.UnZipper(zip_file=self.zip_file_path)
-        with zipfile.ZipFile(self.zip_file_path, 'r') as a_zip:
+        unzipper = zipper.UnZipper(zip_file=TestUnzipper.zip_file_path)
+        with zipfile.ZipFile(TestUnzipper.zip_file_path, 'r') as a_zip:
             self.assertListEqual(a_zip.namelist(), unzipper.list_contents())
 
     def test_is_ok(self):
         """Verify UnZipper returns True if files appear ok"""
-        unzipper = zipper.UnZipper(zip_file=self.zip_file_path)
+        unzipper = zipper.UnZipper(zip_file=TestUnzipper.zip_file_path)
         self.assertTrue(unzipper.is_ok())
 
     def test_extractall(self):
         """Verify extraction of all the files in the ZIP"""
-        unzipper = zipper.UnZipper(zip_file=self.zip_file_path)
-        original_files = {os.path.basename(orig_file):orig_file for orig_file in
+        unzipper = zipper.UnZipper(zip_file=TestUnzipper.zip_file_path)
+        original_files = {os.path.basename(orig_file): orig_file for orig_file in
                           self.generate_file_list()}
-        unzipper.extractall(self.destination_folder)
-        for root, dirs, files in os.walk(self.destination_folder):
+        unzipper.extractall(TestUnzipper.destination_folder)
+        for root, dirs, files in os.walk(TestUnzipper.destination_folder):
             for fname in files:
                 basename, ext = os.path.splitext(fname)
                 if ext.lower() in ('.png', '.jpg'):
@@ -92,12 +96,12 @@ class TestUnzipper(unittest.TestCase):
 
     def test_extract(self):
         """Verify extraction of a single file"""
-        unzipper = zipper.UnZipper(zip_file=self.zip_file_path)
-        original_files = {os.path.basename(orig_file):orig_file for orig_file in
+        unzipper = zipper.UnZipper(zip_file=TestUnzipper.zip_file_path)
+        original_files = {os.path.basename(orig_file): orig_file for orig_file in
                           self.generate_file_list()}
         for each in unzipper.list_contents():
-            unzipper.extract(each, self.destination_folder)
-        for root, dirs, files in os.walk(self.destination_folder):
+            unzipper.extract(each, TestUnzipper.destination_folder)
+        for root, dirs, files in os.walk(TestUnzipper.destination_folder):
             for fname in files:
                 basename, ext = os.path.splitext(fname)
                 if ext.lower() in ('.png', '.jpg'):
@@ -106,10 +110,10 @@ class TestUnzipper(unittest.TestCase):
 
     def test_read(self):
         """Verify reading a single file from the ZIP"""
-        unzipper = zipper.UnZipper(zip_file=self.zip_file_path)
-        original_files = {os.path.basename(orig_file):orig_file for orig_file in
+        unzipper = zipper.UnZipper(zip_file=TestUnzipper.zip_file_path)
+        original_files = {os.path.basename(orig_file): orig_file for orig_file in
                           self.generate_file_list()}
-        for root, dirs, files in os.walk(self.file_folder):
+        for root, dirs, files in os.walk(TestUnzipper.file_folder):
             for fname in files:
                 basename, ext = os.path.splitext(fname)
                 if ext.lower() in ('.png', '.jpg'):
@@ -117,16 +121,23 @@ class TestUnzipper(unittest.TestCase):
                     # Files are stored with relative paths
                     # in ZIPs, remove the '/' or 'drive:\'
                     # from root
-                    rel_path = file_name.split(os.sep, 1)[-1]
+                    rel_path = os.path.normpath(file_name.split(os.sep, 1)[-1])
+                    if sys.platform == 'win32':
+                        # zip module uses / character in its filesystem
+                        rel_path = rel_path.replace('\\', '/')
                     with open(file_name, "rb") as original_file:
                         self.assertEqual(original_file.read(),
                             unzipper.read(rel_path))
 
-    def tearDown(self):
-        if os.path.exists(self.zip_file_path):
-            os.remove(self.zip_file_path)
-        if os.path.exists(self.destination_folder):
-            shutil.rmtree(self.destination_folder)
+    @classmethod
+    def tearDownClass(cls):
+        """Remove test files are removed at the end of testing
+        (deletions on Windows can fail if file is in use)
+        """
+        if os.path.exists(TestUnzipper.zip_file_path):
+            os.remove(TestUnzipper.zip_file_path)
+        if os.path.exists(TestUnzipper.destination_folder):
+            shutil.rmtree(TestUnzipper.destination_folder)
 
 if __name__ == "__main__":
     unittest.main()
