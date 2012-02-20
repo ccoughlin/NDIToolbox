@@ -8,11 +8,11 @@ __author__ = 'Chris R. Coughlin'
 from models import fetcher
 import unittest
 import os.path
-import multiprocessing
 import random
 import string
 import SimpleHTTPServer
 import SocketServer
+import threading
 import urllib
 
 class TestFetcher(unittest.TestCase):
@@ -29,7 +29,8 @@ class TestFetcher(unittest.TestCase):
         # Handle server path differences between running these
         # tests directly vs. running the project test suite
         cur_dir = os.getcwd()
-        if cur_dir == os.path.dirname(__file__):
+        print(cur_dir)
+        if os.path.normcase(cur_dir) == os.path.normcase(os.path.dirname(__file__)):
             # Running this test module directly
             cls.local_file = os.path.join('support_files', 'LAHMPlogo.png')
         else:
@@ -42,7 +43,7 @@ class TestFetcher(unittest.TestCase):
     def setUp(self):
         """Creates a SimpleHTTPServer instance to handle a single
         request.  Use self.server_proc.start() to initiate."""
-        self.server_proc = multiprocessing.Process(target=TestFetcher.httpd.handle_request)
+        self.server_thd = threading.Thread(target=TestFetcher.httpd.handle_request)
 
     def test_init(self):
         """Verify initial member settings"""
@@ -61,7 +62,7 @@ class TestFetcher(unittest.TestCase):
     def test_fetch_handle(self):
         """Verify returning file-like object handle to remote file"""
         a_fetcher = fetcher.Fetcher(url=TestFetcher.data_url)
-        self.server_proc.start()
+        self.server_thd.start()
         retrieved_file = a_fetcher.fetch_handle().read()
         with open(TestFetcher.local_file, 'rb') as fidin:
             local_file = fidin.read()
@@ -72,7 +73,7 @@ class TestFetcher(unittest.TestCase):
         server isn't found or can't fulfill the request."""
         no_such_file = TestFetcher.data_url + ".org"
         a_fetcher = fetcher.Fetcher(url=no_such_file)
-        self.server_proc.start()
+        self.server_thd.start()
         with self.assertRaises(IOError):
             retrieved_file_handle = a_fetcher.fetch()
 
@@ -80,7 +81,7 @@ class TestFetcher(unittest.TestCase):
         """Verify fetching remote file"""
         a_fetcher = fetcher.Fetcher(url=TestFetcher.data_url, username='bert',
             password='ernie')
-        self.server_proc.start()
+        self.server_thd.start()
         retrieved_file = a_fetcher.fetch()
         with open(TestFetcher.local_file, 'rb') as fidin:
             local_file = fidin.read()
@@ -91,14 +92,14 @@ class TestFetcher(unittest.TestCase):
         server isn't found or can't fulfill the request."""
         no_such_file = TestFetcher.data_url + ".org"
         a_fetcher = fetcher.Fetcher(url=no_such_file)
-        self.server_proc.start()
+        self.server_thd.start()
         with self.assertRaises(IOError):
             retrieved_file = a_fetcher.fetch()
 
     def tearDown(self):
         """Shuts down the server process if still active"""
-        if self.server_proc.is_alive():
-            self.server_proc.join()
+        if self.server_thd.is_alive():
+            self.server_thd.join()
 
 if __name__ == "__main__":
     random.seed()

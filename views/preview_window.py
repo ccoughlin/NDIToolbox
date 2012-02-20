@@ -31,7 +31,7 @@ class PreviewWindow(wx.Frame):
             data_thd.join(0.125)
             if not data_thd.is_alive():
                 break
-            wx.Yield()
+            wx.GetApp().Yield(True)
 
     def init_ui(self):
         """Creates and lays out the user interface"""

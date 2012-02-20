@@ -36,7 +36,7 @@ class PlotWindow(wx.Frame):
             data_thd.join(0.125)
             if not data_thd.is_alive():
                 break
-            wx.Yield()
+            wx.GetApp().Yield(True)
         self.title = 'Plot - {0}'.format(os.path.basename(self.data_file))
         wx.Frame.__init__(self, id=wx.ID_ANY, parent=self.parent, title=self.title)
         self.init_menu()
