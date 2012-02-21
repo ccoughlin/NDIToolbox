@@ -10,13 +10,16 @@ class TestPathFinder(unittest.TestCase):
     """Tests the pathfinder module"""
 
     def setUp(self):
-        #import __main__
         self.app_path = os.path.join(os.path.expanduser('~'), 'PycharmProjects', 'Bane')
-        #self.app_path = '/home/ccoughlin/PycharmProjects/Bane'
+        self.user_path = os.path.normcase(os.path.join(os.path.expanduser('~'), 'a7117'))
 
     def test_app_path(self):
         """Verify pathfinder reports the correct application path"""
         self.assertEqual(self.app_path, pathfinder.app_path())
+
+    def test_user_path(self):
+        """Verify pathfinder reports the correct path for storing user data"""
+        self.assertEqual(self.user_path.lower(), pathfinder.user_path().lower())
 
     def test_resources_path(self):
         """Verify correct resources path"""
@@ -40,17 +43,17 @@ class TestPathFinder(unittest.TestCase):
 
     def test_data_path(self):
         """Verify correct data path"""
-        data_path = os.path.join(self.app_path, 'data')
+        data_path = os.path.join(self.user_path, 'data')
         self.assertEqual(data_path, pathfinder.data_path())
 
     def test_thumbnail_path(self):
         """Verify correct path to data thumbnails"""
-        thumb_path = os.path.join(self.app_path, 'thumbnails')
+        thumb_path = os.path.join(self.user_path, 'thumbnails')
         self.assertEqual(thumb_path, pathfinder.thumbnails_path())
 
     def test_plugins_path(self):
         """Verify correct path to plugins"""
-        plugin_path = os.path.join(self.app_path, 'plugins')
+        plugin_path = os.path.join(self.user_path, 'plugins')
         self.assertEqual(plugin_path, pathfinder.plugins_path())
 
     def test_config_path(self):

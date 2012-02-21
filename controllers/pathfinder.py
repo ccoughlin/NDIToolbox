@@ -1,6 +1,7 @@
 """pathfinder.py - specifies paths and common filenames"""
 __author__ = 'Chris R. Coughlin'
 
+from models import config
 import os.path
 import sys
 
@@ -15,6 +16,18 @@ def app_path():
         entry_point = os.path.dirname(controllers.__file__)
     return os.path.dirname(entry_point)
 
+def user_path():
+    """Returns the path for storing user data.  If not already set,
+    returns user's home directory/a7117 and sets the default in the
+    config file."""
+    _config = config.Configure(config_path())
+    upath_key = "User Path"
+    if _config.has_app_option(upath_key):
+        return _config.get_app_option(upath_key)
+    else:
+        default_upath = os.path.normcase(os.path.join(os.path.expanduser('~'), 'a7117'))
+        _config.set_app_option({upath_key:default_upath})
+        return default_upath
 
 def resource_path():
     """Returns the path to resources - home folder
@@ -39,17 +52,18 @@ def bitmap_path():
 
 
 def data_path():
-    return os.path.join(app_path(), 'data')
+    """Returns the path to data files"""
+    return os.path.join(user_path(), 'data')
 
 
 def thumbnails_path():
     """Returns the path to data thumbnails"""
-    return os.path.join(app_path(), 'thumbnails')
+    return os.path.join(user_path(), 'thumbnails')
 
 
 def plugins_path():
     """Returns the path to plugins"""
-    return os.path.join(app_path(), 'plugins')
+    return os.path.join(user_path(), 'plugins')
 
 
 def config_path():

@@ -78,6 +78,18 @@ class MainModel(object):
 
     def __init__(self, controller):
         self.controller = controller
+        self.check_user_path()
+
+    def check_user_path(self):
+        """Verify that user data folders exist.  Creates
+        any missing folders."""
+        user_folder = pathfinder.user_path()
+        data_folder = pathfinder.data_path()
+        thumbnail_folder = pathfinder.thumbnails_path()
+        plugins_folder = pathfinder.plugins_path()
+        for fldr in (user_folder, data_folder, thumbnail_folder, plugins_folder):
+            if not os.path.exists(fldr):
+                os.mkdir(fldr)
 
     def copy_data(self, data_file):
         """Adds the specified data file to the data folder"""

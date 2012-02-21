@@ -24,7 +24,6 @@ class ThumbnailPanel(wx.Panel):
     def init_ui(self):
         """Builds the wx Panel"""
         self.panel_sizer = wx.BoxSizer(wx.VERTICAL)
-        fg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
         self.figure_bmp = wx.StaticBitmap(self, wx.ID_ANY,
             bitmap=self.controller.empty_bitmap(self.bitmap_width, self.bitmap_height),
             pos=wx.DefaultPosition, size=wx.DefaultSize)

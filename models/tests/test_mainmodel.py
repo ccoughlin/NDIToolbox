@@ -14,6 +14,26 @@ import random
 import shutil
 import unittest
 
+def deleted_user_path():
+    """Utility function to delete empty folders in the user data folders,
+    used to verify that MainModel will recreate missing folders as required.
+    Returns a list of folders successfully deleted or None if no folders
+    were deleted."""
+    data_folders = [pathfinder.user_path(), pathfinder.data_path(), pathfinder.thumbnails_path(),
+                    pathfinder.plugins_path()]
+    deleted_folders = []
+    for folder in data_folders:
+        exists_and_empty = os.path.exists(folder) and os.listdir(folder) == []
+        if exists_and_empty:
+            try:
+                os.rmdir(folder)
+                deleted_folders.append(folder)
+            except WindowsError: # folder in use (Explorer, cmd, etc.)
+                pass
+    if deleted_folders:
+        return deleted_folders
+    return None
+
 class TestMainModel(unittest.TestCase):
     """Tests the main model"""
 
@@ -29,6 +49,17 @@ class TestMainModel(unittest.TestCase):
     def random_data(self):
         """Returns a list of random data"""
         return [random.uniform(-100, 100) for i in range(25)]
+
+    @unittest.skipIf(deleted_user_path() is None,
+        "User data folders in use")
+    def test_check_user_path(self):
+        """Verify main model creates the user data folders if not
+        already in existence."""
+        data_folders = [pathfinder.user_path(), pathfinder.data_path(), pathfinder.thumbnails_path(),
+                        pathfinder.plugins_path()]
+        self.model.check_user_path()
+        for folder in data_folders:
+            self.assertTrue(os.path.exists(folder))
 
     def test_get_data(self):
         """Verify get_data function returns a NumPy array"""
