@@ -24,28 +24,28 @@ class PreviewWindowController(object):
         current data set."""
         if self.model.data is not None:
             try:
-                    self.view.spreadsheet.ClearGrid()
-                    self.view.spreadsheet.SetNumberRows(0)
-                    self.view.spreadsheet.SetNumberCols(0)
-                    rownum = 0
-                    if self.model.data.ndim == 2:
-                        num_rows = self.model.data.shape[0]
-                        for row in range(num_rows):
-                            self.view.spreadsheet.AppendRows(1)
-                            numcols = self.model.data[row].size
-                            if self.view.spreadsheet.GetNumberCols() < numcols:
-                                self.view.spreadsheet.SetNumberCols(numcols)
-                            colnum = 0
-                            for cell in self.model.data[row]:
-                                self.view.spreadsheet.SetCellValue(rownum, colnum, str(cell))
-                                colnum += 1
-                            rownum += 1
-                    elif self.model.data.ndim == 1:
-                        self.view.spreadsheet.SetNumberCols(1)
-                        for el in self.model.data:
-                            self.view.spreadsheet.AppendRows(1)
-                            self.view.spreadsheet.SetCellValue(rownum, 0, str(el))
-                            rownum += 1
+                self.view.spreadsheet.ClearGrid()
+                self.view.spreadsheet.SetNumberRows(0)
+                self.view.spreadsheet.SetNumberCols(0)
+                rownum = 0
+                if self.model.data.ndim == 2:
+                    num_rows = self.model.data.shape[0]
+                    for row in range(num_rows):
+                        self.view.spreadsheet.AppendRows(1)
+                        numcols = self.model.data[row].size
+                        if self.view.spreadsheet.GetNumberCols() < numcols:
+                            self.view.spreadsheet.SetNumberCols(numcols)
+                        colnum = 0
+                        for cell in self.model.data[row]:
+                            self.view.spreadsheet.SetCellValue(rownum, colnum, str(cell))
+                            colnum += 1
+                        rownum += 1
+                elif self.model.data.ndim == 1:
+                    self.view.spreadsheet.SetNumberCols(1)
+                    for el in self.model.data:
+                        self.view.spreadsheet.AppendRows(1)
+                        self.view.spreadsheet.SetCellValue(rownum, 0, str(el))
+                        rownum += 1
             except MemoryError: # File too large to load
                 err_msg = "The file is too large to load."
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,

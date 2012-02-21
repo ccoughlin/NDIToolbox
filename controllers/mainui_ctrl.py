@@ -12,6 +12,7 @@ import views.dialogs as dlg
 import controllers.pathfinder as pathfinder
 import wx
 import os.path
+import sys
 import threading
 
 class MainUIController(object):
@@ -34,7 +35,10 @@ class MainUIController(object):
     def get_icon(self):
         """Returns a wx.Icon of the application's
         default icon"""
-        return wx.IconFromBitmap(self.get_icon_bmp())
+        if sys.platform != 'win32':
+            return wx.IconFromBitmap(self.get_icon_bmp())
+        icon = wx.Icon(pathfinder.winicon_path(), wx.BITMAP_TYPE_ICO)
+        return icon
 
     def get_bitmap(self, bitmap_name):
         """Returns a wx.Bitmap instance of the given bitmap's name if

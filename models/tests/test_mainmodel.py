@@ -34,6 +34,7 @@ def deleted_user_path():
         return deleted_folders
     return None
 
+
 class TestMainModel(unittest.TestCase):
     """Tests the main model"""
 

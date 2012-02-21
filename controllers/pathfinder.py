@@ -16,6 +16,7 @@ def app_path():
         entry_point = os.path.dirname(controllers.__file__)
     return os.path.dirname(entry_point)
 
+
 def user_path():
     """Returns the path for storing user data.  If not already set,
     returns user's home directory/a7117 and sets the default in the
@@ -26,8 +27,9 @@ def user_path():
         return _config.get_app_option(upath_key)
     else:
         default_upath = os.path.normcase(os.path.join(os.path.expanduser('~'), 'a7117'))
-        _config.set_app_option({upath_key:default_upath})
+        _config.set_app_option({upath_key: default_upath})
         return default_upath
+
 
 def resource_path():
     """Returns the path to resources - home folder
@@ -44,6 +46,12 @@ def icon_path():
     """Returns the path to the application's default
     PNG icon"""
     return os.path.join(icons_path(), 'a7117_64.png')
+
+
+def winicon_path():
+    """Returns the path to the application's default
+    .ICO icon"""
+    return os.path.join(icons_path(), 'a7117_64.ico')
 
 
 def bitmap_path():

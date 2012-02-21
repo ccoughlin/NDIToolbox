@@ -32,9 +32,14 @@ class TestPathFinder(unittest.TestCase):
         self.assertEqual(icons_path, pathfinder.icons_path())
 
     def test_icon_path(self):
-        """Verify correction main application icon path"""
+        """Verify correct main application icon path"""
         icon_path = os.path.join(self.app_path, 'resources', 'icons', 'a7117_64.png')
         self.assertEqual(icon_path, pathfinder.icon_path())
+
+    def test_win_icon_path(self):
+        """Verify correct main application icon path under Windows"""
+        icon_path = os.path.join(self.app_path, 'resources', 'icons', 'a7117_64.ico')
+        self.assertEqual(icon_path, pathfinder.winicon_path())
 
     def test_bitmaps_path(self):
         """Verify correct bitmap path"""
