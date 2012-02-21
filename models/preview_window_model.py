@@ -7,13 +7,6 @@ from models import mainmodel
 
 __author__ = 'Chris R. Coughlin'
 
-def load_data_wrapper(data_filename, plugin_queue, read_parameters):
-    """multiprocessing wrapper function to read large data
-    files and send them through the specified Pipe instance."""
-    data = mainmodel.get_data(data_filename, **read_parameters)
-    plugin_queue.put(data)
-
-
 class PreviewWindowModel(object):
     """Model for the PreviewWindow"""
 

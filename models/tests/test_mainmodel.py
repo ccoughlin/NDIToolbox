@@ -10,6 +10,7 @@ import models.abstractplugin as abstractplugin
 import controllers.pathfinder as pathfinder
 import numpy as np
 import os
+import random
 import shutil
 import unittest
 
@@ -17,13 +18,17 @@ class TestMainModel(unittest.TestCase):
     """Tests the main model"""
 
     def setUp(self):
-        self.sample_data = np.ones(912)
+        self.sample_data = np.array(self.random_data())
         self.sample_data_basename = "sample.dat"
         self.sample_data_file = os.path.join(os.path.dirname(__file__),
             self.sample_data_basename)
         np.savetxt(self.sample_data_file, self.sample_data)
         self.mock_controller = ""
         self.model = model.MainModel(self.mock_controller)
+
+    def random_data(self):
+        """Returns a list of random data"""
+        return [random.uniform(-100, 100) for i in range(25)]
 
     def test_get_data(self):
         """Verify get_data function returns a NumPy array"""
@@ -91,7 +96,7 @@ class TestMainModel(unittest.TestCase):
         plugin_classes = [plugin[1] for plugin in plugin_list]
         # Ensure that the normalize plugin was found
         self.assertTrue(normalize_plugin_name in plugin_names)
-        raw_data = np.array([-1.1, -2.2, 0, 3.3, 4.4, 1.19])
+        raw_data = np.array(self.random_data())
         expected_data = raw_data / np.max(raw_data)
         normalize_plugin = plugin_classes[plugin_names.index(normalize_plugin_name)]()
         normalize_plugin.data = raw_data
@@ -127,3 +132,7 @@ class TestMainModel(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(self.sample_data_file):
             os.remove(self.sample_data_file)
+
+if __name__ == "__main__":
+    random.seed()
+    unittest.main()

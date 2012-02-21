@@ -15,13 +15,15 @@ from multiprocessing import Process, Pipe, freeze_support
 import os
 import os.path
 import unittest
+import random
 import StringIO
 
 class TestThumbnailPanelModel(unittest.TestCase):
     """Tests the thumbnailpanel model functions"""
 
     def setUp(self):
-        self.sample_data = np.ones(88)
+        random_data = [random.uniform(-100, 100) for i in range(25)]
+        self.sample_data = np.array(random_data)
         self.sample_data_file = os.path.normpath(os.path.join(os.path.dirname(__file__), "sample.dat"))
         np.savetxt(self.sample_data_file, self.sample_data)
 
@@ -82,4 +84,5 @@ class TestThumbnailPanelModel(unittest.TestCase):
 
 if __name__ == "__main__":
     freeze_support()
+    random.seed()
     unittest.main()
