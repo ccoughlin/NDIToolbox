@@ -32,6 +32,7 @@ class PreviewWindow(wx.Frame):
             if not data_thd.is_alive():
                 break
             wx.GetApp().Yield(True)
+        self.controller.populate_spreadsheet()
 
     def init_ui(self):
         """Creates and lays out the user interface"""
