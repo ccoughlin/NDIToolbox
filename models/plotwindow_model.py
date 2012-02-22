@@ -47,10 +47,13 @@ class PlotWindowModel(BasicPlotWindowModel):
         vals are a tuple of the gate function label and a wxPython
         id to assign to the menu item
         """
-        self.gates = dict(boxcar=('Boxcar', 1000), triang=('Triangular', 1001), blackman=('Blackman', 1002),
-            hamming=('Hamming', 1003), hanning=('Hann (Hanning)', 1004), bartlett=('Bartlett', 1005),
-            parzen=('Parzen', 1006), bohman=('Bohman', 1007), blackmanharris=('Blackman-Harris', 1008),
-            nuttall=('Nuttall', 1009), barthann=('Barthann', 1010))
+        self.gates = dict(boxcar=('Boxcar', 1000), triang=('Triangular', 1001),
+                          blackman=('Blackman', 1002),
+                          hamming=('Hamming', 1003), hanning=('Hann (Hanning)', 1004),
+                          bartlett=('Bartlett', 1005),
+                          parzen=('Parzen', 1006), bohman=('Bohman', 1007),
+                          blackmanharris=('Blackman-Harris', 1008),
+                          nuttall=('Nuttall', 1009), barthann=('Barthann', 1010))
 
     def apply_window(self, window_type, original_data, start_idx, end_idx):
         """Returns the specified type of window for the range

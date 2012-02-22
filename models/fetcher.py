@@ -19,13 +19,12 @@ class Fetcher(object):
         """Returns the file-like object handle to the remote
         file.  Raises IOError if unable to contact server or
         request couldn't be completed (e.g. file not found)."""
-        file_hdl = None
         if self.url is not None:
             try:
                 if self.username is not None and self.password is not None:
                     auth_handler = urllib2.HTTPBasicAuthHandler()
                     auth_handler.add_password(realm=None, uri=self.url,
-                        user=self.username, passwd=self.password)
+                                              user=self.username, passwd=self.password)
                     opener = urllib2.build_opener(auth_handler)
                     urllib2.install_opener(opener)
                 return urllib2.urlopen(self.url)

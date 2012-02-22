@@ -42,7 +42,7 @@ class TestMainModel(unittest.TestCase):
         self.sample_data = np.array(self.random_data())
         self.sample_data_basename = "sample.dat"
         self.sample_data_file = os.path.join(os.path.dirname(__file__),
-            self.sample_data_basename)
+                                             self.sample_data_basename)
         np.savetxt(self.sample_data_file, self.sample_data)
         self.mock_controller = ""
         self.model = model.MainModel(self.mock_controller)
@@ -52,11 +52,13 @@ class TestMainModel(unittest.TestCase):
         return [random.uniform(-100, 100) for i in range(25)]
 
     @unittest.skipIf(deleted_user_path() is None,
-        "User data folders in use")
+                     "User data folders in use")
     def test_check_user_path(self):
         """Verify main model creates the user data folders if not
         already in existence."""
-        data_folders = [pathfinder.user_path(), pathfinder.data_path(), pathfinder.thumbnails_path(),
+        data_folders = [pathfinder.user_path(), pathfinder.data_path(),
+                        pathfinder.thumbnails_path()
+            ,
                         pathfinder.plugins_path()]
         self.model.check_user_path()
         for folder in data_folders:
@@ -102,7 +104,7 @@ class TestMainModel(unittest.TestCase):
                         except TypeError:
                             print(dicom_data_file)
                         dest_file = os.path.join(pathfinder.data_path(),
-                            os.path.basename(dicom_data_file))
+                                                 os.path.basename(dicom_data_file))
                         self.assertTrue(os.path.exists(dest_file))
                         read_data = np.loadtxt(dest_file, delimiter=',')
                         self.assertListEqual(dicom_arr.tolist(), read_data.tolist())
@@ -115,7 +117,6 @@ class TestMainModel(unittest.TestCase):
         """Verify the main model loads available plugins"""
         plugin_list = model.load_plugins()
         for plugin in plugin_list:
-            plugin_name = plugin[0]
             plugin_instance = plugin[1]
             self.assertTrue(issubclass(plugin_instance, abstractplugin.AbstractPlugin))
 
@@ -140,7 +141,7 @@ class TestMainModel(unittest.TestCase):
         """Verify copying of sample data file to data folder"""
         self.model.copy_data(self.sample_data_file)
         copied_data_file = os.path.join(pathfinder.data_path(),
-            self.sample_data_basename)
+                                        self.sample_data_basename)
         self.assertTrue(os.path.exists(copied_data_file))
         os.remove(copied_data_file)
 
@@ -148,7 +149,7 @@ class TestMainModel(unittest.TestCase):
         """Verify removal of a data file from the data folder"""
         self.model.copy_data(self.sample_data_file)
         copied_data_file = os.path.join(pathfinder.data_path(),
-            self.sample_data_basename)
+                                        self.sample_data_basename)
         self.assertTrue(os.path.exists(copied_data_file))
         self.model.remove_data(copied_data_file)
         self.assertFalse(os.path.exists(copied_data_file))

@@ -61,9 +61,9 @@ def plot(data_filename, width, height, **import_params):
     """Returns a PNG plot of the specified data file's dataset"""
     data = mainmodel.get_data(data_filename, **import_params)
     return gen_thumbnail(plot_stream(data,
-        os.path.basename(data_filename),
-        width, height),
-        data_filename)
+                                     os.path.basename(data_filename),
+                                     width, height),
+                         data_filename)
 
 
 def multiprocess_plot(data_filename, width, height, **import_params):
@@ -72,7 +72,7 @@ def multiprocess_plot(data_filename, width, height, **import_params):
     data = mainmodel.get_data(data_filename, **import_params)
     in_conn, out_conn = Pipe()
     plot_proc = Process(target=plot_pipe,
-        args=(data, os.path.basename(data_filename), width, height, out_conn))
+                        args=(data, os.path.basename(data_filename), width, height, out_conn))
     plot_proc.start()
     img_stream = in_conn.recv()
     plot_proc.join()
@@ -84,6 +84,9 @@ def gen_thumbnail(image_stream, data_filename):
     in the thumbnails folder it is saved there for reuse"""
     img = wx.ImageFromStream(image_stream, type=wx.BITMAP_TYPE_PNG)
     thumb_fn = thumbnail_name(data_filename)
+    # Ensure the thumbnails folder exists
+    if not os.path.exists(os.path.dirname(thumb_fn)):
+        os.makedirs(os.path.dirname(thumb_fn))
     if not os.path.exists(thumb_fn):
         with open(thumb_fn, 'wb') as img_file:
             # Cache the PNG for reuse

@@ -9,7 +9,6 @@ from controllers import pathfinder
 from views.dialogs import ImportTextDialog
 from models import thumbnailpanel_model as model
 import wx
-import hashlib
 import os.path
 
 class ThumbnailPanelController(object):
@@ -28,7 +27,6 @@ class ThumbnailPanelController(object):
         data file, returning a wx Bitmap"""
         thumbnail = self.empty_bitmap(width, height)
         if data_fname:
-            m = hashlib.md5(data_fname)
             thumb_fname = model.thumbnail_name(data_fname)
             if not os.path.exists(thumb_fname):
                 # No thumbnail for this file exists, generate
@@ -37,9 +35,9 @@ class ThumbnailPanelController(object):
                 if import_dlg.ShowModal() == wx.ID_OK:
                     readtext_params = import_dlg.get_import_parameters()
                     thumbnail = model.multiprocess_plot(data_fname,
-                        self.view.bitmap_width / 100,
-                        self.view.bitmap_height / 100,
-                        **readtext_params)
+                                                        self.view.bitmap_width / 100,
+                                                        self.view.bitmap_height / 100,
+                                                        **readtext_params)
 
             else:
                 # Thumbnail found, skip generation

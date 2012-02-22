@@ -27,64 +27,69 @@ class ImportTextDialog(wx.Dialog):
         self.fsizer = wx.FlexGridSizer(cols=2)
 
         commentchar_lbl = wx.StaticText(self, wx.ID_ANY, u'Comment Character:',
-            wx.DefaultPosition, wx.DefaultSize)
+                                        wx.DefaultPosition, wx.DefaultSize)
         self.fsizer.Add(commentchar_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                        ui_defaults.widget_margin)
         self.commentchar_tc = wx.TextCtrl(self, wx.ID_ANY, u'#', wx.DefaultPosition,
-            wx.DefaultSize)
+                                          wx.DefaultSize)
         self.commentchar_tc.SetToolTipString('Lines beginning with this character are ignored')
         self.fsizer.Add(self.commentchar_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                        ui_defaults.widget_margin)
 
         delimchar_lbl = wx.StaticText(self, wx.ID_ANY, u'Delimiter Character:',
-            wx.DefaultPosition, wx.DefaultSize)
+                                      wx.DefaultPosition, wx.DefaultSize)
         self.fsizer.Add(delimchar_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                        ui_defaults.widget_margin)
         self.delimiter_choices = [',', 'Whitespace (TAB, Space, etc.)', ':', ';', '|', '/']
-        self.delimchar_choice = wx.ComboBox(self, wx.ID_ANY, value=',', choices=self.delimiter_choices,
-            style=wx.CB_DROPDOWN)
-        self.delimchar_choice.SetToolTipString('Data in each row are separated with this character')
+        self.delimchar_choice = wx.ComboBox(self, wx.ID_ANY, value=',',
+                                            choices=self.delimiter_choices,
+                                            style=wx.CB_DROPDOWN)
+        self.delimchar_choice.SetToolTipString('Data in each row are separated with this '
+                                               'character')
         self.fsizer.Add(self.delimchar_choice, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                        ui_defaults.widget_margin)
 
         skipheader_lbl = wx.StaticText(self, wx.ID_ANY, u'Lines In Header:',
-            wx.DefaultPosition, wx.DefaultSize)
+                                       wx.DefaultPosition, wx.DefaultSize)
         self.fsizer.Add(skipheader_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                        ui_defaults.widget_margin)
         self.headerlines_ctrl = wx.SpinCtrl(self, wx.ID_ANY, '0')
         self.headerlines_ctrl.SetToolTipString("Number of lines to skip at beginning of file")
         self.headerlines_ctrl.SetRange(0, 1e6)
         self.fsizer.Add(self.headerlines_ctrl, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                        ui_defaults.widget_margin)
 
         skipfooter_lbl = wx.StaticText(self, wx.ID_ANY, u'Lines In Footer:',
-            wx.DefaultPosition, wx.DefaultSize)
+                                       wx.DefaultPosition, wx.DefaultSize)
         self.fsizer.Add(skipfooter_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                        ui_defaults.widget_margin)
         self.footerlines_ctrl = wx.SpinCtrl(self, wx.ID_ANY, '0')
         self.footerlines_ctrl.SetToolTipString("Number of lines to skip at end of file")
         self.footerlines_ctrl.SetRange(0, 1e6)
         self.fsizer.Add(self.footerlines_ctrl, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                        ui_defaults.widget_margin)
 
         cols_lbl = wx.StaticText(self, wx.ID_ANY, u'Columns To Read:',
-            wx.DefaultPosition, wx.DefaultSize)
+                                 wx.DefaultPosition, wx.DefaultSize)
         self.fsizer.Add(cols_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                        ui_defaults.widget_margin)
         self.cols_tc = wx.TextCtrl(self, wx.ID_ANY, u'All', wx.DefaultPosition, wx.DefaultSize)
-        self.cols_tc.SetToolTipString("Comma-delimited list of columns to read (first column is 0)")
+        self.cols_tc.SetToolTipString("Comma-delimited list of columns to read (first column is "
+                                      "0)")
         self.fsizer.Add(self.cols_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                        ui_defaults.widget_margin)
 
         transpose_lbl = wx.StaticText(self, wx.ID_ANY, u'Transpose Array?',
-            wx.DefaultPosition, wx.DefaultSize)
+                                      wx.DefaultPosition, wx.DefaultSize)
         self.fsizer.Add(transpose_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
-        self.transpose_cb = wx.CheckBox(self, wx.ID_ANY, u'Do not tranpose data', wx.DefaultPosition, wx.DefaultSize)
+                        ui_defaults.widget_margin)
+        self.transpose_cb = wx.CheckBox(self, wx.ID_ANY, u'Do not tranpose data',
+                                        wx.DefaultPosition
+                                        , wx.DefaultSize)
         self.transpose_cb.SetToolTipString("Check this box to transpose the data array after load")
         self.Bind(wx.EVT_CHECKBOX, self.on_transpose_cb, self.transpose_cb)
         self.fsizer.Add(self.transpose_cb, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                        ui_defaults.widget_margin)
 
         self.sizer.Add(self.fsizer, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
         self._generate_std_buttons()
@@ -99,7 +104,7 @@ class ImportTextDialog(wx.Dialog):
         self.stdbtns.AddButton(cancel_btn)
         self.stdbtns.Realize()
         self.sizer.Add(self.stdbtns, ui_defaults.lbl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                       ui_defaults.widget_margin)
 
     def on_transpose_cb(self, evt):
         """Updates the Tranpose checkbox label with the current setting"""
@@ -159,12 +164,12 @@ class IntegerRangeDialog(wx.Dialog):
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
         self.start_ctrl = wx.SpinCtrl(self, -1, min=start_min, max=start_max)
         hbox1.Add(wx.StaticText(self, -1, start_range_lbl), 1, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                  ui_defaults.widget_margin)
         hbox1.Add(self.start_ctrl, 0, ui_defaults.sizer_flags, ui_defaults.widget_margin)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         self.finish_ctrl = wx.SpinCtrl(self, -1, min=finish_min, max=finish_max)
         hbox2.Add(wx.StaticText(self, -1, finish_range_lbl), 1, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                  ui_defaults.widget_margin)
         hbox2.Add(self.finish_ctrl, 0, ui_defaults.sizer_flags, ui_defaults.widget_margin)
         hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         btns = self.CreateButtonSizer(wx.OK | wx.CANCEL)
@@ -195,23 +200,23 @@ class FloatRangeDialog(wx.Dialog):
         vbox.Add(msg_text, 0, ui_defaults.sizer_flags, ui_defaults.widget_margin)
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
         self.start_ctrl = NumCtrl(self, wx.ID_ANY, pos=wx.DefaultPosition,
-            size=wx.DefaultSize)
+                                  size=wx.DefaultSize)
         if start_min is not None:
             self.start_ctrl.SetMin(start_min)
         if start_max is not None:
             self.start_ctrl.SetMax(start_max)
         hbox1.Add(wx.StaticText(self, -1, start_range_lbl), 1, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                  ui_defaults.widget_margin)
         hbox1.Add(self.start_ctrl, 0, ui_defaults.sizer_flags, ui_defaults.widget_margin)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         self.finish_ctrl = NumCtrl(self, wx.ID_ANY, pos=wx.DefaultPosition,
-            size=wx.DefaultSize)
+                                   size=wx.DefaultSize)
         if finish_min is not None:
             self.finish_ctrl.SetMin(finish_min)
         if finish_max is not None:
             self.finish_ctrl.SetMax(finish_max)
         hbox2.Add(wx.StaticText(self, -1, finish_range_lbl), 1, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                  ui_defaults.widget_margin)
         hbox2.Add(self.finish_ctrl, 0, ui_defaults.sizer_flags, ui_defaults.widget_margin)
         hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         btns = self.CreateButtonSizer(wx.OK | wx.CANCEL)
@@ -236,8 +241,8 @@ class progressDialog(object):
 
     def __init__(self, dlg_title, dlg_msg="Please wait..."):
         self.pdlg = ProgressDialog(message=dlg_msg,
-            title=dlg_title,
-            maximum=100#,
+                                   title=dlg_title,
+                                   maximum=100#,
         )
         self.pdlg.Pulse()
 
@@ -266,13 +271,13 @@ class AboutDialog(wx.Dialog):
         logo = self.get_bmp()
         if logo is not None:
             self.bitmap_logo = statbmp.GenStaticBitmap(self, wx.ID_ANY, logo,
-                style=wx.ALIGN_CENTRE,
-                size=(logo.GetWidth(), logo.GetHeight()))
+                                                       style=wx.ALIGN_CENTRE,
+                                                       size=(logo.GetWidth(), logo.GetHeight()))
             if self.url is not None:
                 self.bitmap_logo.SetToolTipString("Visit {0}".format(self.url))
                 self.bitmap_logo.Bind(wx.EVT_LEFT_DOWN, self.on_click, self.bitmap_logo)
             self.sizer.Add(self.bitmap_logo, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-                ui_defaults.widget_margin)
+                           ui_defaults.widget_margin)
         if self.msg is not None:
             dc = wx.ClientDC(self)
             if logo is not None:
@@ -281,10 +286,10 @@ class AboutDialog(wx.Dialog):
                 wrap_width = self.GetClientSizeTuple()[0]
             self.msg = wordwrap.wordwrap(textwrap.dedent(self.msg), wrap_width, dc)
             self.msg_lbl = wx.StaticText(self, wx.ID_ANY, self.msg,
-                pos=wx.DefaultPosition,
-                size=wx.DefaultSize)
+                                         pos=wx.DefaultPosition,
+                                         size=wx.DefaultSize)
             self.sizer.Add(self.msg_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-                ui_defaults.widget_margin)
+                           ui_defaults.widget_margin)
         self.SetSizerAndFit(self.sizer)
         self.Centre()
 
@@ -311,8 +316,8 @@ class ConfigurePluginDialog(wx.Dialog):
         self.plugin = plugin_instance
         title = "Configure Plugin"
         super(ConfigurePluginDialog, self).__init__(parent, wx.ID_ANY, title,
-            wx.DefaultPosition, wx.DefaultSize,
-            wx.DEFAULT_DIALOG_STYLE)
+                                                    wx.DefaultPosition, wx.DefaultSize,
+                                                    wx.DEFAULT_DIALOG_STYLE)
         self.generate()
 
     def generate(self):
@@ -325,13 +330,13 @@ class ConfigurePluginDialog(wx.Dialog):
         plugin_lbl_font = wx.Font(18, wx.DEFAULT, wx.NORMAL, wx.BOLD)
         plugin_lbl.SetFont(plugin_lbl_font)
         desc_panel_sizer.Add(plugin_lbl, ui_defaults.lbl_pct,
-            ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
+                             ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
         description_lbl = wx.StaticText(desc_panel, wx.ID_ANY, self.plugin.description)
         desc_panel_sizer.Add(description_lbl, ui_defaults.lbl_pct,
-            ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
+                             ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
         desc_panel.SetSizer(desc_panel_sizer)
         self.sizer.Add(desc_panel, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-            0)
+                       0)
         self.config_panel = wx.ScrolledWindow(self, wx.ID_ANY)
         self.config_panel_sizer = wx.FlexGridSizer(cols=2)
         self.config_panel_sizer.AddGrowableCol(1)
@@ -339,11 +344,11 @@ class ConfigurePluginDialog(wx.Dialog):
         for lbl, ctrl in self.config_ctrls.items():
             opt_lbl = wx.StaticText(self.config_panel, wx.ID_ANY, lbl)
             self.config_panel_sizer.Add(opt_lbl, ui_defaults.lbl_pct,
-                ui_defaults.lblsizer_flags,
-                ui_defaults.widget_margin)
+                                        ui_defaults.lblsizer_flags,
+                                        ui_defaults.widget_margin)
             self.config_panel_sizer.Add(ctrl, ui_defaults.ctrl_pct,
-                ui_defaults.sizer_flags,
-                ui_defaults.widget_margin)
+                                        ui_defaults.sizer_flags,
+                                        ui_defaults.widget_margin)
         self.config_panel.SetSizerAndFit(self.config_panel_sizer)
         self.sizer.Add(self.config_panel, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
         self._generate_std_buttons()

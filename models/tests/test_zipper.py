@@ -19,8 +19,10 @@ class TestUnzipper(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.file_folder = os.path.normpath(os.path.join(os.path.dirname(__file__), 'support_files'))
-        cls.destination_folder = os.path.normpath(os.path.join(os.path.dirname(__file__), 'temp_files'))
+        cls.file_folder = os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                                        'support_files'))
+        cls.destination_folder = os.path.normpath(
+            os.path.join(os.path.dirname(__file__), 'temp_files'))
         cls.zip_file_path = os.path.normpath(os.path.join(cls.file_folder, 'test.zip'))
 
     def setUp(self):
@@ -68,7 +70,7 @@ class TestUnzipper(unittest.TestCase):
         """Verify instantiation raises a TypeError if the specified
         file is not a ZIP archive"""
         with self.assertRaises(TypeError):
-            unzipper = zipper.UnZipper(zip_file=__file__)
+            zipper.UnZipper(zip_file=__file__)
 
     def test_list_contents(self):
         """Verify listing of ZIP contents"""
@@ -111,8 +113,6 @@ class TestUnzipper(unittest.TestCase):
     def test_read(self):
         """Verify reading a single file from the ZIP"""
         unzipper = zipper.UnZipper(zip_file=TestUnzipper.zip_file_path)
-        original_files = {os.path.basename(orig_file): orig_file for orig_file in
-                          self.generate_file_list()}
         for root, dirs, files in os.walk(TestUnzipper.file_folder):
             for fname in files:
                 basename, ext = os.path.splitext(fname)
@@ -127,7 +127,7 @@ class TestUnzipper(unittest.TestCase):
                         rel_path = rel_path.replace('\\', '/')
                     with open(file_name, "rb") as original_file:
                         self.assertEqual(original_file.read(),
-                            unzipper.read(rel_path))
+                                         unzipper.read(rel_path))
 
     @classmethod
     def tearDownClass(cls):

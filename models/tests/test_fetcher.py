@@ -35,7 +35,7 @@ class TestFetcher(unittest.TestCase):
         else:
             # Running as part of larger project test suite
             cls.local_file = os.path.join('models', 'tests',
-                'support_files', 'LAHMPlogo.png')
+                                          'support_files', 'LAHMPlogo.png')
         cls.data_file = urllib.pathname2url(cls.local_file)
         cls.data_url = 'http://localhost:{0}/{1}'.format(PORT, cls.data_file)
 
@@ -54,7 +54,7 @@ class TestFetcher(unittest.TestCase):
         uname = random.shuffle(available_chars)
         pw = random.shuffle(available_chars)
         another_fetcher = fetcher.Fetcher(url=TestFetcher.data_url, username=uname,
-            password=pw)
+                                          password=pw)
         self.assertEqual(another_fetcher.username, uname)
         self.assertEqual(another_fetcher.password, pw)
 
@@ -74,12 +74,12 @@ class TestFetcher(unittest.TestCase):
         a_fetcher = fetcher.Fetcher(url=no_such_file)
         self.server_thd.start()
         with self.assertRaises(IOError):
-            retrieved_file_handle = a_fetcher.fetch()
+            a_fetcher.fetch()
 
     def test_fetch(self):
         """Verify fetching remote file"""
         a_fetcher = fetcher.Fetcher(url=TestFetcher.data_url, username='bert',
-            password='ernie')
+                                    password='ernie')
         self.server_thd.start()
         retrieved_file = a_fetcher.fetch()
         with open(TestFetcher.local_file, 'rb') as fidin:
@@ -93,7 +93,7 @@ class TestFetcher(unittest.TestCase):
         a_fetcher = fetcher.Fetcher(url=no_such_file)
         self.server_thd.start()
         with self.assertRaises(IOError):
-            retrieved_file = a_fetcher.fetch()
+            a_fetcher.fetch()
 
     def tearDown(self):
         """Shuts down the server process if still active"""
