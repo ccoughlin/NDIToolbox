@@ -12,6 +12,7 @@ import numpy as np
 import os
 import random
 import shutil
+import sys
 import unittest
 
 def deleted_user_path():
@@ -42,7 +43,7 @@ class TestMainModel(unittest.TestCase):
         self.sample_data = np.array(self.random_data())
         self.sample_data_basename = "sample.dat"
         self.sample_data_file = os.path.join(os.path.dirname(__file__),
-                                             self.sample_data_basename)
+            self.sample_data_basename)
         np.savetxt(self.sample_data_file, self.sample_data)
         self.mock_controller = ""
         self.model = model.MainModel(self.mock_controller)
@@ -52,17 +53,34 @@ class TestMainModel(unittest.TestCase):
         return [random.uniform(-100, 100) for i in range(25)]
 
     @unittest.skipIf(deleted_user_path() is None,
-                     "User data folders in use")
+        "User data folders in use")
     def test_check_user_path(self):
         """Verify main model creates the user data folders if not
         already in existence."""
         data_folders = [pathfinder.user_path(), pathfinder.data_path(),
-                        pathfinder.thumbnails_path()
-            ,
+                        pathfinder.thumbnails_path(),
                         pathfinder.plugins_path()]
         self.model.check_user_path()
         for folder in data_folders:
             self.assertTrue(os.path.exists(folder))
+
+    def test_copy_system_plugins(self):
+        """Verify main model copies system plugins to the user's
+        plugins folder."""
+        # Sample of system plugins to install
+        system_plugins = ['medfilter_plugin.py', 'normalize_plugin.py', '__init__.py']
+        # Try to remove them if already installed
+        for plugin in system_plugins:
+            installed_plugin = os.path.join(pathfinder.plugins_path(), plugin)
+            if os.path.exists(installed_plugin):
+                try:
+                    os.remove(installed_plugin)
+                except WindowsError: # file in use
+                    pass
+        self.model.copy_system_plugins()
+        for plugin in system_plugins:
+            installed_plugin = os.path.join(pathfinder.plugins_path(), plugin)
+            self.assertTrue(os.path.exists(installed_plugin))
 
     def test_get_data(self):
         """Verify get_data function returns a NumPy array"""
@@ -104,7 +122,7 @@ class TestMainModel(unittest.TestCase):
                         except TypeError:
                             print(dicom_data_file)
                         dest_file = os.path.join(pathfinder.data_path(),
-                                                 os.path.basename(dicom_data_file))
+                            os.path.basename(dicom_data_file))
                         self.assertTrue(os.path.exists(dest_file))
                         read_data = np.loadtxt(dest_file, delimiter=',')
                         self.assertListEqual(dicom_arr.tolist(), read_data.tolist())
@@ -141,7 +159,7 @@ class TestMainModel(unittest.TestCase):
         """Verify copying of sample data file to data folder"""
         self.model.copy_data(self.sample_data_file)
         copied_data_file = os.path.join(pathfinder.data_path(),
-                                        self.sample_data_basename)
+            self.sample_data_basename)
         self.assertTrue(os.path.exists(copied_data_file))
         os.remove(copied_data_file)
 
@@ -149,7 +167,7 @@ class TestMainModel(unittest.TestCase):
         """Verify removal of a data file from the data folder"""
         self.model.copy_data(self.sample_data_file)
         copied_data_file = os.path.join(pathfinder.data_path(),
-                                        self.sample_data_basename)
+            self.sample_data_basename)
         self.assertTrue(os.path.exists(copied_data_file))
         self.model.remove_data(copied_data_file)
         self.assertFalse(os.path.exists(copied_data_file))
@@ -161,6 +179,64 @@ class TestMainModel(unittest.TestCase):
         self.assertTrue(len(os.listdir(pathfinder.thumbnails_path())) > 0)
         self.model.remove_thumbs()
         self.assertListEqual(os.listdir(pathfinder.thumbnails_path()), [])
+
+    def test_get_windows_version(self):
+        """Verify get_windows_version function returns correct version
+        information."""
+        if sys.platform == 'win32':
+            win_ver = sys.getwindowsversion()
+            major, minor = model.get_windows_version()
+            self.assertEqual(win_ver.major, major)
+            self.assertEqual(win_ver.minor, minor)
+        else:
+            self.assertIsNone(model.get_windows_version())
+
+    def get_win_ver(self):
+        """Returns the major, minor version of the Windows OS"""
+        if sys.platform == 'win32':
+            win_ver = sys.getwindowsversion()
+            return win_ver.major, win_ver.minor
+        return None
+
+    def test_iswin7(self):
+        """Verify is_win7 function returns True if running on Windows 7."""
+        is_windows7 = False
+        if sys.platform == 'win32':
+            major, minor = self.get_win_ver()
+            is_windows7 = major == 6 and minor == 1
+        self.assertEqual(is_windows7, model.is_win7())
+
+    def test_iswinvista(self):
+        """Verify is_winvista function returns True if running on Windows Vista."""
+        is_winvista = False
+        if sys.platform == 'win32':
+            major, minor = self.get_win_ver()
+            is_winvista = major == 6 and minor == 0
+        self.assertEqual(is_winvista, model.is_winvista())
+
+    def test_iswinxp(self):
+        """Verify is_winxp function returns True if running on Windows XP."""
+        is_winxp = False
+        if sys.platform == 'win32':
+            major, minor = self.get_win_ver()
+            is_winxp = major == 5 and minor == 1
+        self.assertEqual(is_winxp, model.is_winxp())
+
+    def test_iswinxp64(self):
+        """Verify is_winxp64 function returns True if running on Windows XP x64."""
+        is_winxp64 = False
+        if sys.platform == 'win32':
+            major, minor = self.get_win_ver()
+            is_winxp = major == 5 and minor == 2
+        self.assertEqual(is_winxp64, model.is_winxp64())
+
+    def test_iswin2k(self):
+        """Verify is_winxp function returns True if running on Windows 2000."""
+        is_win2k = False
+        if sys.platform == 'win32':
+            major, minor = self.get_win_ver()
+            is_win2k = major == 5 and minor == 0
+        self.assertEqual(is_win2k, model.is_win2k())
 
     def tearDown(self):
         if os.path.exists(self.sample_data_file):

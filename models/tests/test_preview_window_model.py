@@ -19,7 +19,7 @@ class TestPreviewWindowModel(unittest.TestCase):
         self.mock_ctrl = " "
         self.sample_data = np.array(self.random_data())
         self.sample_data_file = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                                              "sample.dat"))
+            "sample.dat"))
         self.read_params = {'delimiter': ''}
         np.savetxt(self.sample_data_file, self.sample_data)
 
@@ -30,7 +30,7 @@ class TestPreviewWindowModel(unittest.TestCase):
     def test_init(self):
         """Verify instantiation and initial settings"""
         a_model = preview_window_model.PreviewWindowModel(self.mock_ctrl, self.sample_data_file,
-                                                          **self.read_params)
+            **self.read_params)
         self.assertEqual(self.sample_data_file, a_model.data_file)
         self.assertEqual(self.read_params, a_model.read_parameters)
         self.assertIsNone(a_model.data)
@@ -38,7 +38,7 @@ class TestPreviewWindowModel(unittest.TestCase):
     def test_load_data(self):
         """Verify load_data method returns numpy data array"""
         a_model = preview_window_model.PreviewWindowModel(self.mock_ctrl, self.sample_data_file,
-                                                          **self.read_params)
+            **self.read_params)
         a_model.load_data()
         self.assertListEqual(self.sample_data.tolist(), a_model.data.tolist())
 

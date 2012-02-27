@@ -107,18 +107,18 @@ class BasicPlotWindowController(object):
                         plugin_instance.config = cfg
                 plugin_queue = multiprocessing.Queue()
                 plugin_process = multiprocessing.Process(target=plugin_wrapper,
-                                                         args=(
-                                                         plugin_class, self.data, plugin_queue,
-                                                         cfg))
+                    args=(
+                        plugin_class, self.data, plugin_queue,
+                        cfg))
                 plugin_process.daemon = True
                 plugin_process.start()
                 keepGoing = True
                 # TODO: move progress dialog to dialogs module
                 try:
                     progress_dlg = wx.ProgressDialog("Running Plugin",
-                                                     "Please wait, executing plugin...",
-                                                     parent=self.view,
-                                                     style=wx.PD_CAN_ABORT)
+                        "Please wait, executing plugin...",
+                        parent=self.view,
+                        style=wx.PD_CAN_ABORT)
                     while keepGoing:
                         wx.MilliSleep(100)
                         (keepGoing, skip) = progress_dlg.UpdatePulse()
@@ -142,8 +142,8 @@ class BasicPlotWindowController(object):
     def on_save_data(self, evt):
         """Handles request to save current data set to disk"""
         save_dlg = wx.FileDialog(self.view, message="Save File As...",
-                                 defaultDir=pathfinder.data_path(),
-                                 style=wx.SAVE | wx.OVERWRITE_PROMPT)
+            defaultDir=pathfinder.data_path(),
+            style=wx.SAVE | wx.OVERWRITE_PROMPT)
         if save_dlg.ShowModal() == wx.ID_OK:
             export_parameters = {'delimiter': ','}
             mainmodel.save_data(save_dlg.GetPath(), self.data, **export_parameters)
@@ -162,27 +162,27 @@ class BasicPlotWindowController(object):
     def on_set_xlabel(self, evt):
         """Handles the set x-axis label event"""
         label_dlg = wx.TextEntryDialog(parent=self.view.parent,
-                                       message="Enter a new label for the X-Axis",
-                                       caption="Set X Axis Label",
-                                       defaultValue=self.get_titles()['x'])
+            message="Enter a new label for the X-Axis",
+            caption="Set X Axis Label",
+            defaultValue=self.get_titles()['x'])
         if label_dlg.ShowModal() == wx.ID_OK:
             self.set_titles(x=label_dlg.GetValue())
 
     def on_set_ylabel(self, evt):
         """Handles the set y-axis label event"""
         label_dlg = wx.TextEntryDialog(parent=self.view.parent,
-                                       message="Enter a new label for the Y-Axis",
-                                       caption="Set Y Axis Label",
-                                       defaultValue=self.get_titles()['y'])
+            message="Enter a new label for the Y-Axis",
+            caption="Set Y Axis Label",
+            defaultValue=self.get_titles()['y'])
         if label_dlg.ShowModal() == wx.ID_OK:
             self.set_titles(y=label_dlg.GetValue())
 
     def on_set_plottitle(self, evt):
         """Handles the set x-axis label event"""
         label_dlg = wx.TextEntryDialog(parent=self.view.parent,
-                                       message="Enter a new title for the plot",
-                                       caption="Set Plot Title",
-                                       defaultValue=self.get_titles()['plot'])
+            message="Enter a new title for the plot",
+            caption="Set Plot Title",
+            defaultValue=self.get_titles()['plot'])
         if label_dlg.ShowModal() == wx.ID_OK:
             self.set_titles(plot=label_dlg.GetValue())
 
@@ -274,7 +274,7 @@ class PlotWindowController(BasicPlotWindowController):
             except OverflowError as err: # Data too large to plot
                 err_msg = "{0}".format(err)
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                           caption="Unable To Plot Data", style=wx.ICON_ERROR)
+                    caption="Unable To Plot Data", style=wx.ICON_ERROR)
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
 
@@ -305,7 +305,7 @@ class PlotWindowController(BasicPlotWindowController):
                 except ValueError as err: # negative dimensions
                     err_msg = "{0}".format(err)
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                               caption="Unable To Apply Gate", style=wx.ICON_ERROR)
+                        caption="Unable To Apply Gate", style=wx.ICON_ERROR)
                     err_dlg.ShowModal()
                     err_dlg.Destroy()
                 finally:
@@ -345,13 +345,13 @@ class ImgPlotWindowController(BasicPlotWindowController):
             except TypeError as err: # Tried to imgplot 1D array
                 err_msg = err
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                           caption="Unable To Plot Data", style=wx.ICON_ERROR)
+                    caption="Unable To Plot Data", style=wx.ICON_ERROR)
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
             except OverflowError as err: # Data too large to plot
                 err_msg = "{0}".format(err)
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                           caption="Unable To Plot Data", style=wx.ICON_ERROR)
+                    caption="Unable To Plot Data", style=wx.ICON_ERROR)
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
 
@@ -381,9 +381,9 @@ class ImgPlotWindowController(BasicPlotWindowController):
         """Sets the label for the imgplot's colorbar"""
         if self.colorbar is not None:
             label_dlg = wx.TextEntryDialog(parent=self.view.parent,
-                                           message="Enter a new label for the colorbar",
-                                           caption="Set Colorbar Label",
-                                           defaultValue=self.get_titles()['colorbar'])
+                message="Enter a new label for the colorbar",
+                caption="Set Colorbar Label",
+                defaultValue=self.get_titles()['colorbar'])
             if label_dlg.ShowModal() == wx.ID_OK:
                 self.set_titles(colorbar=label_dlg.GetValue())
 
@@ -440,8 +440,8 @@ class ImgPlotWindowController(BasicPlotWindowController):
         colormap to the user's choice."""
         colormaps = self.model.get_colormap_choices()
         cmap_dlg = wx.lib.dialogs.singleChoiceDialog(self.view.parent, "Select Colormap",
-                                                     "Please select a colormap for this plot.",
-                                                     colormaps)
+            "Please select a colormap for this plot.",
+            colormaps)
         if cmap_dlg.accepted is True:
             colormap = cmap_dlg.selection
             if colormap == '':

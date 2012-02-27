@@ -31,16 +31,16 @@ class TestThumbnailPanelModel(unittest.TestCase):
     def test_create_plot(self):
         """Verify plot function returns a matplotlib Figure"""
         self.assertTrue(isinstance(model.create_plot(self.sample_data,
-                                                     title="Plot Title",
-                                                     width=3, height=3),
-                                   Figure))
+            title="Plot Title",
+            width=3, height=3),
+            Figure))
 
     def test_plot_stream(self):
         """Verify plot_stream function returns a StringIO StringIO instance"""
         self.assertTrue(isinstance(model.plot_stream(self.sample_data,
-                                                     title="Plot Title",
-                                                     width=5, height=5),
-                                   StringIO.StringIO))
+            title="Plot Title",
+            width=5, height=5),
+            StringIO.StringIO))
 
     def test_plot_pipe(self):
         """Verify plot_pipe function writes a StringIO instance of the
@@ -48,8 +48,8 @@ class TestThumbnailPanelModel(unittest.TestCase):
         """
         in_conn, out_conn = Pipe()
         plot_proc = Process(target=model.plot_pipe,
-                            args=(self.sample_data, os.path.basename(self.sample_data_file)),
-                            kwargs={'width': 7, 'height': 2, 'pipe': out_conn})
+            args=(self.sample_data, os.path.basename(self.sample_data_file)),
+            kwargs={'width': 7, 'height': 2, 'pipe': out_conn})
         plot_proc.start()
         img_stream = in_conn.recv()
         plot_proc.join()
@@ -60,7 +60,7 @@ class TestThumbnailPanelModel(unittest.TestCase):
         import_parameters = {'delimiter': ''}
         app = wx.PySimpleApp()
         plot_bmp = model.multiprocess_plot(self.sample_data_file, width=10,
-                                           height=19, **import_parameters)
+            height=19, **import_parameters)
         self.assertTrue(isinstance(plot_bmp, wx.Bitmap))
 
     def test_gen_thumbnail(self):

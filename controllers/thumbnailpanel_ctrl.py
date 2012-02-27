@@ -35,9 +35,9 @@ class ThumbnailPanelController(object):
                 if import_dlg.ShowModal() == wx.ID_OK:
                     readtext_params = import_dlg.get_import_parameters()
                     thumbnail = model.multiprocess_plot(data_fname,
-                                                        self.view.bitmap_width / 100,
-                                                        self.view.bitmap_height / 100,
-                                                        **readtext_params)
+                        self.view.bitmap_width / 100,
+                        self.view.bitmap_height / 100,
+                        **readtext_params)
 
             else:
                 # Thumbnail found, skip generation

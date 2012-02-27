@@ -25,11 +25,11 @@ class ThumbnailPanel(wx.Panel):
         """Builds the wx Panel"""
         self.panel_sizer = wx.BoxSizer(wx.VERTICAL)
         self.figure_bmp = wx.StaticBitmap(self, wx.ID_ANY,
-                                          bitmap=self.controller.empty_bitmap(self.bitmap_width,
-                                                                              self.bitmap_height),
-                                          pos=wx.DefaultPosition, size=wx.DefaultSize)
+            bitmap=self.controller.empty_bitmap(self.bitmap_width,
+                self.bitmap_height),
+            pos=wx.DefaultPosition, size=wx.DefaultSize)
         self.panel_sizer.Add(self.figure_bmp, ui_defaults.ctrl_pct, wx.CENTER,
-                             ui_defaults.widget_margin)
+            ui_defaults.widget_margin)
         self.SetSizerAndFit(self.panel_sizer)
 
     def plot_thumb(self, data_fname):

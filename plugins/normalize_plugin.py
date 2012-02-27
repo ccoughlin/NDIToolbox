@@ -29,7 +29,7 @@ class NormalizePlugin(TRIPlugin):
 
     def __init__(self):
         super(NormalizePlugin, self).__init__(self.name, self.description,
-                                              self.authors, self.url, self.copyright)
+            self.authors, self.url, self.copyright)
 
     def run(self):
         """Executes the plugin - if data are not None they are normalized

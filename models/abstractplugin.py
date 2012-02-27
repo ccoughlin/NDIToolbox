@@ -115,7 +115,7 @@ class TRIPlugin(CompanyPlugin):
     def __init__(self, name=None, description=None, authors=None, version=None,
                  url=None, copyright=None):
         super(TRIPlugin, self).__init__(name, description, authors, version,
-                                        url, copyright)
+            url, copyright)
 
 
 class ComputationalToolsPlugin(CompanyPlugin):
@@ -131,4 +131,4 @@ class ComputationalToolsPlugin(CompanyPlugin):
     def __init__(self, name=None, description=None, authors=None, version=None,
                  url=None, copyright=None):
         super(ComputationalToolsPlugin, self).__init__(name, description, authors, version,
-                                                       url, copyright)
+            url, copyright)

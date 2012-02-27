@@ -25,8 +25,8 @@ def get_data(data_fname, **import_params):
     cols_to_read = import_params.get('usecols', None)
     transpose_data = import_params.get('transpose', False)
     data = np.genfromtxt(data_fname, comments=comment_char, delimiter=delim_char,
-                         skip_header=header_lines, skip_footer=footer_lines, usecols=cols_to_read,
-                         unpack=transpose_data)
+        skip_header=header_lines, skip_footer=footer_lines, usecols=cols_to_read,
+        unpack=transpose_data)
     return data
 
 
@@ -53,7 +53,7 @@ def load_plugins():
                 try:
                     module_hdl, path_name, description = imp.find_module(module_name)
                     plugin_module = imp.load_module(module_name, module_hdl, path_name,
-                                                    description)
+                        description)
                     plugin_classes = inspect.getmembers(plugin_module, inspect.isclass)
                     for plugin_class in plugin_classes:
                         if issubclass(plugin_class[1], abstractplugin.AbstractPlugin):
@@ -74,12 +74,77 @@ def get_config():
     return config.Configure(pathfinder.config_path())
 
 
+def get_windows_version():
+    """Returns the major, minor version of the
+    Windows OS, or None if not on Windows."""
+    if sys.platform == 'win32':
+        win_ver = sys.getwindowsversion()
+        return win_ver.major, win_ver.minor
+    return None
+
+
+def is_win7():
+    """Returns True if the host OS appears
+    to be Windows 7 or Windows Server 2008 R2."""
+    retval = False
+    if sys.platform == 'win32':
+        major, minor = get_windows_version()
+        if major == 6 and minor == 1:
+            retval = True
+    return retval
+
+
+def is_winvista():
+    """Returns True if the host OS appears
+    to be Windows Vista or Windows Server 2008."""
+    retval = False
+    if sys.platform == 'win32':
+        major, minor = get_windows_version()
+        if major == 6 and minor == 0:
+            retval = True
+    return retval
+
+
+def is_winxp():
+    """Returns True if the host OS appears
+    to be Windows XP."""
+    retval = False
+    if sys.platform == 'win32':
+        major, minor = get_windows_version()
+        if major == 5 and minor == 1:
+            retval = True
+    return retval
+
+
+def is_winxp64():
+    """Returns True if the host OS appears
+    to be Windows XP Pro x64."""
+    retval = False
+    if sys.platform == 'win32':
+        major, minor = get_windows_version()
+        if major == 5 and minor == 2:
+            retval = True
+    return retval
+
+
+def is_win2k():
+    """Returns True if the host OS appears
+    to be Windows 2000."""
+    retval = False
+    if sys.platform == 'win32':
+        major, minor = get_windows_version()
+        if major == 5 and minor == 0:
+            retval = True
+    return retval
+
+
 class MainModel(object):
     """Model for the main user interface"""
 
     def __init__(self, controller):
         self.controller = controller
         self.check_user_path()
+        self.copy_system_plugins()
 
     def check_user_path(self):
         """Verify that user data folders exist.  Creates
@@ -92,6 +157,19 @@ class MainModel(object):
             if not os.path.exists(fldr):
                 os.makedirs(fldr)
 
+    def copy_system_plugins(self):
+        """Copies plugins that ship with the application
+        to the user's plugins folder."""
+        system_plugins_folder = os.path.join(pathfinder.app_path(), 'plugins')
+        for root, dir, files in os.walk(system_plugins_folder):
+            for module_file in files:
+                module_name, module_extension = os.path.splitext(module_file)
+                if module_extension == os.extsep + "py":
+                    installed_plugin = os.path.join(pathfinder.plugins_path(), module_file)
+                    if not os.path.exists(installed_plugin):
+                        system_plugin = os.path.join(system_plugins_folder, module_file)
+                        shutil.copy(system_plugin, pathfinder.plugins_path())
+
     def copy_data(self, data_file):
         """Adds the specified data file to the data folder"""
         shutil.copy(data_file, pathfinder.data_path())
@@ -103,7 +181,7 @@ class MainModel(object):
         di_struct = dicom.read_file(data_file)
         export_parameters = {'delimiter': ','}
         di_fname = os.path.join(pathfinder.data_path(),
-                                os.path.basename(data_file))
+            os.path.basename(data_file))
         # TODO - implement support for 3D arrays
         # when data format is finalized
         if di_struct.pixel_array.ndim > 2:

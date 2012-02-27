@@ -24,7 +24,7 @@ class Fetcher(object):
                 if self.username is not None and self.password is not None:
                     auth_handler = urllib2.HTTPBasicAuthHandler()
                     auth_handler.add_password(realm=None, uri=self.url,
-                                              user=self.username, passwd=self.password)
+                        user=self.username, passwd=self.password)
                     opener = urllib2.build_opener(auth_handler)
                     urllib2.install_opener(opener)
                 return urllib2.urlopen(self.url)
