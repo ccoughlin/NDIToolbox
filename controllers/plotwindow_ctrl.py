@@ -343,7 +343,7 @@ class ImgPlotWindowController(BasicPlotWindowController):
                 self.set_titles(plot=titles['plot'], x=titles['x'], y=titles['y'])
                 self.view.axes.grid(self.axes_grid)
             except TypeError as err: # Tried to imgplot 1D array
-                err_msg = err
+                err_msg = "{0}".format(err)
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
                     caption="Unable To Plot Data", style=wx.ICON_ERROR)
                 err_dlg.ShowModal()
