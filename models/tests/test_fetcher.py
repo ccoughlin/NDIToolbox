@@ -21,7 +21,7 @@ class TestFetcher(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create a SimpleHTTPServer instance to serve
-        test files from the suport_files folder"""
+        test files from the support_files folder"""
         PORT = 8000 + random.randint(1, 1000)
         req_handler = SimpleHTTPServer.SimpleHTTPRequestHandler
         cls.httpd = SocketServer.TCPServer(("localhost", PORT), req_handler)
@@ -41,7 +41,7 @@ class TestFetcher(unittest.TestCase):
 
     def setUp(self):
         """Creates a SimpleHTTPServer instance to handle a single
-        request.  Use self.server_proc.start() to initiate."""
+        request.  Use self.server_thd.start() to initiate."""
         self.server_thd = threading.Thread(target=TestFetcher.httpd.handle_request)
 
     def test_init(self):

@@ -3,7 +3,7 @@
 Chris R. Coughlin (TRI/Austin, Inc.)
 """
 
-__author__ = 'CRC'
+__author__ = 'Chris R. Coughlin'
 
 from models import preview_window_model
 import numpy as np
