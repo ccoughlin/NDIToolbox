@@ -33,7 +33,6 @@ class TestPluginInstaller(unittest.TestCase):
     @classmethod
     def local_plugin(cls, plugin_name):
         """Returns the local path and filename of the specified plugin archive."""
-        local_path = None
         cur_dir = os.getcwd()
         if os.path.normcase(cur_dir) == os.path.normcase(os.path.dirname(__file__)):
             # Running this test module directly

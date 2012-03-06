@@ -152,6 +152,10 @@ class PlotWindow(wx.Frame):
         """Initializes the Tools Menu (Plugins and external scripts)"""
         self.tools_mnu = wx.Menu()
         self.plugins_mnu = wx.Menu()
+        install_plugin_mnui = wx.MenuItem(self.plugins_mnu, wx.ID_ANY, text="Install Plugin...",
+            help="Download and install a new plugin")
+        self.Bind(wx.EVT_MENU, self.controller.on_install_plugin, id=install_plugin_mnui.GetId())
+        self.plugins_mnu.AppendItem(install_plugin_mnui)
         plugins = self.controller.available_plugins
         for plugin_id, plugin in plugins.items():
             plugin_name = plugin[1].name

@@ -5,6 +5,7 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 from views import dialogs
+from views import fetchplugin_dialog
 from models import mainmodel
 import pathfinder
 import models.plotwindow_model as model
@@ -79,6 +80,20 @@ class BasicPlotWindowController(object):
     def refresh_plot(self):
         """Forces plot to redraw itself"""
         self.view.canvas.draw()
+
+    def on_install_plugin(self, evt):
+        """Handles request to download and install a plugin"""
+        dlg = fetchplugin_dialog.FetchPluginDialog(parent=self.view)
+        if dlg.ShowModal() == wx.ID_OK:
+            try:
+                dlg.install_plugin()
+            except Exception as err:
+                err_msg = "{0}".format(err)
+                err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                    caption="Unable To Install Plugin", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+        dlg.Destroy()
 
     def on_run_plugin(self, evt):
         """Handles request to run a plugin"""
