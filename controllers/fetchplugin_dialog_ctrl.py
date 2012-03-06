@@ -21,12 +21,12 @@ class FetchPluginDialogController(object):
 
     def init_url(self):
         """Initializes URL, username, and password(s) to None"""
-        plugin_url = {'url':None,
-                      'login':False,
-                      'username':None,
-                      'password':None,
-                      'zip_encrypted':False,
-                      'zip_password':None}
+        plugin_url = {'url': None,
+                      'login': False,
+                      'username': None,
+                      'password': None,
+                      'zip_encrypted': False,
+                      'zip_password': None}
         return plugin_url
 
     def get_configured_url(self):
@@ -66,9 +66,22 @@ class FetchPluginDialogController(object):
             dlg_msg="Please wait, downloading plugin...")
         try:
             self.fetch_plugin()
-            self.model.install_plugin()
+            if not self.model.install_plugin():
+                err_dlg = wx.MessageDialog(self.view, message="Plugin installation failed.",
+                    caption="Unable To Install Plugin", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+            else:
+                success_dlg = wx.MessageDialog(self.view, message="Plugin installation successful.",
+                    caption="Installation Complete", style=wx.ICON_INFORMATION)
+                success_dlg.ShowModal()
+                success_dlg.Destroy()
         except Exception as err:
-            pass
+            err_msg = "{0}".format(err)
+            err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                caption="Unable To Install Plugin", style=wx.ICON_ERROR)
+            err_dlg.ShowModal()
+            err_dlg.Destroy()
         finally:
             busy_dlg.close()
 

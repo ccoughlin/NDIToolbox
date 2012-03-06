@@ -19,7 +19,6 @@ import unittest
 import urllib
 
 class TestFetchPluginDialogModel(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         """Create a SimpleHTTPServer instance to serve test files from the support_files folder"""
@@ -65,12 +64,12 @@ class TestFetchPluginDialogModel(unittest.TestCase):
         self.server_thd = threading.Thread(target=TestFetchPluginDialogModel.httpd.handle_request)
         self.mock_controller = ""
         self.model = fetchplugin_dialog_model.FetchPluginDialogModel(self.mock_controller)
-        self.plugin_url_params = {'url':self.good_plugin_url,
-                          'login':False,
-                          'username':None,
-                          'password':None,
-                          'zip_encrypted':False,
-                          'zip_password':None}
+        self.plugin_url_params = {'url': self.good_plugin_url,
+                                  'login': False,
+                                  'username': None,
+                                  'password': None,
+                                  'zip_encrypted': False,
+                                  'zip_password': None}
 
     def tearDown(self):
         """Shuts down the server process if still active"""
@@ -101,15 +100,16 @@ class TestFetchPluginDialogModel(unittest.TestCase):
         self.server_thd.start()
         sample_plugin_url = TestFetchPluginDialogModel.plugin_url_params('greets_plugin.zip')
         installed_plugin_name = os.path.join(pathfinder.plugins_path(), 'greets_plugin.py')
-        plugin_url_params = {'url':sample_plugin_url,
-                             'login':False,
-                             'username':None,
-                             'password':None,
-                             'zip_encrypted':True,
-                             'zip_password':'9225'}
+        plugin_url_params = {'url': sample_plugin_url,
+                             'login': False,
+                             'username': None,
+                             'password': None,
+                             'zip_encrypted': True,
+                             'zip_password': '9225'}
         self.model.get_plugin(plugin_url_params)
-        self.model.install_plugin()
+        successful_installation = self.model.install_plugin()
         self.assertTrue(os.path.exists(installed_plugin_name))
+        self.assertTrue(successful_installation)
         # Clean up - attempt to remove the sample plugin if it already exists
         if os.path.exists(installed_plugin_name):
             try:

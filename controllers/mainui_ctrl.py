@@ -83,14 +83,24 @@ class MainUIController(object):
 
     def on_about(self, evt):
         """Handles the About This Program event"""
-        pass
+        project_logo = os.path.join(pathfinder.icons_path(), 'a7117_256.png')
+        project_msg = ' '.join(
+            ("NDIToolbox (TM) Copyright (c) 2012 TRI/Austin, Inc.  Developed under TRI Project A7117.",
+             "\n\nUse of this software is governed by the terms outlined in the license.txt file.",
+             "\n\nProject Manager:  David Forsyth",
+             "\nLead Developer:  Chris Coughlin")
+        )
+        about_project_logo_dlg = dlg.AboutDialog(parent=self.view, title="About This Program",
+            msg=project_msg, url="www.nditoolbox.com", logobmp_fname=project_logo)
+        about_project_logo_dlg.ShowModal()
+        about_project_logo_dlg.Destroy()
 
     def on_about_tri(self, evt):
         """Handles the About TRI event"""
         tri_logo = os.path.join(pathfinder.bitmap_path(), "tri_austin_logo.png")
         tri_msg = ' '.join(
             ("Texas Research Institute Austin, Inc. (TRI/Austin) is TRI's flagship company",
-             "and conducts materials research and development projects. TRI is committed to",
+             "and conducts materials research and development projects.\n\nTRI is committed to",
              "providing the highest quality materials science products and services."))
         about_tri_dlg = dlg.AboutDialog(parent=self.view, title="About TRI",
             msg=tri_msg,

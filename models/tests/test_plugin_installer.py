@@ -223,8 +223,9 @@ class TestPluginInstaller(unittest.TestCase):
         installer = plugin_installer.PluginInstaller(sample_plugin_url, zip_password='9225')
         installer.fetch()
         self.assertTrue(installer.verify_plugin())
-        installer.install_plugin()
+        install_success = installer.install_plugin()
         self.assertTrue(os.path.exists(installed_plugin_name))
+        self.assertTrue(install_success)
         # Clean up - attempt to remove the sample plugin if it already exists
         if os.path.exists(installed_plugin_name):
             try:

@@ -32,9 +32,10 @@ class FetchPluginDialogModel(object):
         self.plugin_fetcher.fetch()
 
     def install_plugin(self):
-        """Downloads, verifies, and installs the plugin"""
+        """Downloads, verifies, and installs the plugin.  Returns True if successful."""
         if self.plugin_fetcher is not None:
-            self.plugin_fetcher.install_plugin()
+            return self.plugin_fetcher.install_plugin()
+        return False
 
     def get_readme(self, url_dict):
         """Returns the plugin's README contents."""

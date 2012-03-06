@@ -31,7 +31,8 @@ class FetchPluginDialog(wx.Dialog):
             wx.DefaultPosition, wx.DefaultSize)
         self.main_panel_sizer.Add(url_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
             ui_defaults.widget_margin)
-        self.url_tc = wx.TextCtrl(self, wx.ID_ANY, u'http://172.16.100.132:8000/good_medfilter_plugin.zip', wx.DefaultPosition,
+        self.url_tc = wx.TextCtrl(self, wx.ID_ANY, u'http://',
+            wx.DefaultPosition,
             wx.DefaultSize)
         self.url_tc.SetToolTipString("Example: http://www.tri-austin.com/a7117/my_plugin.zip")
         self.main_panel_sizer.Add(self.url_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,

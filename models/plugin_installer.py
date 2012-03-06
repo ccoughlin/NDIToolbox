@@ -93,7 +93,8 @@ class PluginInstaller(object):
         return plugin_ok
 
     def install_plugin(self):
-        """Installs the plugin in the default plugin path."""
+        """Installs the plugin in the default plugin path.
+        Returns True if installation succeeded."""
         plugin_path = pathfinder.plugins_path()
         if self.plugin is not None:
             plugin_zip = UnZipper(self.plugin_contents, self.zip_password)
@@ -102,3 +103,10 @@ class PluginInstaller(object):
                                 each_file not in self.readme_files]
                 for each_file in plugin_files:
                     plugin_zip.extract(each_file, plugin_path)
+                    if not os.path.exists(os.path.join(plugin_path, each_file)):
+                        return False
+            else:
+                return False
+        else:
+            return False
+        return True
