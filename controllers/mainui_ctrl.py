@@ -95,6 +95,14 @@ class MainUIController(object):
         about_project_logo_dlg.ShowModal()
         about_project_logo_dlg.Destroy()
 
+    def on_about_license(self, evt):
+        """Handles the License Information event"""
+        license_file = os.path.join(pathfinder.app_path(), 'license.txt')
+        with open(license_file, 'rb') as fidin:
+            license = fidin.readlines()
+            license_dlg = dlg.TextDisplayDialog(parent=self.view, text=''.join(license))
+            license_dlg.Show()
+
     def on_about_tri(self, evt):
         """Handles the About TRI event"""
         tri_logo = os.path.join(pathfinder.bitmap_path(), "tri_austin_logo.png")

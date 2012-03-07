@@ -54,6 +54,10 @@ class UI(wx.Frame):
             help="About This Program")
         self.help_mnu.AppendItem(about_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_about, id=about_mnui.GetId())
+        license_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="License Information...",
+            help="License Information")
+        self.help_mnu.AppendItem(license_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_about_license, id=license_mnui.GetId())
         about_tri_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text='About TRI/Austin...',
             help="About TRI/Austin's NDE Division")
         self.help_mnu.AppendItem(about_tri_mnui)

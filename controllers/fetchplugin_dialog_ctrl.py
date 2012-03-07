@@ -51,19 +51,21 @@ class FetchPluginDialogController(object):
     def fetch_plugin(self):
         """Downloads the plugin"""
         url_dict = self.get_configured_url()
+        busy_dlg = dialogs.progressDialog(dlg_title="Retrieving Plugin",
+            dlg_msg="Please wait, downloading plugin...")
         fetch_plugin_thd = threading.Thread(target=self.model.get_plugin, args=(url_dict,))
         fetch_plugin_thd.setDaemon(True)
         fetch_plugin_thd.start()
         while True:
             fetch_plugin_thd.join(0.125)
+            busy_dlg.update()
             if not fetch_plugin_thd.is_alive():
+                busy_dlg.close()
                 break
             wx.GetApp().Yield()
 
     def install_plugin(self):
         """Downloads, verifies, and installs the plugin"""
-        busy_dlg = dialogs.progressDialog(dlg_title="Retrieving Plugin",
-            dlg_msg="Please wait, downloading plugin...")
         try:
             self.fetch_plugin()
             if not self.model.install_plugin():
@@ -82,21 +84,17 @@ class FetchPluginDialogController(object):
                 caption="Unable To Install Plugin", style=wx.ICON_ERROR)
             err_dlg.ShowModal()
             err_dlg.Destroy()
-        finally:
-            busy_dlg.close()
 
     # Event Handlers
     def on_about_plugin(self, evt):
         """Handles the request to retrieve info about the plugin"""
-        #TODO - implement custom README viewer (see notes)
         busy_dlg = dialogs.progressDialog(dlg_title="Retrieving Plugin",
             dlg_msg="Please wait, downloading plugin...")
         try:
             self.fetch_plugin()
             readme = self.model.get_readme(self.get_configured_url())
-            msg_dlg = wx.MessageDialog(self.view, message=readme, caption="README", style=wx.ICON_INFORMATION)
-            msg_dlg.ShowModal()
-            msg_dlg.Destroy()
+            text_display_dlg = dialogs.TextDisplayDialog(parent=self.view, text=readme, title='README')
+            text_display_dlg.Show()
         except Exception as err:
             err_msg = "{0}".format(err)
             err_dlg = wx.MessageDialog(self.view, message=err_msg,

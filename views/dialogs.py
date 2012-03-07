@@ -246,6 +246,9 @@ class progressDialog(object):
         )
         self.pdlg.Pulse()
 
+    def update(self):
+        self.pdlg.UpdatePulse()
+
     def close(self):
         self.pdlg.Update(100)
         self.pdlg.Destroy()
@@ -377,3 +380,74 @@ class ConfigurePluginDialog(wx.Dialog):
         for opt, ctrl in self.config_ctrls.items():
             config[opt] = ctrl.GetValue()
         return config
+
+
+class TextDisplayDialog(wx.Frame):
+    """Simple wxPython window to display large blocks of text"""
+
+    def __init__(self, text, parent=None, wrap=True, *args, **kwargs):
+        self.parent = parent
+        self.text = text
+        self.wrap_text = wrap
+        wx.Frame.__init__(self, parent, *args, **kwargs)
+        if self.parent is not None:
+            self.SetIcon(self.parent.GetIcon())
+        self.init_ui()
+
+    def init_ui(self):
+        """Initializes and lays out the UI"""
+        self.SetClientSize(wx.Size(400, 300))
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.main_panel = wx.Panel(self)
+        self.main_panel_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.textfilew_tc = wx.TextCtrl(self.main_panel, wx.ID_ANY, ''.join(self.text),
+            wx.DefaultPosition, wx.DefaultSize, style=wx.TE_MULTILINE)
+        self.main_panel_sizer.Add(self.textfilew_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
+            ui_defaults.widget_margin)
+        self.textfile_tc = wx.TextCtrl(self.main_panel, wx.ID_ANY, ''.join(self.text),
+            wx.DefaultPosition, wx.DefaultSize, style=wx.TE_MULTILINE | wx.TE_DONTWRAP)
+        self.main_panel_sizer.Add(self.textfile_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
+            ui_defaults.widget_margin)
+        self.set_text_wrap(self.wrap_text)
+        ctrl_panel = wx.Panel(self.main_panel)
+        ctrl_sizer = wx.FlexGridSizer(cols=2)
+        ctrl_sizer.SetFlexibleDirection(wx.HORIZONTAL)
+        ctrl_sizer.AddGrowableCol(0)
+        wrap_cb = wx.CheckBox(ctrl_panel, wx.ID_ANY, u"Wrap Text")
+        wrap_cb.SetValue(self.wrap_text)
+        ctrl_sizer.Add(wrap_cb, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
+        self.Bind(wx.EVT_CHECKBOX, self.on_toggle_wrap, wrap_cb)
+        ok_btn = wx.Button(ctrl_panel, wx.ID_OK)
+        self.Bind(wx.EVT_BUTTON, self.on_ok_btn, ok_btn)
+        ok_btn.SetFocus()
+        ctrl_sizer.Add(ok_btn, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
+        ctrl_panel.SetSizerAndFit(ctrl_sizer)
+        self.main_panel_sizer.Add(ctrl_panel, ui_defaults.lbl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
+        self.main_panel.SetSizer(self.main_panel_sizer)
+        self.sizer.Add(self.main_panel, 1, ui_defaults.sizer_flags, 0)
+        self.SetSizer(self.sizer)
+
+    def on_toggle_wrap(self, evt):
+        """Handles request to enable/disable text wrapping in display"""
+        self.set_text_wrap(evt.IsChecked())
+
+    def set_text_wrap(self, wrap):
+        """Toggles between the two TextCtrls to enable (wrap=True)
+        or disable (wrap=False) text wrapping in the window.  Used
+        to circumvent limitations in Windows re: changing control styles
+        dynamically."""
+        # TODO - fix display bug that sets margin to 0 when first
+        # switching controls
+        if wrap:
+            self.textfilew_tc.SetSize(self.textfile_tc.GetSize())
+            self.textfile_tc.Hide()
+            self.textfilew_tc.Show()
+        else:
+            self.textfile_tc.SetSize(self.textfilew_tc.GetSize())
+            self.textfilew_tc.Hide()
+            self.textfile_tc.Show()
+        self.UpdateWindowUI(wx.UPDATE_UI_RECURSE)
+
+    def on_ok_btn(self, evt):
+        """Handles request to close the window"""
+        self.Destroy()
