@@ -436,17 +436,15 @@ class TextDisplayDialog(wx.Frame):
         or disable (wrap=False) text wrapping in the window.  Used
         to circumvent limitations in Windows re: changing control styles
         dynamically."""
-        # TODO - fix display bug that sets margin to 0 when first
-        # switching controls
         if wrap:
             self.textfilew_tc.SetSize(self.textfile_tc.GetSize())
             self.textfile_tc.Hide()
-            self.textfilew_tc.Show()
+            self.main_panel_sizer.Show(self.textfilew_tc)
         else:
             self.textfile_tc.SetSize(self.textfilew_tc.GetSize())
             self.textfilew_tc.Hide()
-            self.textfile_tc.Show()
-        self.UpdateWindowUI(wx.UPDATE_UI_RECURSE)
+            self.main_panel_sizer.Show(self.textfile_tc)
+        self.main_panel_sizer.Layout()
 
     def on_ok_btn(self, evt):
         """Handles request to close the window"""

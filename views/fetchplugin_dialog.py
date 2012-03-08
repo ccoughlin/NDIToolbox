@@ -15,7 +15,7 @@ class FetchPluginDialog(wx.Dialog):
     # TODO - beef up exception handling
 
     def __init__(self, parent):
-        super(FetchPluginDialog, self).__init__(parent=parent, title="Retrieve Plugin")
+        super(FetchPluginDialog, self).__init__(parent=parent, title="Install Plugin")
         self.controller = fetchplugin_dialog_ctrl.FetchPluginDialogController(self)
         self.init_ui()
 

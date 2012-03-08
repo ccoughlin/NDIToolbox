@@ -100,7 +100,8 @@ class MainUIController(object):
         license_file = os.path.join(pathfinder.app_path(), 'license.txt')
         with open(license_file, 'rb') as fidin:
             license = fidin.readlines()
-            license_dlg = dlg.TextDisplayDialog(parent=self.view, text=''.join(license))
+            license_dlg = dlg.TextDisplayDialog(parent=self.view, text=''.join(license),
+                title="License Information")
             license_dlg.Show()
 
     def on_about_tri(self, evt):
