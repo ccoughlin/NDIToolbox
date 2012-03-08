@@ -4,11 +4,12 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 """
 
 from controllers.preview_window_ctrl import PreviewWindowController
+from models import workerthread
 import ui_defaults
 import wxspreadsheet
 import wx
 import os.path
-import threading
+import Queue
 
 __author__ = 'Chris R. Coughlin'
 
@@ -24,12 +25,20 @@ class PreviewWindow(wx.Frame):
         self.load_data()
 
     def load_data(self):
-        data_thd = threading.Thread(target=self.controller.load_data)
-        data_thd.setDaemon(True)
+        exception_queue = Queue.Queue()
+        data_thd = workerthread.WorkerThread(exception_queue=exception_queue, target=self.controller.load_data)
         data_thd.start()
         while True:
             data_thd.join(0.125)
             if not data_thd.is_alive():
+                try:
+                    exc_type, exc = exception_queue.get(block=False)
+                    err_msg = "An error occurred while loading data:\n{0}".format(exc)
+                    err_dlg = wx.MessageDialog(self.parent, message=err_msg,
+                        caption="Unable To Load Data", style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                except Queue.Empty:
+                    pass
                 break
             wx.GetApp().Yield(True)
         self.controller.populate_spreadsheet()

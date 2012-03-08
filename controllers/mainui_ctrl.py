@@ -6,14 +6,15 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 from models import mainmodel
+from models import workerthread
 import views.plotwindow as plotwindow
 import views.preview_window as preview_window
 import views.dialogs as dlg
 import controllers.pathfinder as pathfinder
 import wx
 import os.path
+import Queue
 import sys
-import threading
 
 class MainUIController(object):
     """Controller for the main user interface"""
@@ -170,13 +171,22 @@ class MainUIController(object):
         if file_dlg.ShowModal() == wx.ID_OK:
             try:
                 wx.BeginBusyCursor()
-                imp_dicom_thd = threading.Thread(target=self.model.import_dicom,
+                exception_queue = Queue.Queue()
+                imp_dicom_thd = workerthread.WorkerThread(exception_queue=exception_queue,
+                    target=self.model.import_dicom,
                     args=(file_dlg.GetPath(), ))
-                imp_dicom_thd.setDaemon(True)
                 imp_dicom_thd.start()
                 while True:
                     imp_dicom_thd.join(0.125)
                     if not imp_dicom_thd.is_alive():
+                        try:
+                            exc_type, exc = exception_queue.get(block=False)
+                            err_msg = "An error occurred during import:\n{0}".format(exc)
+                            err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                caption="Unable To Import File", style=wx.ICON_ERROR)
+                            err_dlg.ShowModal()
+                        except Queue.Empty:
+                            pass
                         break
                     wx.Yield()
                 self.view.data_panel.populate()

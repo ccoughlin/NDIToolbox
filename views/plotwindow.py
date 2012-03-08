@@ -7,12 +7,13 @@ __author__ = 'Chris R. Coughlin'
 
 import ui_defaults
 from controllers.plotwindow_ctrl import PlotWindowController, ImgPlotWindowController
+from models import workerthread
 import wx
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import NavigationToolbar2Wx
 import os.path
-import threading
+import Queue
 
 class PlotWindow(wx.Frame):
     """Basic wxPython UI element for displaying matplotlib plots"""
@@ -29,12 +30,20 @@ class PlotWindow(wx.Frame):
 
     def load_data(self):
         """Loads the data set and plots"""
-        data_thd = threading.Thread(target=self.controller.load_data)
-        data_thd.setDaemon(True)
+        exception_queue = Queue.Queue()
+        data_thd = workerthread.WorkerThread(exception_queue=exception_queue, target=self.controller.load_data)
         data_thd.start()
         while True:
             data_thd.join(0.125)
             if not data_thd.is_alive():
+                try:
+                    exc_type, exc = exception_queue.get(block=False)
+                    err_msg = "An error occurred while loading data:\n{0}".format(exc)
+                    err_dlg = wx.MessageDialog(self.parent, message=err_msg,
+                        caption="Unable To Load Data", style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                except Queue.Empty:
+                    pass
                 break
             wx.GetApp().Yield(True)
         self.title = 'Plot - {0}'.format(os.path.basename(self.data_file))

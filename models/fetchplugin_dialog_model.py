@@ -9,7 +9,6 @@ from models import plugin_installer
 
 class FetchPluginDialogModel(object):
     """Model for the FetchPluginDialog"""
-    # TODO - beef up exception handling
 
     def __init__(self, controller):
         self.controller = controller

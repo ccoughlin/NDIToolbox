@@ -12,7 +12,6 @@ import wx
 class FetchPluginDialog(wx.Dialog):
     """Dialog to configure remote fetch and inspection
     of A7117 Plugins"""
-    # TODO - beef up exception handling
 
     def __init__(self, parent):
         super(FetchPluginDialog, self).__init__(parent=parent, title="Install Plugin")

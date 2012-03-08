@@ -6,13 +6,13 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 from models import fetchplugin_dialog_model
+from models import workerthread
 from views import dialogs
 import wx
-import threading
+import Queue
 
 class FetchPluginDialogController(object):
     """Controller for the FetchPluginDialog"""
-    # TODO - beef up exception handling
 
     def __init__(self, view):
         self.view = view
@@ -53,14 +53,23 @@ class FetchPluginDialogController(object):
         url_dict = self.get_configured_url()
         busy_dlg = dialogs.progressDialog(dlg_title="Retrieving Plugin",
             dlg_msg="Please wait, downloading plugin...")
-        fetch_plugin_thd = threading.Thread(target=self.model.get_plugin, args=(url_dict,))
-        fetch_plugin_thd.setDaemon(True)
+        exception_queue = Queue.Queue()
+        fetch_plugin_thd = workerthread.WorkerThread(exception_queue=exception_queue, target=self.model.get_plugin,
+            args=(url_dict,))
         fetch_plugin_thd.start()
         while True:
             fetch_plugin_thd.join(0.125)
             busy_dlg.update()
             if not fetch_plugin_thd.is_alive():
                 busy_dlg.close()
+                try:
+                    exc_type, exc = exception_queue.get(block=False)
+                    err_msg = "An error occurred during download:\n{0}".format(exc)
+                    err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                        caption="Unable To Retrieve Plugin", style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                except Queue.Empty:
+                    pass
                 break
             wx.GetApp().Yield()
 
@@ -80,6 +89,8 @@ class FetchPluginDialogController(object):
                 success_dlg.Destroy()
         except Exception as err:
             err_msg = "{0}".format(err)
+            if err_msg == "":
+                err_msg = "An error occurred during the installation process."
             err_dlg = wx.MessageDialog(self.view, message=err_msg,
                 caption="Unable To Install Plugin", style=wx.ICON_ERROR)
             err_dlg.ShowModal()
@@ -97,8 +108,10 @@ class FetchPluginDialogController(object):
             text_display_dlg.Show()
         except Exception as err:
             err_msg = "{0}".format(err)
+            if err_msg == "":
+                err_msg = "An error occurred attempting to retrieve the plugin's README file."
             err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                caption="Unable To Retrieve Plugin", style=wx.ICON_ERROR)
+                caption="Unable To Retrieve README", style=wx.ICON_ERROR)
             err_dlg.ShowModal()
             err_dlg.Destroy()
         finally:
