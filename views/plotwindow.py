@@ -39,6 +39,9 @@ class PlotWindow(wx.Frame):
                 try:
                     exc_type, exc = exception_queue.get(block=False)
                     err_msg = "An error occurred while loading data:\n{0}".format(exc)
+                    if len(err_msg) > 150:
+                        # Truncate NumPy's genfromtxt() method's lengthy error messages
+                        err_msg = ''.join([err_msg[:150], "\n(continued)"])
                     err_dlg = wx.MessageDialog(self.parent, message=err_msg,
                         caption="Unable To Load Data", style=wx.ICON_ERROR)
                     err_dlg.ShowModal()
