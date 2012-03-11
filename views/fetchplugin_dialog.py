@@ -27,68 +27,68 @@ class FetchPluginDialog(wx.Dialog):
         self.main_panel_sizer = wx.FlexGridSizer(cols=2)
 
         url_lbl = wx.StaticText(self, wx.ID_ANY, u"Plugin URL",
-            wx.DefaultPosition, wx.DefaultSize)
+                                wx.DefaultPosition, wx.DefaultSize)
         self.main_panel_sizer.Add(url_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                                  ui_defaults.widget_margin)
         self.url_tc = wx.TextCtrl(self, wx.ID_ANY, u'http://',
-            wx.DefaultPosition,
-            wx.DefaultSize)
+                                  wx.DefaultPosition,
+                                  wx.DefaultSize)
         self.url_tc.SetToolTipString("Example: http://www.tri-austin.com/a7117/my_plugin.zip")
         self.main_panel_sizer.Add(self.url_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                                  ui_defaults.widget_margin)
 
         # Set username/password if necessary
         self.login_cb = wx.CheckBox(self, wx.ID_ANY, u"Login Required")
         self.login_cb.SetToolTipString("Enable if the URL requires a username and password")
         self.main_panel_sizer.Add(self.login_cb, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                                  ui_defaults.widget_margin)
         login_panel = wx.Panel(self)
         login_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
         uname_lbl = wx.StaticText(login_panel, wx.ID_ANY, u"Username",
-            wx.DefaultPosition, wx.DefaultSize)
+                                  wx.DefaultPosition, wx.DefaultSize)
         login_panel_sizer.Add(uname_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                              ui_defaults.widget_margin)
         self.uname_tc = wx.TextCtrl(login_panel, wx.ID_ANY, u'', wx.DefaultPosition,
-            wx.DefaultSize)
+                                    wx.DefaultSize)
         login_panel_sizer.Add(self.uname_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                              ui_defaults.widget_margin)
         pword_lbl = wx.StaticText(login_panel, wx.ID_ANY, u"Password",
-            wx.DefaultPosition, wx.DefaultSize)
+                                  wx.DefaultPosition, wx.DefaultSize)
         login_panel_sizer.Add(pword_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                              ui_defaults.widget_margin)
         self.pword_tc = wx.TextCtrl(login_panel, wx.ID_ANY, u'', wx.DefaultPosition,
-            wx.DefaultSize, style=wx.TE_PASSWORD)
+                                    wx.DefaultSize, style=wx.TE_PASSWORD)
         login_panel_sizer.Add(self.pword_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                              ui_defaults.widget_margin)
         login_panel.SetSizerAndFit(login_panel_sizer)
         self.main_panel_sizer.Add(login_panel, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            0)
+                                  0)
 
         # Set password on encrypted archives
         self.encryptedzip_cb = wx.CheckBox(self, wx.ID_ANY, u"Protected")
         self.encryptedzip_cb.SetToolTipString("Enable if the plugin archive is encrypted")
         self.main_panel_sizer.Add(self.encryptedzip_cb, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                                  ui_defaults.widget_margin)
 
         zip_panel = wx.Panel(self)
         zip_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
         zippword_lbl = wx.StaticText(zip_panel, wx.ID_ANY, u"Password",
-            wx.DefaultPosition, wx.DefaultSize)
+                                     wx.DefaultPosition, wx.DefaultSize)
         zip_panel_sizer.Add(zippword_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-            ui_defaults.widget_margin)
+                            ui_defaults.widget_margin)
         self.zippword_tc = wx.TextCtrl(zip_panel, wx.ID_ANY, u'', wx.DefaultPosition,
-            wx.DefaultSize, style=wx.TE_PASSWORD)
+                                       wx.DefaultSize, style=wx.TE_PASSWORD)
         zip_panel_sizer.Add(self.zippword_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            ui_defaults.widget_margin)
+                            ui_defaults.widget_margin)
         zip_panel.SetSizerAndFit(zip_panel_sizer)
         self.main_panel_sizer.Add(zip_panel, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            0)
+                                  0)
         self.about_plugin_btn = wx.Button(self, wx.ID_ANY, "About Plugin...", wx.DefaultPosition,
-            wx.DefaultSize)
+                                          wx.DefaultSize)
         self.about_plugin_btn.SetToolTipString("Displays the Plugin's README file")
         self.Bind(wx.EVT_BUTTON, self.controller.on_about_plugin, self.about_plugin_btn)
         self.main_panel_sizer.Add(self.about_plugin_btn, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-            0)
+                                  0)
         self._generate_std_buttons()
         self.SetSizerAndFit(self.main_panel_sizer)
 
