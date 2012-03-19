@@ -61,6 +61,11 @@ class TestPathFinder(unittest.TestCase):
         plugin_path = os.path.join(self.user_path, 'plugins')
         self.assertEqual(plugin_path, pathfinder.plugins_path())
 
+    def test_podmodels_path(self):
+        """Verify correct path to POD Toolkit models"""
+        model_path = os.path.join(self.user_path, "podmodels")
+        self.assertEqual(model_path, pathfinder.podmodels_path())
+
     def test_config_path(self):
         """Verify correct path to configuration file"""
         config_path = os.path.expanduser("~/a7117.cfg")

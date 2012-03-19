@@ -106,20 +106,9 @@ class BasicPlotWindowController(object):
         for plugin_id, plugin in self.available_plugins.items():
             if requested_plugin_id == plugin_id:
                 cfg = None
-                plugin_name = plugin[0]
-                plugin_class = None
-                plugin_instance = None
-                available_plugins = self.get_plugins()
-                plugin_names = [plugin[0] for plugin in available_plugins]
-                plugin_classes = [plugin[1] for plugin in available_plugins]
-                if plugin_name in plugin_names:
-                    plugin_class = plugin_classes[plugin_names.index(plugin_name)]
-                    plugin_instance = plugin_class()
-                    plugin_instance.data = self.data
-                if hasattr(plugin_instance, "config"):
-                    cfg = self.configure_plugin_dlg(plugin_instance)
-                    if cfg is not None:
-                        plugin_instance.config = cfg
+                plugin_class, check_plugin_config_instance = self.model.get_plugin(plugin[0])
+                if hasattr(check_plugin_config_instance, "config"):
+                    cfg = self.configure_plugin_dlg(check_plugin_config_instance)
                 plugin_queue = multiprocessing.Queue()
                 plugin_process = multiprocessing.Process(target=plugin_wrapper,
                     args=(

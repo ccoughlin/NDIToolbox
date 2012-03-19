@@ -33,6 +33,20 @@ class BasicPlotWindowModel(object):
         """Returns a list of available plugins"""
         return mainmodel.load_plugins()
 
+    def get_plugin(self, plugin_name):
+        """Given the name of a plugin, returns the plugin's class and an instance of the plugin,
+        or (None, None) if the plugin isn't listed in the available plugins."""
+        plugin_class = None
+        plugin_instance = None
+        available_plugins = self.get_plugins()
+        plugin_names = [plugin[0] for plugin in available_plugins]
+        plugin_classes = [plugin[1] for plugin in available_plugins]
+        if plugin_name in plugin_names:
+            plugin_class = plugin_classes[plugin_names.index(plugin_name)]
+            plugin_instance = plugin_class()
+            plugin_instance.data = self.data
+        return plugin_class, plugin_instance
+
 
 class PlotWindowModel(BasicPlotWindowModel):
     """Model for the PlotWindow"""

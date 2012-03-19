@@ -77,3 +77,8 @@ def plugins_path():
 def config_path():
     """Returns the path to the configuration file"""
     return os.path.expanduser("~/a7117.cfg")
+
+
+def podmodels_path():
+    """Returns the path to POD Toolkit models"""
+    return os.path.join(user_path(), "podmodels")

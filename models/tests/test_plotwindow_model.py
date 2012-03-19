@@ -52,6 +52,16 @@ class TestBasicPlotWindowModel(unittest.TestCase):
             self.assertTrue(plugin_name in expected_plugin_names)
             self.assertTrue(issubclass(plugin_instance, abstractplugin.AbstractPlugin))
 
+    def test_get_plugin(self):
+        """Verify a class name and an instance of a plugin is returned"""
+        retrieved_plugin_list = self.basic_model.get_plugins()
+        for plugin in retrieved_plugin_list:
+            plugin_name = plugin[0]
+            plugin_instance = plugin[1]
+            plg_cls, plg_instance = self.basic_model.get_plugin(plugin_name)
+            self.assertEqual(type(plugin_instance), type(plg_cls))
+            self.assertTrue(isinstance(plg_instance, plg_cls))
+
 
 class TestPlotWindowModel(unittest.TestCase):
     """Tests the PlotWindowModel class"""

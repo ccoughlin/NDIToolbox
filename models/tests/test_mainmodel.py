@@ -59,7 +59,7 @@ class TestMainModel(unittest.TestCase):
         already in existence."""
         data_folders = [pathfinder.user_path(), pathfinder.data_path(),
                         pathfinder.thumbnails_path(),
-                        pathfinder.plugins_path()]
+                        pathfinder.plugins_path(), pathfinder.podmodels_path()]
         self.model.check_user_path()
         for folder in data_folders:
             self.assertTrue(os.path.exists(folder))

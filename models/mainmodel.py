@@ -153,7 +153,8 @@ class MainModel(object):
         data_folder = pathfinder.data_path()
         thumbnail_folder = pathfinder.thumbnails_path()
         plugins_folder = pathfinder.plugins_path()
-        for fldr in (user_folder, data_folder, thumbnail_folder, plugins_folder):
+        podmodels_folder = pathfinder.podmodels_path()
+        for fldr in (user_folder, data_folder, thumbnail_folder, plugins_folder, podmodels_folder):
             if not os.path.exists(fldr):
                 os.makedirs(fldr)
 

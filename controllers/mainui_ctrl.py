@@ -259,3 +259,10 @@ class MainUIController(object):
                     plt_window.Show()
                 wx.EndBusyCursor()
             import_dlg.Destroy()
+
+    def on_run_podtk(self, evt):
+        """Handles request to run POD Toolkit"""
+        from views import podtk
+
+        podtk_ui = podtk.PODWindow(parent=self.view)
+        podtk_ui.Show()

@@ -31,6 +31,7 @@ class UI(wx.Frame):
         """Creates the main application menu"""
         self.menubar = wx.MenuBar()
         self.init_file_menu()
+        self.init_tools_menu()
         self.init_help_menu()
         self.SetMenuBar(self.menubar)
 
@@ -46,6 +47,15 @@ class UI(wx.Frame):
         self.file_mnu.AppendItem(quit_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_quit, id=quit_mnui.GetId())
         self.menubar.Append(self.file_mnu, "&File")
+
+    def init_tools_menu(self):
+        """Creates the Tools menu"""
+        self.tool_mnu = wx.Menu()
+        podtk_mnui = wx.MenuItem(self.tool_mnu, wx.ID_ANY, text="POD Toolkit",
+            help="Runs the Probability Of Detection Toolkit")
+        self.tool_mnu.AppendItem(podtk_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_run_podtk, id=podtk_mnui.GetId())
+        self.menubar.Append(self.tool_mnu, "&Tools")
 
     def init_help_menu(self):
         """Creates the Help menu"""
