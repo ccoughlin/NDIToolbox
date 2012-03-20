@@ -20,8 +20,8 @@ NDIToolbox is a Python (<http://www.python.org>) application and should run on m
 
 * wxPython (<http://www.wxpython.org>)
 * NumPy and SciPy (<http://www.scipy.org>)
-* matplotlib (<http://matplotlib.sf.net)
-* pydicom (<code.google.com/p/pydicom>)
+* matplotlib (<http://matplotlib.sf.net>)
+* pydicom (<http://code.google.com/p/pydicom>)
 
 Installation
 ------------
@@ -30,5 +30,5 @@ In the future we might have a full-blown installation package available, but for
 Acknowledgements
 ----------------
 * Axialis (<http://www.axialis.com/iconworkshop/>)
-* pydicom (<code.google.com/p/pydicom>)
+* pydicom (<http://code.google.com/p/pydicom>)
 * ASTM Committee E07 On Nondestructive Testing (<http://www.astm.org/COMMIT/COMMITTEE/E07.htm>)
