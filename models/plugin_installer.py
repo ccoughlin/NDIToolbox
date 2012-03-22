@@ -12,21 +12,19 @@ import os.path
 import cStringIO
 
 class PluginInstaller(object):
-    """Fetches and installs remote plugins.  Supports
-    HTTP Basic Auth and global passwords on ZIP archives."""
+    """Installs local plugin archives, supports global
+    passwords on ZIPs."""
 
-    def __init__(self, plugin_url, username=None, password=None, zip_password=None):
+    def __init__(self, plugin_url, zip_password=None):
         self.plugin_url = plugin_url
-        self.plugin_url_username = username
-        self.plugin_url_password = password
         self.zip_password = zip_password
         self.plugin = None
 
     def fetch(self):
-        """Retrieves the remote plugin, raising IOError if
-        file not found / server unavailable."""
-        plugin_fetcher = Fetcher(self.plugin_url, self.plugin_url_username, self.plugin_url_password)
-        self.plugin = plugin_fetcher.fetch()
+        """Retrieves the plugin, raising IOError if
+        file not found."""
+        with open(self.plugin_url, 'rb') as plugin_contents:
+            self.plugin = plugin_contents.read()
 
     @property
     def plugin_contents(self):
@@ -110,3 +108,21 @@ class PluginInstaller(object):
         else:
             return False
         return True
+
+
+class RemotePluginInstaller(PluginInstaller):
+    """Fetches and installs remote plugins.  Supports
+    HTTP Basic Auth and global passwords on ZIP archives."""
+
+    def __init__(self, plugin_url, username=None, password=None, zip_password=None):
+        self.plugin_url = plugin_url
+        self.plugin_url_username = username
+        self.plugin_url_password = password
+        self.zip_password = zip_password
+        self.plugin = None
+
+    def fetch(self):
+        """Retrieves the remote plugin, raising IOError if
+        file not found / server unavailable."""
+        plugin_fetcher = Fetcher(self.plugin_url, self.plugin_url_username, self.plugin_url_password)
+        self.plugin = plugin_fetcher.fetch()

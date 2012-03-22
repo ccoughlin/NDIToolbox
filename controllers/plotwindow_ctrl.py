@@ -82,8 +82,27 @@ class BasicPlotWindowController(object):
         self.view.canvas.draw()
 
     def on_install_plugin(self, evt):
+        """Handles request to install a local plugin"""
+        file_dlg = wx.FileDialog(parent=self.view, message="Please select a plugin archive to install.",
+            wildcard="ZIP files (*.zip)|*.zip|All files (*.*)|*.*")
+        if file_dlg.ShowModal() == wx.ID_OK:
+            dlg = fetchplugin_dialog.FetchPluginDialog(parent=self.view,
+                plugin_path=file_dlg.GetPath())
+            if dlg.ShowModal() == wx.ID_OK:
+                try:
+                    dlg.install_plugin()
+                except Exception as err:
+                    err_msg = "{0}".format(err)
+                    err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                        caption="Unable To Install Plugin", style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                    err_dlg.Destroy()
+            dlg.Destroy()
+        file_dlg.Destroy()
+
+    def on_download_plugin(self, evt):
         """Handles request to download and install a plugin"""
-        dlg = fetchplugin_dialog.FetchPluginDialog(parent=self.view)
+        dlg = fetchplugin_dialog.FetchRemotePluginDialog(parent=self.view)
         if dlg.ShowModal() == wx.ID_OK:
             try:
                 dlg.install_plugin()
