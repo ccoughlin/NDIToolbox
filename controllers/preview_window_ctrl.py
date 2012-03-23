@@ -49,6 +49,6 @@ class PreviewWindowController(object):
             except MemoryError: # File too large to load
                 err_msg = "The file is too large to load."
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                    caption="Unable To Preview Data", style=wx.ICON_ERROR)
+                                           caption="Unable To Preview Data", style=wx.ICON_ERROR)
                 err_dlg.ShowModal()
                 err_dlg.Destroy()

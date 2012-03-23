@@ -56,5 +56,7 @@ class FetchRemotePluginDialogModel(FetchPluginDialogModel):
             zip_password = url_dict.get('zip_password')
         else:
             zip_password = None
-        self.plugin_fetcher = plugin_installer.RemotePluginInstaller(plugin_url, username, password, zip_password)
+        self.plugin_fetcher = plugin_installer.RemotePluginInstaller(plugin_url, username,
+                                                                     password,
+                                                                     zip_password)
         self.plugin_fetcher.fetch()

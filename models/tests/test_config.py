@@ -62,7 +62,7 @@ class TestConfigure(unittest.TestCase):
         """Verify reading of options"""
         self.write_cfg()
         self.assertEqual(pathfinder.app_path(),
-            self.config.get_app_option('path'))
+                         self.config.get_app_option('path'))
         self.assertFalse(self.config.get_app_option_boolean('Should Run'))
         self.assertEqual(self.config.get_app_option_int('alpha'), 1)
         self.assertAlmostEqual(self.config.get_app_option_float('beta'), -2.2)

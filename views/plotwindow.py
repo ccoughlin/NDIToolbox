@@ -31,7 +31,8 @@ class PlotWindow(wx.Frame):
     def load_data(self):
         """Loads the data set and plots"""
         exception_queue = Queue.Queue()
-        data_thd = workerthread.WorkerThread(exception_queue=exception_queue, target=self.controller.load_data)
+        data_thd = workerthread.WorkerThread(exception_queue=exception_queue,
+                                             target=self.controller.load_data)
         data_thd.start()
         while True:
             data_thd.join(0.125)
@@ -43,7 +44,7 @@ class PlotWindow(wx.Frame):
                         # Truncate NumPy's genfromtxt() method's lengthy error messages
                         err_msg = ''.join([err_msg[:150], "\n(continued)"])
                     err_dlg = wx.MessageDialog(self.parent, message=err_msg,
-                        caption="Unable To Load Data", style=wx.ICON_ERROR)
+                                               caption="Unable To Load Data", style=wx.ICON_ERROR)
                     err_dlg.ShowModal()
                 except Queue.Empty:
                     pass
@@ -101,11 +102,11 @@ class PlotWindow(wx.Frame):
         """Creates the File menu"""
         self.file_mnu = wx.Menu()
         savedata_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Save Current Data",
-            help="Save current data to disk")
+                                    help="Save current data to disk")
         self.Bind(wx.EVT_MENU, self.controller.on_save_data, id=savedata_mnui.GetId())
         self.file_mnu.AppendItem(savedata_mnui)
         close_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Close Window",
-            help="Close the plot window")
+                                 help="Close the plot window")
         self.Bind(wx.EVT_MENU, self.controller.on_close, id=close_mnui.GetId())
         self.file_mnu.AppendItem(close_mnui)
         self.menubar.Append(self.file_mnu, "&File")
@@ -114,19 +115,19 @@ class PlotWindow(wx.Frame):
         """Creates the Plot menu"""
         self.plot_mnu = wx.Menu()
         plottitle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set Plot Title",
-            help="Set Plot Title")
+                                     help="Set Plot Title")
         self.Bind(wx.EVT_MENU, self.controller.on_set_plottitle, id=plottitle_mnui.GetId())
         self.plot_mnu.AppendItem(plottitle_mnui)
         xlbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set X Axis Label",
-            help="Set X Axis Label")
+                                help="Set X Axis Label")
         self.Bind(wx.EVT_MENU, self.controller.on_set_xlabel, id=xlbl_mnui.GetId())
         self.plot_mnu.AppendItem(xlbl_mnui)
         ylbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set Y Axis Label",
-            help="Set Y Axis Label")
+                                help="Set Y Axis Label")
         self.Bind(wx.EVT_MENU, self.controller.on_set_ylabel, id=ylbl_mnui.GetId())
         self.plot_mnu.AppendItem(ylbl_mnui)
         gridtoggle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Toggle Grid",
-            help="Turns grid on or off")
+                                      help="Turns grid on or off")
         self.plot_mnu.AppendItem(gridtoggle_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_toggle_grid, id=gridtoggle_mnui.GetId())
         self.menubar.Append(self.plot_mnu, "&Plot")
@@ -135,7 +136,7 @@ class PlotWindow(wx.Frame):
         """Creates the Operations menu"""
         self.ops_mnu = wx.Menu()
         self.revert_mnui = wx.MenuItem(self.ops_mnu, wx.ID_ANY, text='Revert To Original',
-            help='Revert to original data set')
+                                       help='Revert to original data set')
         self.Bind(wx.EVT_MENU, self.controller.on_revert, id=self.revert_mnui.GetId())
         self.ops_mnu.AppendItem(self.revert_mnui)
         self.init_specific_ops_menu()
@@ -145,7 +146,7 @@ class PlotWindow(wx.Frame):
         """Creates any plot-specific Operations menu items"""
         self.rect_mnu = wx.Menu() # Rectification operations
         self.fullrect_mnui = wx.MenuItem(self.rect_mnu, wx.ID_ANY, text="Full",
-            help="Full Rectification")
+                                         help="Full Rectification")
         self.Bind(wx.EVT_MENU, self.controller.on_rectify, id=self.fullrect_mnui.GetId())
         self.rect_mnu.AppendItem(self.fullrect_mnui)
         self.ops_mnu.AppendMenu(wx.ID_ANY, 'Rectify', self.rect_mnu)
@@ -181,16 +182,16 @@ class PlotWindow(wx.Frame):
             plugin_name = plugin[1].name
             plugin_description = plugin[1].description
             script_mnui = wx.MenuItem(self.tools_mnu, id=plugin_id, text=plugin_name,
-                help=plugin_description)
+                                      help=plugin_description)
             self.Bind(wx.EVT_MENU, self.controller.on_run_plugin, id=script_mnui.GetId())
             self.plugins_mnu.AppendItem(script_mnui)
         self.plugins_mnu.AppendSeparator()
         install_plugin_mnui = wx.MenuItem(self.plugins_mnu, wx.ID_ANY, text="Install Plugin...",
-            help="Install a local plugin")
+                                          help="Install a local plugin")
         self.Bind(wx.EVT_MENU, self.controller.on_install_plugin, id=install_plugin_mnui.GetId())
         self.plugins_mnu.AppendItem(install_plugin_mnui)
         download_plugin_mnui = wx.MenuItem(self.plugins_mnu, wx.ID_ANY, text="Download Plugin...",
-            help="Download and install a new plugin")
+                                           help="Download and install a new plugin")
         self.Bind(wx.EVT_MENU, self.controller.on_download_plugin, id=download_plugin_mnui.GetId())
         self.plugins_mnu.AppendItem(download_plugin_mnui)
         self.tools_mnu.AppendMenu(wx.ID_ANY, "Plugins", self.plugins_mnu)
@@ -212,32 +213,32 @@ class ImgPlotWindow(PlotWindow):
         """Creates the Plot menu"""
         self.plot_mnu = wx.Menu()
         plottitle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set Plot Title",
-            help="Set Plot Title")
+                                     help="Set Plot Title")
         self.Bind(wx.EVT_MENU, self.controller.on_set_plottitle, id=plottitle_mnui.GetId())
         self.plot_mnu.AppendItem(plottitle_mnui)
         xlbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set X Axis Label",
-            help="Set X Axis Label")
+                                help="Set X Axis Label")
         self.Bind(wx.EVT_MENU, self.controller.on_set_xlabel, id=xlbl_mnui.GetId())
         self.plot_mnu.AppendItem(xlbl_mnui)
         ylbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set Y Axis Label",
-            help="Set Y Axis Label")
+                                help="Set Y Axis Label")
         self.Bind(wx.EVT_MENU, self.controller.on_set_ylabel, id=ylbl_mnui.GetId())
         self.plot_mnu.AppendItem(ylbl_mnui)
         cbarlbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Set Colorbar Label',
-            help='Set Colorbar Label')
+                                   help='Set Colorbar Label')
         self.Bind(wx.EVT_MENU, self.controller.on_set_cbarlbl, id=cbarlbl_mnui.GetId())
         self.plot_mnu.AppendItem(cbarlbl_mnui)
         gridtoggle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Toggle Grid",
-            help="Turns grid on or off")
+                                      help="Turns grid on or off")
         self.plot_mnu.AppendItem(gridtoggle_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_toggle_grid, id=gridtoggle_mnui.GetId())
         self.preview_cmaps_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Preview Colormaps',
-            help='Preview available colormaps')
+                                              help='Preview available colormaps')
         self.Bind(wx.EVT_MENU, self.controller.on_preview_cmaps, id=self.preview_cmaps_mnui.GetId
             ())
         self.plot_mnu.AppendItem(self.preview_cmaps_mnui)
         self.select_cmap_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Select Colormap...',
-            help='Selects colormap')
+                                            help='Selects colormap')
         self.Bind(wx.EVT_MENU, self.controller.on_select_cmap, id=self.select_cmap_mnui.GetId())
         self.plot_mnu.AppendItem(self.select_cmap_mnui)
         self.menubar.Append(self.plot_mnu, "&Plot")
@@ -246,23 +247,23 @@ class ImgPlotWindow(PlotWindow):
         """Implements imgplot-specific operations for the Operations menu"""
         self.detrend_mnu = wx.Menu() # Detrending menu
         self.detrend_constantx_mnui = wx.MenuItem(self.detrend_mnu, wx.ID_ANY,
-            text="Constant Horizontal")
+                                                  text="Constant Horizontal")
         self.Bind(wx.EVT_MENU, self.controller.on_detrend_meanx,
-            id=self.detrend_constantx_mnui.GetId())
+                  id=self.detrend_constantx_mnui.GetId())
         self.detrend_mnu.AppendItem(self.detrend_constantx_mnui)
         self.detrend_constanty_mnui = wx.MenuItem(self.detrend_mnu, wx.ID_ANY,
-            text="Constant Vertical")
+                                                  text="Constant Vertical")
         self.Bind(wx.EVT_MENU, self.controller.on_detrend_meany,
-            id=self.detrend_constanty_mnui.GetId())
+                  id=self.detrend_constanty_mnui.GetId())
         self.detrend_mnu.AppendItem(self.detrend_constanty_mnui)
         self.detrend_linearx_mnui = wx.MenuItem(self.detrend_mnu, wx.ID_ANY,
-            text="Linear Horizontal")
+                                                text="Linear Horizontal")
         self.Bind(wx.EVT_MENU, self.controller.on_detrend_linearx,
-            id=self.detrend_linearx_mnui.GetId())
+                  id=self.detrend_linearx_mnui.GetId())
         self.detrend_mnu.AppendItem(self.detrend_linearx_mnui)
         self.detrend_lineary_mnui = wx.MenuItem(self.detrend_mnu, wx.ID_ANY, text="Linear Vertical")
         self.Bind(wx.EVT_MENU, self.controller.on_detrend_lineary,
-            id=self.detrend_lineary_mnui.GetId())
+                  id=self.detrend_lineary_mnui.GetId())
         self.detrend_mnu.AppendItem(self.detrend_lineary_mnui)
         self.ops_mnu.AppendMenu(wx.ID_ANY, 'Detrend Data', self.detrend_mnu)
 

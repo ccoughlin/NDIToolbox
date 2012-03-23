@@ -35,8 +35,10 @@ class PODWindowController(object):
         """Handles request to add a model"""
         # Placeholder for now
         addmodel_dlg = wx.MessageDialog(self.view, caption="Add A POD Model",
-            message="This feature not yet implemented.\nPlease contact TRI for assistance.",
-            style=wx.OK | wx.ICON_INFORMATION)
+                                        message="This feature not yet implemented.\nPlease " \
+                                                "contact TRI for assistance."
+                                        ,
+                                        style=wx.OK | wx.ICON_INFORMATION)
         addmodel_dlg.ShowModal()
         addmodel_dlg.Destroy()
 
@@ -44,8 +46,10 @@ class PODWindowController(object):
         """Handles request to delete a model"""
         # Placeholder for now
         delmodel_dlg = wx.MessageDialog(self.view, caption="Remove A POD Model",
-            message="This feature not yet implemented.\nPlease contact TRI for assistance.",
-            style=wx.OK | wx.ICON_INFORMATION)
+                                        message="This feature not yet implemented.\nPlease " \
+                                                "contact TRI for assistance."
+                                        ,
+                                        style=wx.OK | wx.ICON_INFORMATION)
         delmodel_dlg.ShowModal()
         delmodel_dlg.Destroy()
 
@@ -53,7 +57,8 @@ class PODWindowController(object):
         """Handles request to show About dialog"""
         # Placeholder for now
         about_dlg = wx.MessageDialog(self.view, caption="About PODToolkit",
-            message="This is the Probability Of Detection Toolkit", style=wx.OK | wx.ICON_INFORMATION)
+                                     message="This is the Probability Of Detection Toolkit",
+                                     style=wx.OK | wx.ICON_INFORMATION)
         about_dlg.ShowModal()
         about_dlg.Destroy()
 
@@ -61,8 +66,10 @@ class PODWindowController(object):
         """Handles request to show Help information"""
         # Placeholder for now
         help_dlg = wx.MessageDialog(self.view, caption="PODToolkit Help",
-            message="This feature not yet implemented.\nPlease contact TRI for assistance.",
-            style=wx.OK | wx.ICON_INFORMATION)
+                                    message="This feature not yet implemented.\nPlease contact " \
+                                            "TRI for assistance."
+                                    ,
+                                    style=wx.OK | wx.ICON_INFORMATION)
         help_dlg.ShowModal()
         help_dlg.Destroy()
 
@@ -111,7 +118,7 @@ class PODWindowController(object):
                     self.populate_spreadsheet(self.view.input_grid, data)
                 except IOError as err:
                     err_dlg = wx.MessageDialog(self.view, caption="Failed To Read File",
-                        message=str(err), style=wx.OK | wx.ICON_ERROR)
+                                               message=str(err), style=wx.OK | wx.ICON_ERROR)
                     err_dlg.ShowModal()
                     err_dlg.Destroy()
 
@@ -120,8 +127,10 @@ class PODWindowController(object):
         selected_input_data = self.view.modeltree.GetSelection()
         if selected_input_data.IsOk():
             file_dlg = wx.FileDialog(self.view, message="Please select a CSV file",
-                wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
-                style=wx.FD_OPEN)
+                                     wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*" \
+                                              ".txt|All Files (*.*)|*.*"
+                                     ,
+                                     style=wx.FD_OPEN)
             if file_dlg.ShowModal() == wx.ID_OK:
                 inputdata_item = self.view.modeltree.GetItemPyData(selected_input_data)
                 inputdata_item['filename'] = file_dlg.GetPath()
@@ -134,8 +143,10 @@ class PODWindowController(object):
         currently supports Open File (id=20) and Save File (id=30)."""
         if evt.GetId() == 20: # Open File
             file_dlg = wx.FileDialog(self.view, message="Please select a CSV file",
-                wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
-                style=wx.FD_OPEN)
+                                     wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*" \
+                                              ".txt|All Files (*.*)|*.*"
+                                     ,
+                                     style=wx.FD_OPEN)
             if file_dlg.ShowModal() == wx.ID_OK:
                 try:
                     grid = self.get_active_grid()
@@ -148,16 +159,19 @@ class PODWindowController(object):
                     if str(err) is None:
                         msg = "An unknown error occurred attempting to read the file."
                     else:
-                        msg = "An error occurred attempting to read the file:\n\n{0}".format(str(err))
+                        msg = "An error occurred attempting to read the file:\n\n{0}".format(
+                            str(err))
                     err_dlg = wx.MessageDialog(self.view, caption="Failed To Read File",
-                        message=msg, style=wx.OK | wx.ICON_ERROR)
+                                               message=msg, style=wx.OK | wx.ICON_ERROR)
                     err_dlg.ShowModal()
                     err_dlg.Destroy()
         elif evt.GetId() == 30: # Save File
             save_file_dlg = wx.FileDialog(self.view, message="Please specify an output filename",
-                defaultDir=pathfinder.podmodels_path(),
-                wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
-                style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+                                          defaultDir=pathfinder.podmodels_path(),
+                                          wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*" \
+                                                   ".txt|All Files (*.*)|*.*"
+                                          ,
+                                          style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
             if save_file_dlg.ShowModal() == wx.ID_OK:
                 grid = self.get_active_grid()
                 grid.WriteCSV(save_file_dlg.GetPath())
@@ -183,7 +197,8 @@ class PODWindowController(object):
             property_value = self.view.mp_grid.GetCellValue(evt.GetRow(), 1)
             selected_property = self.view.modeltree.GetSelection()
             if selected_property.IsOk() and selected_property != self.view.modeltree.GetRootItem():
-                self.view.modeltree.GetItemPyData(selected_property)[property_name] = property_value
+                self.view.modeltree.GetItemPyData(selected_property)[property_name] = \
+                property_value
 
     def on_save_model(self, evt):
         """Handles request to store POD Model configuration changes to disk"""
@@ -200,10 +215,11 @@ class PODWindowController(object):
     def run_model(self, model_instance):
         """Runs the specified POD Model instance in a separate thread."""
         exception_queue = Queue.Queue()
-        model_thd = workerthread.WorkerThread(exception_queue=exception_queue, target=model_instance.run)
+        model_thd = workerthread.WorkerThread(exception_queue=exception_queue,
+                                              target=model_instance.run)
         model_thd.start()
         progress_dlg = dialogs.progressDialog(dlg_title="Running POD Model",
-            dlg_msg="Please wait, running POD Model...")
+                                              dlg_msg="Please wait, running POD Model...")
         while True:
             model_thd.join(0.125)
             progress_dlg.update()
@@ -212,7 +228,8 @@ class PODWindowController(object):
                     exc_type, exc = exception_queue.get(block=False)
                     err_msg = "An error occurred while running the POD Model:\n{0}".format(exc)
                     err_dlg = wx.MessageDialog(self.view.parent, message=err_msg,
-                        caption="Error In POD Model Execution", style=wx.ICON_ERROR)
+                                               caption="Error In POD Model Execution",
+                                               style=wx.ICON_ERROR)
                     err_dlg.ShowModal()
                     err_dlg.Destroy()
                     return
@@ -227,7 +244,8 @@ class PODWindowController(object):
                         except MemoryError: # File too large to load
                             err_msg = "The file is too large to load."
                             err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                caption="Unable To Preview Data", style=wx.ICON_ERROR)
+                                                       caption="Unable To Preview Data",
+                                                       style=wx.ICON_ERROR)
                             err_dlg.ShowModal()
                             err_dlg.Destroy()
                     if model_instance.results is not None: # Model return output text to display

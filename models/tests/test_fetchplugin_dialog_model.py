@@ -53,7 +53,7 @@ class TestFetchPluginDialogModel(unittest.TestCase):
             local_plugin = fidin.read()
             self.assertEqual(local_plugin, self.model.plugin_fetcher.plugin)
             self.assertEqual(cStringIO.StringIO(local_plugin).getvalue(),
-                self.model.plugin_fetcher.plugin)
+                             self.model.plugin_fetcher.plugin)
 
     def test_get_readme(self):
         """Verify model returns the plugin archive's README"""
@@ -113,7 +113,8 @@ class TestRemoteFetchPluginDialogModel(unittest.TestCase):
     def plugin_url_params(cls, plugin_name):
         """Returns the URL to the specified plugin name when served by the test server"""
         return 'http://localhost:{0}/{1}'.format(cls.PORT,
-            TestRemoteFetchPluginDialogModel.local_plugin_url(plugin_name))
+                                                 TestRemoteFetchPluginDialogModel.local_plugin_url(
+                                                     plugin_name))
 
     @property
     def plugin(self):
@@ -128,7 +129,8 @@ class TestRemoteFetchPluginDialogModel(unittest.TestCase):
     def setUp(self):
         """Creates a SimpleHTTPServer instance to handle a single
         request.  Use self.server_thd.start() to initiate."""
-        self.server_thd = threading.Thread(target=TestRemoteFetchPluginDialogModel.httpd.handle_request)
+        self.server_thd = threading.Thread(
+            target=TestRemoteFetchPluginDialogModel.httpd.handle_request)
         self.mock_controller = ""
         self.model = fetchplugin_dialog_model.FetchRemotePluginDialogModel(self.mock_controller)
         self.plugin_url_params = {'url': self.good_plugin_url,
@@ -151,7 +153,7 @@ class TestRemoteFetchPluginDialogModel(unittest.TestCase):
             local_plugin = fidin.read()
             self.assertEqual(local_plugin, self.model.plugin_fetcher.plugin)
             self.assertEqual(cStringIO.StringIO(local_plugin).getvalue(),
-                self.model.plugin_fetcher.plugin)
+                             self.model.plugin_fetcher.plugin)
 
     def test_get_readme(self):
         """Verify model returns the plugin archive's README"""

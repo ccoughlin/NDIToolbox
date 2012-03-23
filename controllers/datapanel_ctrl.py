@@ -21,7 +21,7 @@ class DataPanelController(object):
         self.clear_tree()
         for file in self.model.find_data():
             data_item = self.view.data_tree.AppendItem(self.view.data_tree_root,
-                os.path.basename(file))
+                                                       os.path.basename(file))
             self.view.data_tree.SetPyData(data_item, file)
 
     def clear_tree(self):

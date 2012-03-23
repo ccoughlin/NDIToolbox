@@ -20,7 +20,7 @@ class TestUnzipper(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.file_folder = os.path.normpath(os.path.join(os.path.dirname(__file__),
-            'support_files'))
+                                                        'support_files'))
         cls.destination_folder = os.path.normpath(
             os.path.join(os.path.dirname(__file__), 'temp_files'))
         cls.zip_file_path = os.path.normpath(os.path.join(cls.file_folder, 'test.zip'))
@@ -127,7 +127,7 @@ class TestUnzipper(unittest.TestCase):
                         rel_path = rel_path.replace('\\', '/')
                     with open(file_name, "rb") as original_file:
                         self.assertEqual(original_file.read(),
-                            unzipper.read(rel_path))
+                                         unzipper.read(rel_path))
 
     @classmethod
     def tearDownClass(cls):

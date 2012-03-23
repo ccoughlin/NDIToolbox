@@ -82,7 +82,7 @@ class TestPluginInstaller(unittest.TestCase):
         """Verify correct initialization"""
         zip_pword = random.sample(string.ascii_letters, 9)
         a_plugin_fetcher = plugin_installer.PluginInstaller(self.good_plugin_loc,
-            zip_password=zip_pword)
+                                                            zip_password=zip_pword)
         self.assertEqual(self.good_plugin_loc, a_plugin_fetcher.plugin_url)
         self.assertEqual(zip_pword, a_plugin_fetcher.zip_password)
         self.assertIsNone(a_plugin_fetcher.plugin)
@@ -96,7 +96,7 @@ class TestPluginInstaller(unittest.TestCase):
             local_plugin = fidin.read()
             self.assertEqual(local_plugin, a_plugin_fetcher.plugin)
             self.assertEqual(cStringIO.StringIO(local_plugin).getvalue(),
-                a_plugin_fetcher.plugin_contents.getvalue())
+                             a_plugin_fetcher.plugin_contents.getvalue())
 
     def test_plugin_files(self):
         """Verify plugin_files method returns a list of files in the plugin archive"""
@@ -219,7 +219,9 @@ class TestRemotePluginInstaller(unittest.TestCase):
     @classmethod
     def plugin_url(cls, plugin_name):
         """Returns the URL to the specified plugin name when served by the test server"""
-        return 'http://localhost:{0}/{1}'.format(cls.PORT, TestRemotePluginInstaller.local_plugin_url(plugin_name))
+        return 'http://localhost:{0}/{1}'.format(cls.PORT,
+                                                 TestRemotePluginInstaller.local_plugin_url(
+                                                     plugin_name))
 
     @property
     def good_plugin(self):
@@ -285,7 +287,8 @@ class TestRemotePluginInstaller(unittest.TestCase):
         pword = random.sample(string.ascii_letters, 11)
         zip_pword = random.sample(string.ascii_letters, 9)
         a_plugin_fetcher = plugin_installer.RemotePluginInstaller(self.good_plugin_url,
-            username=uname, password=pword, zip_password=zip_pword)
+                                                                  username=uname, password=pword,
+                                                                  zip_password=zip_pword)
         self.assertEqual(self.good_plugin_url, a_plugin_fetcher.plugin_url)
         self.assertEqual(uname, a_plugin_fetcher.plugin_url_username)
         self.assertEqual(pword, a_plugin_fetcher.plugin_url_password)
@@ -301,7 +304,7 @@ class TestRemotePluginInstaller(unittest.TestCase):
             local_plugin = fidin.read()
             self.assertEqual(local_plugin, self.good_plugin_installer.plugin)
             self.assertEqual(cStringIO.StringIO(local_plugin).getvalue(),
-                self.good_plugin_installer.plugin_contents.getvalue())
+                             self.good_plugin_installer.plugin_contents.getvalue())
 
 if __name__ == "__main__":
     random.seed()

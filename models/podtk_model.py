@@ -37,7 +37,7 @@ class PODWindowModel(object):
                     try:
                         module_hdl, path_name, description = imp.find_module(model_name)
                         podmodel_module = imp.load_module(model_name, module_hdl, path_name,
-                            description)
+                                                          description)
                         podmodel_classes = inspect.getmembers(podmodel_module, inspect.isclass)
                         for podmodel_class in podmodel_classes:
                             if issubclass(podmodel_class[1], PODModel):

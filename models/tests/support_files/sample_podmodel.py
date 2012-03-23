@@ -10,7 +10,8 @@ class SamplePODModel(PODModel):
 
 
     def __init__(self):
-        PODModel.__init__(self, self.name, self.description, self.inputdata, self.params, self.settings)
+        PODModel.__init__(self, self.name, self.description, self.inputdata, self.params,
+                          self.settings)
 
     def run(self):
         """Executes the POD Model"""

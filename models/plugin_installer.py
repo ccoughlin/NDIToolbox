@@ -1,4 +1,4 @@
-"""plugin_installer.py - fetches and installs remote plugins
+"""plugin_installer.py - fetches and installs plugins
 
 Chris R. Coughlin (TRI/Austin, Inc.)
 """
@@ -83,7 +83,8 @@ class PluginInstaller(object):
             if plugin_main not in plugin_files:
                 return False
             plugin_fldr = zip_name_base
-            support_files = [el for el in plugin_files if el not in self.readme_files and el != plugin_main]
+            support_files = [el for el in plugin_files if
+                             el not in self.readme_files and el != plugin_main]
             for each_file in support_files:
                 install_fldr = os.path.dirname(each_file)
                 if os.path.commonprefix([plugin_fldr, install_fldr]) != plugin_fldr:
@@ -124,5 +125,6 @@ class RemotePluginInstaller(PluginInstaller):
     def fetch(self):
         """Retrieves the remote plugin, raising IOError if
         file not found / server unavailable."""
-        plugin_fetcher = Fetcher(self.plugin_url, self.plugin_url_username, self.plugin_url_password)
+        plugin_fetcher = Fetcher(self.plugin_url, self.plugin_url_username,
+                                 self.plugin_url_password)
         self.plugin = plugin_fetcher.fetch()

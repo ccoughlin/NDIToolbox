@@ -24,7 +24,7 @@ class TestPODWindowModel(unittest.TestCase):
         self.sample_data = np.array(self.random_data())
         self.sample_data_basename = "sample.dat"
         self.sample_data_file = os.path.join(os.path.dirname(__file__),
-            self.sample_data_basename)
+                                             self.sample_data_basename)
         np.savetxt(self.sample_data_file, self.sample_data)
 
     def random_data(self):
@@ -132,7 +132,7 @@ class MockPODModel(podtk_model.PODModel):
     def __init__(self, config_file):
         """Mocks PODModel by allowing a specified configuration file"""
         podtk_model.PODModel.__init__(self, self.name, self.description,
-            self.inputdata, self.params, self.settings)
+                                      self.inputdata, self.params, self.settings)
         self.config = config_file
 
     def run(self):

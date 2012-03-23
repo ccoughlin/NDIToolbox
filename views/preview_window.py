@@ -26,7 +26,8 @@ class PreviewWindow(wx.Frame):
 
     def load_data(self):
         exception_queue = Queue.Queue()
-        data_thd = workerthread.WorkerThread(exception_queue=exception_queue, target=self.controller.load_data)
+        data_thd = workerthread.WorkerThread(exception_queue=exception_queue,
+                                             target=self.controller.load_data)
         data_thd.start()
         while True:
             data_thd.join(0.125)
@@ -38,7 +39,7 @@ class PreviewWindow(wx.Frame):
                         # Truncate NumPy's genfromtxt() method's lengthy error messages
                         err_msg = ''.join([err_msg[:150], "\n(continued)"])
                     err_dlg = wx.MessageDialog(self.parent, message=err_msg,
-                        caption="Unable To Load Data", style=wx.ICON_ERROR)
+                                               caption="Unable To Load Data", style=wx.ICON_ERROR)
                     err_dlg.ShowModal()
                 except Queue.Empty:
                     pass

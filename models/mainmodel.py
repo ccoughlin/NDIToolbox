@@ -25,8 +25,8 @@ def get_data(data_fname, **import_params):
     cols_to_read = import_params.get('usecols', None)
     transpose_data = import_params.get('transpose', False)
     data = np.genfromtxt(data_fname, comments=comment_char, delimiter=delim_char,
-        skip_header=header_lines, skip_footer=footer_lines, usecols=cols_to_read,
-        unpack=transpose_data)
+                         skip_header=header_lines, skip_footer=footer_lines, usecols=cols_to_read,
+                         unpack=transpose_data)
     return data
 
 
@@ -53,7 +53,7 @@ def load_plugins():
                 try:
                     module_hdl, path_name, description = imp.find_module(module_name)
                     plugin_module = imp.load_module(module_name, module_hdl, path_name,
-                        description)
+                                                    description)
                     plugin_classes = inspect.getmembers(plugin_module, inspect.isclass)
                     for plugin_class in plugin_classes:
                         if issubclass(plugin_class[1], abstractplugin.AbstractPlugin):
@@ -182,7 +182,7 @@ class MainModel(object):
         di_struct = dicom.read_file(data_file)
         export_parameters = {'delimiter': ','}
         di_fname = os.path.join(pathfinder.data_path(),
-            os.path.basename(data_file))
+                                os.path.basename(data_file))
         # TODO - implement support for 3D arrays
         # when data format is finalized
         if di_struct.pixel_array.ndim > 2:

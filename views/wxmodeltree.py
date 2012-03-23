@@ -28,15 +28,15 @@ class ModelTree(wx.TreeCtrl):
         newinputdata_branch = self.AppendItem(newmodel_branch, self.inputdata_lbl)
         for inputdataname, inputdata in sorted(PODModel.inputdata.iteritems()):
             self.AppendItem(newinputdata_branch, text=inputdataname,
-                data=wx.TreeItemData(inputdata))
+                            data=wx.TreeItemData(inputdata))
         newparameter_branch = self.AppendItem(newmodel_branch, self.parameters_lbl)
         for parametername, parameter in sorted(PODModel.params.iteritems()):
             self.AppendItem(newparameter_branch, text=parametername,
-                data=wx.TreeItemData(parameter))
+                            data=wx.TreeItemData(parameter))
         newsetting_branch = self.AppendItem(newmodel_branch, self.settings_lbl)
         for settingname, setting in sorted(PODModel.settings.iteritems()):
             self.AppendItem(newsetting_branch, text=settingname,
-                data=wx.TreeItemData(setting))
+                            data=wx.TreeItemData(setting))
         self.ExpandAllChildren(newmodel_branch)
         return newmodel_branch
 

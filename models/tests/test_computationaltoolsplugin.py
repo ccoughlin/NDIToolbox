@@ -15,7 +15,7 @@ class TestComputationalToolsPlugin(unittest.TestCase):
         self.plugin_name = "Test Plugin"
         self.plugin_description = "Unit test of TRI Plugin template"
         self.plugin = ComputationalToolsPlugin(name=self.plugin_name,
-            description=self.plugin_description)
+                                               description=self.plugin_description)
 
     def test_init(self):
         """Verify successful instantiation"""

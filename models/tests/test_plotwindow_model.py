@@ -21,8 +21,8 @@ class TestBasicPlotWindowModel(unittest.TestCase):
         self.mock_data_file = ""
         self.mock_read_parameters = {}
         self.basic_model = model.BasicPlotWindowModel(self.mock_controller,
-            self.mock_data_file,
-            **self.mock_read_parameters)
+                                                      self.mock_data_file,
+                                                      **self.mock_read_parameters)
 
     def random_data(self):
         """Returns a list of random data"""
@@ -38,7 +38,7 @@ class TestBasicPlotWindowModel(unittest.TestCase):
         self.basic_model.revert_data()
         self.assertListEqual(self.basic_model.original_data.tolist(), original_data.tolist())
         self.assertListEqual(self.basic_model.original_data.tolist(),
-            self.basic_model.data.tolist())
+                             self.basic_model.data.tolist())
 
     def test_get_plugins(self):
         """Verify a list of available plugins is returned"""
@@ -71,7 +71,7 @@ class TestPlotWindowModel(unittest.TestCase):
         self.mock_data_file = ""
         self.mock_read_parameters = {}
         self.model = model.PlotWindowModel(self.mock_controller, self.mock_data_file,
-            **self.mock_read_parameters)
+                                           **self.mock_read_parameters)
 
     def random_data(self):
         """Returns a list of random data"""
@@ -107,7 +107,7 @@ class TestPlotWindowModel(unittest.TestCase):
             start_idx = 2
             end_idx = 4
             expected_data = self.model.apply_window(gate_fn, self.model.data,
-                start_idx, end_idx)
+                                                    start_idx, end_idx)
             self.model.apply_gate(gate_id, start_idx, end_idx)
             self.assertListEqual(original_data.tolist(), self.model.original_data.tolist())
             self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
@@ -129,7 +129,7 @@ class TestImgPlotWindowModel(unittest.TestCase):
         self.mock_data_file = ""
         self.mock_read_parameters = {}
         self.model = model.ImgPlotWindowModel(self.mock_controller, self.mock_data_file,
-            **self.mock_read_parameters)
+                                              **self.mock_read_parameters)
 
     def random_data(self):
         """Generates a random list of data"""

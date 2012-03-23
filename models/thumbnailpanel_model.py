@@ -61,9 +61,9 @@ def plot(data_filename, width, height, **import_params):
     """Returns a PNG plot of the specified data file's dataset"""
     data = mainmodel.get_data(data_filename, **import_params)
     return gen_thumbnail(plot_stream(data,
-        os.path.basename(data_filename),
-        width, height),
-        data_filename)
+                                     os.path.basename(data_filename),
+                                     width, height),
+                         data_filename)
 
 
 def multiprocess_plot(data_filename, width, height, **import_params):
@@ -72,7 +72,7 @@ def multiprocess_plot(data_filename, width, height, **import_params):
     data = mainmodel.get_data(data_filename, **import_params)
     in_conn, out_conn = Pipe()
     plot_proc = Process(target=plot_pipe,
-        args=(data, os.path.basename(data_filename), width, height, out_conn))
+                        args=(data, os.path.basename(data_filename), width, height, out_conn))
     plot_proc.start()
     img_stream = in_conn.recv()
     plot_proc.join()

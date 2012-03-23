@@ -1095,7 +1095,7 @@ class ConfigObj(Section):
         (.*)                    # value (including list values and comments)
         $   # line end
         ''',
-        re.VERBOSE)
+                          re.VERBOSE)
 
     _sectionmarker = re.compile(r'''^
         (\s*)                     # 1: indentation
@@ -1108,7 +1108,7 @@ class ConfigObj(Section):
         ((?:\s*\])+)              # 4: section marker close
         \s*(\#.*)?                # 5: optional comment
         $''',
-        re.VERBOSE)
+                                re.VERBOSE)
 
     # this regexp pulls list values out as a single string
     # or single values and comments
@@ -1138,7 +1138,7 @@ class ConfigObj(Section):
         )
         \s*(\#.*)?          # optional comment
         $''',
-        re.VERBOSE)
+                           re.VERBOSE)
 
     # use findall to get the members of a list value
     _listvalueexp = re.compile(r'''
@@ -1149,7 +1149,7 @@ class ConfigObj(Section):
         )
         \s*,\s*                 # comma
         ''',
-        re.VERBOSE)
+                               re.VERBOSE)
 
     # this regexp is used for the value
     # when lists are switched off
@@ -1162,7 +1162,7 @@ class ConfigObj(Section):
         )
         \s*(\#.*)?              # optional comment
         $''',
-        re.VERBOSE)
+                              re.VERBOSE)
 
     # regexes for finding triple quoted values on one line
     _single_line_single = re.compile(r"^'''(.*?)'''\s*(#.*)?$")
@@ -1219,7 +1219,7 @@ class ConfigObj(Section):
 
             warnings.warn('Passing in an options dictionary to ConfigObj() is '
                           'deprecated. Use **options instead.',
-                DeprecationWarning, stacklevel=2)
+                          DeprecationWarning, stacklevel=2)
 
             # TODO: check the values too.
             for entry in options:
@@ -1575,17 +1575,17 @@ class ConfigObj(Section):
                 cur_depth = sect_open.count('[')
                 if cur_depth != sect_close.count(']'):
                     self._handle_error("Cannot compute the section depth at line %s.",
-                        NestingError, infile, cur_index)
+                                       NestingError, infile, cur_index)
                     continue
 
                 if cur_depth < this_section.depth:
                     # the new section is dropping back to a previous level
                     try:
                         parent = self._match_depth(this_section,
-                            cur_depth).parent
+                                                   cur_depth).parent
                     except SyntaxError:
                         self._handle_error("Cannot compute nesting level at line %s.",
-                            NestingError, infile, cur_index)
+                                           NestingError, infile, cur_index)
                         continue
                 elif cur_depth == this_section.depth:
                     # the new section is a sibling of the current section
@@ -1595,12 +1595,12 @@ class ConfigObj(Section):
                     parent = this_section
                 else:
                     self._handle_error("Section too nested at line %s.",
-                        NestingError, infile, cur_index)
+                                       NestingError, infile, cur_index)
 
                 sect_name = self._unquote(sect_name)
                 if sect_name in parent:
                     self._handle_error('Duplicate section name at line %s.',
-                        DuplicateError, infile, cur_index)
+                                       DuplicateError, infile, cur_index)
                     continue
 
                 # create the new section
@@ -1650,7 +1650,7 @@ class ConfigObj(Section):
                                 else:
                                     msg = 'Parse error in value at line %s.'
                                 self._handle_error(msg, UnreprError, infile,
-                                    cur_index)
+                                                   cur_index)
                                 continue
                 else:
                     if self.unrepr:
@@ -1663,7 +1663,7 @@ class ConfigObj(Section):
                             else:
                                 msg = 'Parse error in value at line %s.'
                             self._handle_error(msg, UnreprError, infile,
-                                cur_index)
+                                               cur_index)
                             continue
                     else:
                         # extract comment and lists
@@ -1791,7 +1791,8 @@ class ConfigObj(Section):
 
         no_lists_no_quotes = not self.list_values and '\n' not in value and '#' not in value
         need_triple = multiline and ((("'" in value) and ('"' in value)) or ('\n' in value ))
-        hash_triple_quote = multiline and not need_triple and ("'" in value) and ('"' in value) and ('#' in value)
+        hash_triple_quote = multiline and not need_triple and ("'" in value) and (
+        '"' in value) and ('#' in value)
         check_for_single = (no_lists_no_quotes or not need_triple) and not hash_triple_quote
 
         if check_for_single:
@@ -1929,9 +1930,9 @@ class ConfigObj(Section):
         if not isinstance(configspec, ConfigObj):
             try:
                 configspec = ConfigObj(configspec,
-                    raise_errors=True,
-                    file_error=True,
-                    _inspec=True)
+                                       raise_errors=True,
+                                       file_error=True,
+                                       _inspec=True)
             except ConfigObjError, e:
                 # FIXME: Should these errors have a reference
                 #        to the already parsed ConfigObj ?
@@ -2189,8 +2190,8 @@ class ConfigObj(Section):
 
             try:
                 check = validator.check(spec,
-                    val,
-                    missing=missing
+                                        val,
+                                        missing=missing
                 )
             except validator.baseErrorClass, e:
                 if not preserve_errors or isinstance(e, self._vdtMissingValue):
@@ -2251,7 +2252,7 @@ class ConfigObj(Section):
                 val = section[entry]
 
             ret_true, ret_false = validate_entry(entry, configspec[entry], val,
-                missing, ret_true, ret_false)
+                                                 missing, ret_true, ret_false)
 
         many = None
         if '__many__' in configspec.scalars:
@@ -2263,7 +2264,7 @@ class ConfigObj(Section):
             for entry in unvalidated:
                 val = section[entry]
                 ret_true, ret_false = validate_entry(entry, many, val, False,
-                    ret_true, ret_false)
+                                                     ret_true, ret_false)
             unvalidated = []
 
         for entry in incorrect_scalars:
@@ -2295,7 +2296,8 @@ class ConfigObj(Section):
             if copy:
                 section.comments[entry] = configspec.comments.get(entry, [])
                 section.inline_comments[entry] = configspec.inline_comments.get(entry, '')
-            check = self.validate(validator, preserve_errors=preserve_errors, copy=copy, section=section[entry])
+            check = self.validate(validator, preserve_errors=preserve_errors, copy=copy,
+                                  section=section[entry])
             out[entry] = check
             if check == False:
                 ret_true = False
