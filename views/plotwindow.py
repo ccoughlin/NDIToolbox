@@ -163,6 +163,18 @@ class PlotWindow(wx.Frame):
     def init_tools_menu(self):
         """Initializes the Tools Menu (Plugins and external scripts)"""
         self.tools_mnu = wx.Menu()
+        self.init_plugins_menu()
+        self.menubar.Append(self.tools_mnu, '&Tools')
+
+    def init_plugins_menu(self):
+        """Initializes the Plugins menu"""
+        # If the Plugins menu already exists,
+        # delete and rebuild.  Used to refresh
+        # list of available plugins after installing
+        # a new one
+        plugins_mnu_id = self.tools_mnu.FindItem("Plugins")
+        if plugins_mnu_id != -1:
+            self.tools_mnu.RemoveItem(self.tools_mnu.FindItemById(plugins_mnu_id))
         self.plugins_mnu = wx.Menu()
         plugins = self.controller.available_plugins
         for plugin_id, plugin in plugins.items():
@@ -182,7 +194,6 @@ class PlotWindow(wx.Frame):
         self.Bind(wx.EVT_MENU, self.controller.on_download_plugin, id=download_plugin_mnui.GetId())
         self.plugins_mnu.AppendItem(download_plugin_mnui)
         self.tools_mnu.AppendMenu(wx.ID_ANY, "Plugins", self.plugins_mnu)
-        self.menubar.Append(self.tools_mnu, '&Tools')
 
     def init_help_menu(self):
         pass

@@ -58,7 +58,12 @@ class BasicPlotWindowController(object):
         self.axes_grid = True
         self.model = model.BasicPlotWindowModel(self, data_file, **read_text_params)
         self.init_plot_defaults()
-        self.available_plugins = self.generate_plugin_dict()
+
+    @property
+    def available_plugins(self):
+        """Returns a list of available plugins suitable for
+        inclusion in a wxMenu"""
+        return self.generate_plugin_dict()
 
     def init_plot_defaults(self):
         """Sets some basic matplotlib configuration parameters
@@ -91,6 +96,7 @@ class BasicPlotWindowController(object):
             if dlg.ShowModal() == wx.ID_OK:
                 try:
                     dlg.install_plugin()
+                    self.view.init_plugins_menu()
                 except Exception as err:
                     err_msg = "{0}".format(err)
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
@@ -106,6 +112,7 @@ class BasicPlotWindowController(object):
         if dlg.ShowModal() == wx.ID_OK:
             try:
                 dlg.install_plugin()
+                self.view.init_plugins_menu()
             except Exception as err:
                 err_msg = "{0}".format(err)
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
@@ -279,7 +286,6 @@ class PlotWindowController(BasicPlotWindowController):
         self.axes_grid = True
         self.model = model.PlotWindowModel(self, data_file, **read_text_params)
         self.init_plot_defaults()
-        self.available_plugins = self.generate_plugin_dict()
 
     def plot(self, data):
         """Plots the dataset"""
@@ -344,7 +350,6 @@ class ImgPlotWindowController(BasicPlotWindowController):
         self.model = model.ImgPlotWindowModel(self, data_file, **read_text_params)
         self.colorbar = None
         self.init_plot_defaults()
-        self.available_plugins = self.generate_plugin_dict()
 
     def init_plot_defaults(self):
         super(ImgPlotWindowController, self).init_plot_defaults()
