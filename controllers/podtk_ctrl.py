@@ -9,6 +9,7 @@ from models.podtk_model import PODWindowModel
 from models import workerthread
 from controllers import pathfinder
 from views import dialogs
+from views import fetchpodmodel_dialog
 import wx
 import Queue
 
@@ -31,22 +32,51 @@ class PODWindowController(object):
         """Handles Close Window request"""
         self.view.close()
 
-    def on_add_model(self, evt):
-        """Handles request to add a model"""
-        # Placeholder for now
-        addmodel_dlg = wx.MessageDialog(self.view, caption="Add A POD Model",
-                                        message="This feature not yet implemented.\nPlease " \
-                                                "contact TRI for assistance."
-                                        ,
-                                        style=wx.OK | wx.ICON_INFORMATION)
-        addmodel_dlg.ShowModal()
-        addmodel_dlg.Destroy()
+    def on_download_model(self, evt):
+        """Handles request to download and install a plugin"""
+        dlg = fetchpodmodel_dialog.FetchRemotePODModelDialog(parent=self.view)
+        if dlg.ShowModal() == wx.ID_OK:
+            try:
+                dlg.install_plugin()
+                self.view.modeltree.clear()
+                self.get_models()
+            except Exception as err:
+                err_msg = "{0}".format(err)
+                err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                           caption="Unable To Install POD Model",
+                                           style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+        dlg.Destroy()
+
+    def on_install_model(self, evt):
+        """Handles request to install a local POD Model"""
+        file_dlg = wx.FileDialog(parent=self.view,
+                                 message="Please select a POD Model archive to install.",
+                                 wildcard="ZIP files (*.zip)|*.zip|All files (*.*)|*.*")
+        if file_dlg.ShowModal() == wx.ID_OK:
+            dlg = fetchpodmodel_dialog.FetchPODModelDialog(parent=self.view,
+                                                           plugin_path=file_dlg.GetPath())
+            if dlg.ShowModal() == wx.ID_OK:
+                try:
+                    dlg.install_plugin()
+                    self.view.modeltree.clear()
+                    self.get_models()
+                except Exception as err:
+                    err_msg = "{0}".format(err)
+                    err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                               caption="Unable To Install POD Model",
+                                               style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                    err_dlg.Destroy()
+            dlg.Destroy()
+        file_dlg.Destroy()
 
     def on_delete_model(self, evt):
         """Handles request to delete a model"""
         # Placeholder for now
         delmodel_dlg = wx.MessageDialog(self.view, caption="Remove A POD Model",
-                                        message="This feature not yet implemented.\nPlease " \
+                                        message="This feature not yet implemented.\nPlease "\
                                                 "contact TRI for assistance."
                                         ,
                                         style=wx.OK | wx.ICON_INFORMATION)
@@ -66,7 +96,7 @@ class PODWindowController(object):
         """Handles request to show Help information"""
         # Placeholder for now
         help_dlg = wx.MessageDialog(self.view, caption="PODToolkit Help",
-                                    message="This feature not yet implemented.\nPlease contact " \
+                                    message="This feature not yet implemented.\nPlease contact "\
                                             "TRI for assistance."
                                     ,
                                     style=wx.OK | wx.ICON_INFORMATION)
@@ -127,7 +157,7 @@ class PODWindowController(object):
         selected_input_data = self.view.modeltree.GetSelection()
         if selected_input_data.IsOk():
             file_dlg = wx.FileDialog(self.view, message="Please select a CSV file",
-                                     wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*" \
+                                     wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*"\
                                               ".txt|All Files (*.*)|*.*"
                                      ,
                                      style=wx.FD_OPEN)
@@ -143,7 +173,7 @@ class PODWindowController(object):
         currently supports Open File (id=20) and Save File (id=30)."""
         if evt.GetId() == 20: # Open File
             file_dlg = wx.FileDialog(self.view, message="Please select a CSV file",
-                                     wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*" \
+                                     wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*"\
                                               ".txt|All Files (*.*)|*.*"
                                      ,
                                      style=wx.FD_OPEN)
@@ -168,7 +198,7 @@ class PODWindowController(object):
         elif evt.GetId() == 30: # Save File
             save_file_dlg = wx.FileDialog(self.view, message="Please specify an output filename",
                                           defaultDir=pathfinder.podmodels_path(),
-                                          wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*" \
+                                          wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*"\
                                                    ".txt|All Files (*.*)|*.*"
                                           ,
                                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
@@ -197,20 +227,34 @@ class PODWindowController(object):
             property_value = self.view.mp_grid.GetCellValue(evt.GetRow(), 1)
             selected_property = self.view.modeltree.GetSelection()
             if selected_property.IsOk() and selected_property != self.view.modeltree.GetRootItem():
-                self.view.modeltree.GetItemPyData(selected_property)[property_name] = \
+                self.view.modeltree.GetItemPyData(selected_property)[property_name] =\
                 property_value
 
     def on_save_model(self, evt):
         """Handles request to store POD Model configuration changes to disk"""
-        model = self.view.modeltree.get_model()
-        if model is not None:
-            model.save_configuration()
+        try:
+            model = self.view.modeltree.get_model()
+            if model is not None:
+                model.save_configuration()
+        except ValueError: # No model selected
+            err_dlg = wx.MessageDialog(self.view, caption="No Model Selected",
+                                       message="Please select a POD Model.",
+                                       style=wx.OK | wx.ICON_ERROR)
+            err_dlg.ShowModal()
+            err_dlg.Destroy()
 
     def on_runmodel(self, evt):
         """Handles request to execute current POD Model"""
-        model = self.view.modeltree.get_model()
-        if model is not None:
-            self.run_model(model)
+        try:
+            model = self.view.modeltree.get_model()
+            if model is not None:
+                self.run_model(model)
+        except ValueError: # No model selected
+            err_dlg = wx.MessageDialog(self.view, caption="No Model Selected",
+                                       message="Please select a POD Model.",
+                                       style=wx.OK | wx.ICON_ERROR)
+            err_dlg.ShowModal()
+            err_dlg.Destroy()
 
     def run_model(self, model_instance):
         """Runs the specified POD Model instance in a separate thread."""

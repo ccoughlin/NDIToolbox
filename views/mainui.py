@@ -144,7 +144,8 @@ class UI(wx.Frame):
         self.Bind(wx.EVT_TOOL, self.controller.on_plot_data, self.plot_data_tool)
         # Image plot of data
         self.imageplot_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Image Plot',
-                                                             shortHelp='Generates image plot of selected data'
+                                                             shortHelp='Generates image plot of ' \
+                                                                       'selected data'
                                                              ,
                                                              bitmap=self.controller.get_bitmap(
                                                                  'imgplt.png'))

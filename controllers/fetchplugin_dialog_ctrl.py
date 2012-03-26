@@ -41,8 +41,8 @@ class FetchPluginDialogController(object):
     def fetch_plugin(self):
         """Downloads the plugin"""
         url_dict = self.get_configured_url()
-        busy_dlg = dialogs.progressDialog(dlg_title="Retrieving Plugin",
-                                          dlg_msg="Please wait, retrieving plugin...")
+        busy_dlg = dialogs.progressDialog(dlg_title="Retrieving Archive",
+                                          dlg_msg="Please wait, retrieving archive...")
         exception_queue = Queue.Queue()
         fetch_plugin_thd = workerthread.WorkerThread(exception_queue=exception_queue,
                                                      target=self.model.get_plugin,
@@ -55,9 +55,9 @@ class FetchPluginDialogController(object):
                 busy_dlg.close()
                 try:
                     exc_type, exc = exception_queue.get(block=False)
-                    err_msg = "An error occurred while reading the plugin:\n{0}".format(exc)
+                    err_msg = "An error occurred while reading the archive:\n{0}".format(exc)
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                               caption="Unable To Read Plugin",
+                                               caption="Unable To Read Archive",
                                                style=wx.ICON_ERROR)
                     err_dlg.ShowModal()
                 except Queue.Empty:
@@ -75,7 +75,7 @@ class FetchPluginDialogController(object):
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
             else:
-                success_dlg = wx.MessageDialog(self.view, message="Plugin installation successful" \
+                success_dlg = wx.MessageDialog(self.view, message="Plugin installation successful"\
                                                                   ".",
                                                caption="Installation Complete",
                                                style=wx.ICON_INFORMATION)
@@ -93,8 +93,8 @@ class FetchPluginDialogController(object):
     # Event Handlers
     def on_about_plugin(self, evt):
         """Handles the request to retrieve info about the plugin"""
-        busy_dlg = dialogs.progressDialog(dlg_title="Retrieving Plugin",
-                                          dlg_msg="Please wait, retrieving plugin...")
+        busy_dlg = dialogs.progressDialog(dlg_title="Retrieving Archive",
+                                          dlg_msg="Please wait, retrieving archive...")
         try:
             self.fetch_plugin()
             readme = self.model.get_readme(self.get_configured_url())
@@ -104,7 +104,7 @@ class FetchPluginDialogController(object):
         except Exception as err:
             err_msg = "{0}".format(err)
             if err_msg == "":
-                err_msg = "An error occurred attempting to retrieve the plugin's README file."
+                err_msg = "An error occurred attempting to retrieve the archive's README file."
             err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                        caption="Unable To Retrieve README", style=wx.ICON_ERROR)
             err_dlg.ShowModal()

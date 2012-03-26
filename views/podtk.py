@@ -10,7 +10,7 @@ from views import wxspreadsheet
 from views import wxmodeltree
 from views import ui_defaults
 import matplotlib
-from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg, \
+from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg,\
     FigureCanvasWxAgg as FigureCanvas
 import matplotlib.figure
 import wx
@@ -48,20 +48,30 @@ class PODWindow(wx.Frame):
         self.menubar.Append(self.file_mnu, "&File")
 
         self.models_mnu = wx.Menu() # Models menu
-        addmodel_mnui = wx.MenuItem(self.models_mnu, wx.ID_ANY, text="Add A Model\tCTRL+A",
-                                    help="Adds a POD model to the available models")
-        self.Bind(wx.EVT_MENU, self.controller.on_add_model, addmodel_mnui)
-        self.models_mnu.AppendItem(addmodel_mnui)
+        #addmodel_mnui = wx.MenuItem(self.models_mnu, wx.ID_ANY, text="Add A Model\tCTRL+A",
+        #                            help="Adds a POD model to the available models")
+        #self.Bind(wx.EVT_MENU, self.controller.on_add_model, addmodel_mnui)
+        #self.models_mnu.AppendItem(addmodel_mnui)
+
+        install_plugin_mnui = wx.MenuItem(self.models_mnu, wx.ID_ANY, text="Install Model...",
+                                          help="Install a local POD Model")
+        self.Bind(wx.EVT_MENU, self.controller.on_install_model, id=install_plugin_mnui.GetId())
+        self.models_mnu.AppendItem(install_plugin_mnui)
+        download_plugin_mnui = wx.MenuItem(self.models_mnu, wx.ID_ANY, text="Download Model...",
+                                           help="Download and install a new POD Model")
+        self.Bind(wx.EVT_MENU, self.controller.on_download_model, id=download_plugin_mnui.GetId())
+        self.models_mnu.AppendItem(download_plugin_mnui)
+
         savemodel_mnui = wx.MenuItem(self.models_mnu, wx.ID_ANY,
                                      text="Save Model Configuration",
                                      help="Saves the current model configuration to disk\tCTRL+W")
         self.Bind(wx.EVT_MENU, self.controller.on_save_model, savemodel_mnui)
         self.models_mnu.AppendItem(savemodel_mnui)
-        deletemodel_mnui = wx.MenuItem(self.models_mnu, wx.ID_ANY, text="Remove Current Model",
-                                       help="Removes the currently selected POD model from the " \
-                                            "workspace")
-        self.Bind(wx.EVT_MENU, self.controller.on_delete_model, deletemodel_mnui)
-        self.models_mnu.AppendItem(deletemodel_mnui)
+        #deletemodel_mnui = wx.MenuItem(self.models_mnu, wx.ID_ANY, text="Remove Current Model",
+        #                               help="Removes the currently selected POD model from the " \
+        #                                    "workspace")
+        #self.Bind(wx.EVT_MENU, self.controller.on_delete_model, deletemodel_mnui)
+        #self.models_mnu.AppendItem(deletemodel_mnui)
         self.menubar.Append(self.models_mnu, "&Models")
 
         self.ops_mnu = wx.Menu() # Operations menu

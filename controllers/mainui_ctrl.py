@@ -86,17 +86,13 @@ class MainUIController(object):
         """Handles the About This Program event"""
         project_logo = os.path.join(pathfinder.icons_path(), 'a7117_256.png')
         project_msg = ' '.join(
-            (
-            "NDIToolbox (TM) Copyright (c) 2012 TRI/Austin, Inc.  Developed under TRI Project " \
-            "A7117."
-            ,
-            "\n\nUse of this software is governed by the terms outlined in the license.txt file.",
-            "\n\nProject Manager:  David Forsyth",
-            "\nLead Developer:  Chris Coughlin")
+            ("NDIToolbox (TM) Copyright (c) 2012 TRI/Austin, Inc.  Developed under TRI Project A7117.",
+             "\n\nUse of this software is governed by the terms outlined in the license.txt file.",
+             "\n\nProject Manager:  David Forsyth",
+             "\nLead Developer:  Chris Coughlin")
         )
         about_project_logo_dlg = dlg.AboutDialog(parent=self.view, title="About This Program",
-                                                 msg=project_msg, url="www.nditoolbox.com",
-                                                 logobmp_fname=project_logo)
+            msg=project_msg, url="www.nditoolbox.com", logobmp_fname=project_logo)
         about_project_logo_dlg.ShowModal()
         about_project_logo_dlg.Destroy()
 
@@ -106,7 +102,7 @@ class MainUIController(object):
         with open(license_file, 'rb') as fidin:
             license = fidin.readlines()
             license_dlg = dlg.TextDisplayDialog(parent=self.view, text=''.join(license),
-                                                title="License Information")
+                title="License Information")
             license_dlg.Show()
 
     def on_about_tri(self, evt):
@@ -117,9 +113,9 @@ class MainUIController(object):
              "and conducts materials research and development projects.\n\nTRI is committed to",
              "providing the highest quality materials science products and services."))
         about_tri_dlg = dlg.AboutDialog(parent=self.view, title="About TRI",
-                                        msg=tri_msg,
-                                        url="www.tri-austin.com",
-                                        logobmp_fname=tri_logo)
+            msg=tri_msg,
+            url="www.tri-austin.com",
+            logobmp_fname=tri_logo)
         about_tri_dlg.ShowModal()
         about_tri_dlg.Destroy()
 
@@ -130,9 +126,9 @@ class MainUIController(object):
                                 "Axialis Team, and were created by",
                                 "Axialis IconWorkshop."))
         about_axialisicons_dlg = dlg.AboutDialog(parent=self.view, title="About Axialis Icons",
-                                                 msg=axialis_msg,
-                                                 url="www.axialis.com",
-                                                 logobmp_fname=axialis_logo)
+            msg=axialis_msg,
+            url="www.axialis.com",
+            logobmp_fname=axialis_logo)
         about_axialisicons_dlg.ShowModal()
         about_axialisicons_dlg.Destroy()
 
@@ -140,7 +136,7 @@ class MainUIController(object):
         """Handles a change in data file selection by providing a preview plot
         of the data"""
         self.set_thumb(panel=self.view.thumbnail_panel, data_file=self.view.data_panel.data,
-                       enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
+            enable=self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId()))
         if self.view.data_panel.data:
             self.view.enable_data_tools()
         else:
@@ -150,7 +146,7 @@ class MainUIController(object):
         """Handles toggling data thumbnail plot previews"""
         preview_state = self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId())
         self.set_thumb(panel=self.view.thumbnail_panel, data_file=self.view.data_panel.data,
-                       enable=preview_state)
+            enable=preview_state)
         self.model.set_preview_state(preview_state)
 
     def on_refresh_data(self, evt):
@@ -161,7 +157,7 @@ class MainUIController(object):
     def on_add_data(self, evt):
         """Handles request to add data to data folder"""
         file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file',
-                                 style=wx.FD_OPEN)
+            style=wx.FD_OPEN)
         if file_dlg.ShowModal() == wx.ID_OK:
             wx.BeginBusyCursor()
             self.model.copy_data(file_dlg.GetPath())
@@ -171,14 +167,14 @@ class MainUIController(object):
     def on_import_dicom(self, evt):
         """Handles request to add DICOM/DICONDE data to data folder"""
         file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file',
-                                 style=wx.FD_OPEN)
+            style=wx.FD_OPEN)
         if file_dlg.ShowModal() == wx.ID_OK:
             try:
                 wx.BeginBusyCursor()
                 exception_queue = Queue.Queue()
                 imp_dicom_thd = workerthread.WorkerThread(exception_queue=exception_queue,
-                                                          target=self.model.import_dicom,
-                                                          args=(file_dlg.GetPath(), ))
+                    target=self.model.import_dicom,
+                    args=(file_dlg.GetPath(), ))
                 imp_dicom_thd.start()
                 while True:
                     imp_dicom_thd.join(0.125)
@@ -187,8 +183,7 @@ class MainUIController(object):
                             exc_type, exc = exception_queue.get(block=False)
                             err_msg = "An error occurred during import:\n{0}".format(exc)
                             err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                                       caption="Unable To Import File",
-                                                       style=wx.ICON_ERROR)
+                                caption="Unable To Import File", style=wx.ICON_ERROR)
                             err_dlg.ShowModal()
                         except Queue.Empty:
                             pass
@@ -197,13 +192,13 @@ class MainUIController(object):
                 self.view.data_panel.populate()
             except ImportError: # pydicom not installed
                 err_dlg = wx.MessageDialog(self.view, message="Please install the pydicom module.",
-                                           caption="Unable To Import Data", style=wx.ICON_ERROR)
+                    caption="Unable To Import Data", style=wx.ICON_ERROR)
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
             except TypeError: # 3D array not implemented
                 err_dlg = wx.MessageDialog(self.view,
-                                           message="3D Arrays are not supported in this version.",
-                                           caption="Unable To Import Data", style=wx.ICON_ERROR)
+                    message="3D Arrays are not supported in this version.",
+                    caption="Unable To Import Data", style=wx.ICON_ERROR)
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
             finally:
@@ -213,11 +208,11 @@ class MainUIController(object):
         """Handles request to remove data from data folder"""
         if self.view.data_panel.data is not None:
             confirm_deletion_dlg = wx.MessageDialog(parent=self.view.parent,
-                                                    caption="Delete File?",
-                                                    message="Are you sure you want to delete this"\
-                                                            " file?"
-                                                    ,
-                                                    style=wx.OK | wx.CANCEL)
+                caption="Delete File?",
+                message="Are you sure you want to delete this"\
+                        " file?"
+                ,
+                style=wx.OK | wx.CANCEL)
             if confirm_deletion_dlg.ShowModal() == wx.ID_OK:
                 self.model.remove_data(self.view.data_panel.data)
                 self.view.data_panel.populate()
@@ -230,8 +225,8 @@ class MainUIController(object):
                 read_parameters = import_dlg.get_import_parameters()
                 wx.BeginBusyCursor()
                 data_window = preview_window.PreviewWindow(parent=self.view,
-                                                           data_file=self.view.data_panel.data,
-                                                           **read_parameters)
+                    data_file=self.view.data_panel.data,
+                    **read_parameters)
                 data_window.Show()
                 wx.EndBusyCursor()
             import_dlg.Destroy()
@@ -244,7 +239,7 @@ class MainUIController(object):
                 read_parameters = import_dlg.get_import_parameters()
                 wx.BeginBusyCursor()
                 plt_window = plotwindow.PlotWindow(self.view, data_file=self.view.data_panel.data,
-                                                   **read_parameters)
+                    **read_parameters)
                 if plt_window.has_data:
                     plt_window.Show()
                 wx.EndBusyCursor()
@@ -258,8 +253,8 @@ class MainUIController(object):
                 read_parameters = import_dlg.get_import_parameters()
                 wx.BeginBusyCursor()
                 plt_window = plotwindow.ImgPlotWindow(parent=self.view,
-                                                      data_file=self.view.data_panel.data,
-                                                      **read_parameters)
+                    data_file=self.view.data_panel.data,
+                    **read_parameters)
                 if plt_window.has_data:
                     plt_window.Show()
                 wx.EndBusyCursor()

@@ -13,30 +13,36 @@ class FetchPluginDialog(wx.Dialog):
     """Dialog to configure local fetch and inspection
     of plugins"""
 
-    def __init__(self, parent, plugin_path=None):
-        super(FetchPluginDialog, self).__init__(parent=parent, title="Install Plugin")
-        self.controller = fetchplugin_dialog_ctrl.FetchPluginDialogController(self)
+    def __init__(self, parent, plugin_path=None, plugin_type="Plugin"):
+        self.plugin_type = plugin_type
+        super(FetchPluginDialog, self).__init__(parent=parent, title="Install {0}".format(
+            self.plugin_type))
         self.plugin_path = plugin_path
+        self.init_controller()
         self.init_ui()
+
+    def init_controller(self):
+        """Creates the view's controller"""
+        self.controller = fetchplugin_dialog_ctrl.FetchPluginDialogController(self)
 
     def init_ui(self):
         """Creates and lays out the UI"""
         self.main_panel_sizer = wx.FlexGridSizer(cols=2)
 
-        loc_lbl = wx.StaticText(self, wx.ID_ANY, u"Plugin Location",
+        loc_lbl = wx.StaticText(self, wx.ID_ANY, u"{0} Location".format(self.plugin_type),
                                 wx.DefaultPosition, wx.DefaultSize)
         self.main_panel_sizer.Add(loc_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
                                   ui_defaults.widget_margin)
         self.url_tc = wx.TextCtrl(self, wx.ID_ANY, self.plugin_path,
                                   wx.DefaultPosition,
                                   wx.DefaultSize)
-        self.url_tc.SetToolTipString("Full path and filename of plugin archive")
+        self.url_tc.SetToolTipString("Full path and filename of archive")
         self.main_panel_sizer.Add(self.url_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
                                   ui_defaults.widget_margin)
 
         # Set password on encrypted archives
         self.encryptedzip_cb = wx.CheckBox(self, wx.ID_ANY, u"Protected")
-        self.encryptedzip_cb.SetToolTipString("Enable if the plugin archive is encrypted")
+        self.encryptedzip_cb.SetToolTipString("Enable if the archive is encrypted")
         self.main_panel_sizer.Add(self.encryptedzip_cb, ui_defaults.ctrl_pct,
                                   ui_defaults.sizer_flags,
                                   ui_defaults.widget_margin)
@@ -54,9 +60,9 @@ class FetchPluginDialog(wx.Dialog):
         zip_panel.SetSizerAndFit(zip_panel_sizer)
         self.main_panel_sizer.Add(zip_panel, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
                                   0)
-        self.about_plugin_btn = wx.Button(self, wx.ID_ANY, "About Plugin...", wx.DefaultPosition,
-                                          wx.DefaultSize)
-        self.about_plugin_btn.SetToolTipString("Displays the Plugin's README file")
+        self.about_plugin_btn = wx.Button(self, wx.ID_ANY, "About {0}...".format(self.plugin_type),
+                                          wx.DefaultPosition, wx.DefaultSize)
+        self.about_plugin_btn.SetToolTipString("Displays the archive's README file")
         self.Bind(wx.EVT_BUTTON, self.controller.on_about_plugin, self.about_plugin_btn)
         self.main_panel_sizer.Add(self.about_plugin_btn, ui_defaults.ctrl_pct,
                                   ui_defaults.sizer_flags,
@@ -84,10 +90,16 @@ class FetchRemotePluginDialog(wx.Dialog):
     """Dialog to configure remote fetch and inspection
     of A7117 Plugins"""
 
-    def __init__(self, parent):
-        super(FetchRemotePluginDialog, self).__init__(parent=parent, title="Install Plugin")
-        self.controller = fetchplugin_dialog_ctrl.FetchRemotePluginDialogController(self)
+    def __init__(self, parent, plugin_type="Plugin"):
+        self.plugin_type = plugin_type
+        super(FetchRemotePluginDialog, self).__init__(parent=parent,
+                                                      title="Install {0}".format(self.plugin_type))
+        self.init_controller()
         self.init_ui()
+
+    def init_controller(self):
+        """Creates the view's controller"""
+        self.controller = fetchplugin_dialog_ctrl.FetchRemotePluginDialogController(self)
 
     def install_plugin(self):
         """Attempts to download, verify, and install the plugin archive"""
@@ -97,7 +109,7 @@ class FetchRemotePluginDialog(wx.Dialog):
         """Creates and lays out the UI"""
         self.main_panel_sizer = wx.FlexGridSizer(cols=2)
 
-        url_lbl = wx.StaticText(self, wx.ID_ANY, u"Plugin URL",
+        url_lbl = wx.StaticText(self, wx.ID_ANY, u"{0} URL".format(self.plugin_type),
                                 wx.DefaultPosition, wx.DefaultSize)
         self.main_panel_sizer.Add(url_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
                                   ui_defaults.widget_margin)
@@ -137,7 +149,7 @@ class FetchRemotePluginDialog(wx.Dialog):
 
         # Set password on encrypted archives
         self.encryptedzip_cb = wx.CheckBox(self, wx.ID_ANY, u"Protected")
-        self.encryptedzip_cb.SetToolTipString("Enable if the plugin archive is encrypted")
+        self.encryptedzip_cb.SetToolTipString("Enable if the archive is encrypted")
         self.main_panel_sizer.Add(self.encryptedzip_cb, ui_defaults.ctrl_pct,
                                   ui_defaults.sizer_flags,
                                   ui_defaults.widget_margin)
@@ -155,9 +167,9 @@ class FetchRemotePluginDialog(wx.Dialog):
         zip_panel.SetSizerAndFit(zip_panel_sizer)
         self.main_panel_sizer.Add(zip_panel, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
                                   0)
-        self.about_plugin_btn = wx.Button(self, wx.ID_ANY, "About Plugin...", wx.DefaultPosition,
-                                          wx.DefaultSize)
-        self.about_plugin_btn.SetToolTipString("Displays the Plugin's README file")
+        self.about_plugin_btn = wx.Button(self, wx.ID_ANY, "About {0}...".format(self.plugin_type),
+                                          wx.DefaultPosition, wx.DefaultSize)
+        self.about_plugin_btn.SetToolTipString("Displays the archive's README file")
         self.Bind(wx.EVT_BUTTON, self.controller.on_about_plugin, self.about_plugin_btn)
         self.main_panel_sizer.Add(self.about_plugin_btn, ui_defaults.ctrl_pct,
                                   ui_defaults.sizer_flags,

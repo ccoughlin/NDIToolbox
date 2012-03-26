@@ -261,7 +261,8 @@ class ImgPlotWindow(PlotWindow):
         self.Bind(wx.EVT_MENU, self.controller.on_detrend_linearx,
                   id=self.detrend_linearx_mnui.GetId())
         self.detrend_mnu.AppendItem(self.detrend_linearx_mnui)
-        self.detrend_lineary_mnui = wx.MenuItem(self.detrend_mnu, wx.ID_ANY, text="Linear Vertical")
+        self.detrend_lineary_mnui = wx.MenuItem(self.detrend_mnu, wx.ID_ANY,
+                                                text="Linear Vertical")
         self.Bind(wx.EVT_MENU, self.controller.on_detrend_lineary,
                   id=self.detrend_lineary_mnui.GetId())
         self.detrend_mnu.AppendItem(self.detrend_lineary_mnui)

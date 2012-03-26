@@ -19,6 +19,10 @@ class ModelTree(wx.TreeCtrl):
         self.parameters_lbl = "Parameters"
         self.settings_lbl = "Settings"
 
+    def clear(self):
+        """Removes all PODModels"""
+        self.DeleteChildren(self.root)
+
     def add_model(self, PODModel_tuple):
         '''Adds the model PODModel to the tree'''
         PODModel_name = PODModel_tuple[0]
@@ -72,8 +76,6 @@ class ModelTree(wx.TreeCtrl):
                     params = branch_dict
                 elif branch_lbl == self.settings_lbl:
                     settings = branch_dict
-                elif branch_lbl == self.results_lbl:
-                    results = branch_dict
                 branch, breadcrumb = self.GetNextChild(branch, breadcrumb)
             model.inputdata = inputdata
             model.parameters = params
