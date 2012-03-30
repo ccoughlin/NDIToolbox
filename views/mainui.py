@@ -25,6 +25,7 @@ class UI(wx.Frame):
         self._mgr.SetManagedWindow(self)
         self.init_menu()
         self.init_ui()
+        self.controller.verify_userpath()
         self.Bind(wx.EVT_CLOSE, self.controller.on_quit)
 
     def init_menu(self):
@@ -42,6 +43,11 @@ class UI(wx.Frame):
                                  help="Imports a DICOM / DICONDE data file")
         self.file_mnu.AppendItem(dicom_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_import_dicom, id=dicom_mnui.GetId())
+        userpath_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Choose Data Folder...",
+                                    help="Specify the local storage folder")
+        self.file_mnu.AppendItem(userpath_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_choose_userpath, id=userpath_mnui.GetId())
+        self.file_mnu.AppendSeparator()
         quit_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="E&xit\tCTRL+X",
                                 help="Exit The Program")
         self.file_mnu.AppendItem(quit_mnui)
@@ -144,7 +150,7 @@ class UI(wx.Frame):
         self.Bind(wx.EVT_TOOL, self.controller.on_plot_data, self.plot_data_tool)
         # Image plot of data
         self.imageplot_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Image Plot',
-                                                             shortHelp='Generates image plot of ' \
+                                                             shortHelp='Generates image plot of '\
                                                                        'selected data'
                                                              ,
                                                              bitmap=self.controller.get_bitmap(

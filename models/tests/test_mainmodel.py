@@ -13,6 +13,7 @@ import os
 import random
 import shutil
 import sys
+import tempfile
 import unittest
 
 def deleted_user_path():
@@ -57,6 +58,10 @@ class TestMainModel(unittest.TestCase):
     def test_check_user_path(self):
         """Verify main model creates the user data folders if not
         already in existence."""
+        self.check_user_path()
+
+    def check_user_path(self):
+        """Verify user data folders were created"""
         data_folders = [pathfinder.user_path(), pathfinder.data_path(),
                         pathfinder.thumbnails_path(),
                         pathfinder.plugins_path(), pathfinder.podmodels_path()]
@@ -67,6 +72,10 @@ class TestMainModel(unittest.TestCase):
     def test_copy_system_plugins(self):
         """Verify main model copies system plugins to the user's
         plugins folder."""
+        self.copy_system_plugins()
+
+    def copy_system_plugins(self):
+        """Verify system plugins are copied to the user's plugins folder"""
         # Sample of system plugins to install
         system_plugins = ['medfilter_plugin.py', 'normalize_plugin.py', '__init__.py']
         # Try to remove them if already installed
@@ -81,6 +90,19 @@ class TestMainModel(unittest.TestCase):
         for plugin in system_plugins:
             installed_plugin = os.path.join(pathfinder.plugins_path(), plugin)
             self.assertTrue(os.path.exists(installed_plugin))
+
+    def test_migrate_user_path(self):
+        """Verify migration of the user's data folder"""
+        current_user_path = pathfinder.user_path()
+        temp_user_path = tempfile.mkdtemp()
+        self.model.migrate_user_path(temp_user_path)
+        self.check_user_path()
+        self.copy_system_plugins()
+        self.model.migrate_user_path(current_user_path)
+        try:
+            shutil.rmtree(temp_user_path)
+        except WindowsError: # folder in use
+            pass
 
     def test_get_data(self):
         """Verify get_data function returns a NumPy array"""

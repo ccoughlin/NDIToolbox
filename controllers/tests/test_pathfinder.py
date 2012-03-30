@@ -10,7 +10,7 @@ class TestPathFinder(unittest.TestCase):
     """Tests the pathfinder module"""
 
     def setUp(self):
-        self.app_path = os.path.join(os.path.expanduser('~'), 'PycharmProjects', 'Bane')
+        self.app_path = os.path.normcase(os.path.join(os.path.expanduser('~'), 'PycharmProjects', 'Bane'))
         self.user_path = os.path.normcase(os.path.join(os.path.expanduser('~'), 'a7117'))
 
     def test_app_path(self):
@@ -19,7 +19,7 @@ class TestPathFinder(unittest.TestCase):
 
     def test_user_path(self):
         """Verify pathfinder reports the correct path for storing user data"""
-        self.assertEqual(self.user_path.lower(), pathfinder.user_path().lower())
+        self.assertEqual(self.user_path, pathfinder.user_path())
 
     def test_resources_path(self):
         """Verify correct resources path"""
@@ -68,7 +68,7 @@ class TestPathFinder(unittest.TestCase):
 
     def test_config_path(self):
         """Verify correct path to configuration file"""
-        config_path = os.path.expanduser("~/a7117.cfg")
+        config_path = os.path.normcase(os.path.expanduser("~/a7117.cfg"))
         self.assertEqual(config_path, pathfinder.config_path())
 
 if __name__ == "__main__":

@@ -5,6 +5,14 @@ from models import config
 import os.path
 import sys
 
+def normalized(path_fn):
+    def normalize():
+        return os.path.normcase(path_fn())
+
+    return normalize
+
+
+@normalized
 def app_path():
     """Returns the base application path."""
     if hasattr(sys, 'frozen'):
@@ -17,6 +25,7 @@ def app_path():
     return os.path.dirname(entry_point)
 
 
+@normalized
 def user_path():
     """Returns the path for storing user data.  If not already set,
     returns user's home directory/a7117 and sets the default in the
@@ -31,54 +40,64 @@ def user_path():
         return default_upath
 
 
+@normalized
 def resource_path():
     """Returns the path to resources - home folder
     for icons, bitmaps, etc."""
     return os.path.join(app_path(), 'resources')
 
 
+@normalized
 def icons_path():
     """Returns the path to application icons"""
     return os.path.join(resource_path(), 'icons')
 
 
+@normalized
 def icon_path():
     """Returns the path to the application's default
     PNG icon"""
     return os.path.join(icons_path(), 'a7117_64.png')
 
 
+@normalized
 def winicon_path():
     """Returns the path to the application's default
     .ICO icon"""
     return os.path.join(icons_path(), 'a7117_64.ico')
 
 
+@normalized
 def bitmap_path():
     """Returns the path to application bitmaps"""
     return os.path.join(resource_path(), 'bitmaps')
 
 
+@normalized
 def data_path():
     """Returns the path to data files"""
     return os.path.join(user_path(), 'data')
 
 
+@normalized
 def thumbnails_path():
     """Returns the path to data thumbnails"""
     return os.path.join(user_path(), 'thumbnails')
 
 
+@normalized
 def plugins_path():
     """Returns the path to plugins"""
     return os.path.join(user_path(), 'plugins')
 
 
+@normalized
 def config_path():
     """Returns the path to the configuration file"""
     return os.path.expanduser("~/a7117.cfg")
 
 
+@normalized
 def podmodels_path():
     """Returns the path to POD Toolkit models"""
     return os.path.join(user_path(), "podmodels")

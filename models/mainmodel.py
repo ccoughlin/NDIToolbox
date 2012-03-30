@@ -143,8 +143,6 @@ class MainModel(object):
 
     def __init__(self, controller):
         self.controller = controller
-        self.check_user_path()
-        self.copy_system_plugins()
 
     def check_user_path(self):
         """Verify that user data folders exist.  Creates
@@ -157,6 +155,15 @@ class MainModel(object):
         for fldr in (user_folder, data_folder, thumbnail_folder, plugins_folder, podmodels_folder):
             if not os.path.exists(fldr):
                 os.makedirs(fldr)
+
+    def migrate_user_path(self, new_user_path):
+        """Sets the default user path to new_user_path, creating
+        the path if necessary and copying system plugins.
+        """
+        config = get_config()
+        config.set_app_option({"User Path": os.path.normcase(new_user_path)})
+        self.check_user_path()
+        self.copy_system_plugins()
 
     def copy_system_plugins(self):
         """Copies plugins that ship with the application
