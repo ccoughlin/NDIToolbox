@@ -53,10 +53,10 @@ def plugin_wrapper(plugin_cls, plugin_data, plugin_queue, plugin_cfg=None):
 class BasicPlotWindowController(object):
     """Base class for PlotWindows"""
 
-    def __init__(self, view, data_file, **read_text_params):
+    def __init__(self, view, data_file):
         self.view = view
         self.axes_grid = True
-        self.model = model.BasicPlotWindowModel(self, data_file, **read_text_params)
+        self.model = model.BasicPlotWindowModel(self, data_file)
         self.init_plot_defaults()
 
     @property
@@ -177,8 +177,7 @@ class BasicPlotWindowController(object):
                                  defaultDir=pathfinder.data_path(),
                                  style=wx.SAVE | wx.OVERWRITE_PROMPT)
         if save_dlg.ShowModal() == wx.ID_OK:
-            export_parameters = {'delimiter': ','}
-            mainmodel.save_data(save_dlg.GetPath(), self.data, **export_parameters)
+            mainmodel.save_data(save_dlg.GetPath(), self.data)
         save_dlg.Destroy()
 
     def on_revert(self, evt):
@@ -283,10 +282,10 @@ class BasicPlotWindowController(object):
 class PlotWindowController(BasicPlotWindowController):
     """Controller for PlotWindow class"""
 
-    def __init__(self, view, data_file, **read_text_params):
+    def __init__(self, view, data_file):
         self.view = view
         self.axes_grid = True
-        self.model = model.PlotWindowModel(self, data_file, **read_text_params)
+        self.model = model.PlotWindowModel(self, data_file)
         self.init_plot_defaults()
 
     def plot(self, data):
@@ -346,10 +345,10 @@ class PlotWindowController(BasicPlotWindowController):
 class ImgPlotWindowController(BasicPlotWindowController):
     """Controller for ImgPlotWindow class"""
 
-    def __init__(self, view, data_file, **read_text_params):
+    def __init__(self, view, data_file):
         self.view = view
         self.axes_grid = True
-        self.model = model.ImgPlotWindowModel(self, data_file, **read_text_params)
+        self.model = model.ImgPlotWindowModel(self, data_file)
         self.colorbar = None
         self.init_plot_defaults()
 

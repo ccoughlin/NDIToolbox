@@ -16,11 +16,11 @@ __author__ = 'Chris R. Coughlin'
 class PreviewWindow(wx.Frame):
     """Basic wxPython wxFrame for previewing data in tabular format"""
 
-    def __init__(self, parent, data_file, **read_text_params):
+    def __init__(self, parent, data_file):
         self.parent = parent
         self.title = 'Preview - {0}'.format(os.path.basename(data_file))
         super(PreviewWindow, self).__init__(parent=self.parent, title=self.title)
-        self.controller = PreviewWindowController(self, data_file, **read_text_params)
+        self.controller = PreviewWindowController(self, data_file)
         self.init_ui()
         self.load_data()
 

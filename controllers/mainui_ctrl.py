@@ -192,12 +192,78 @@ class MainUIController(object):
         finally:
             path_dlg.Destroy()
 
+    def on_import_text(self, evt):
+        """Handles request to add ASCII data to data folder"""
+        file_dlg = wx.FileDialog(parent=self.view, message="Please specify a data file",
+                                 style=wx.FD_OPEN)
+        if file_dlg.ShowModal() == wx.ID_OK:
+            try:
+                import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
+                if import_dlg.ShowModal() == wx.ID_OK:
+                    read_parameters = import_dlg.get_import_parameters()
+                    wx.BeginBusyCursor()
+                    exception_queue = Queue.Queue()
+                    imp_text_thd = workerthread.WorkerThread(exception_queue=exception_queue,
+                                                             target=self.model.import_txt,
+                                                             args=(file_dlg.GetPath(),), kwargs=read_parameters)
+                    imp_text_thd.start()
+                    while True:
+                        imp_text_thd.join(0.125)
+                        if not imp_text_thd.is_alive():
+                            try:
+                                exc_type, exc = exception_queue.get(block=False)
+                                err_msg = "An error occurred during import:\n{0}".format(exc)
+                                err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                                           caption="Unable To Import File", style=wx.ICON_ERROR)
+                                err_dlg.ShowModal()
+                            except Queue.Empty:
+                                pass
+                            break
+                        wx.GetApp().Yield()
+                    self.view.data_panel.populate()
+            finally:
+                import_dlg.Destroy()
+                wx.EndBusyCursor()
+
+    def on_export_text(self, evt):
+        """Handels request to export selected data to delimited ASCII"""
+        file_dlg = wx.FileDialog(parent=self.view, message="Please specify a data file",
+                                 style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        if file_dlg.ShowModal() == wx.ID_OK:
+            exportfmt_dlg = dlg.ExportTextDialog(parent=self.view.parent)
+            if exportfmt_dlg.ShowModal() == wx.ID_OK:
+                wx.BusyCursor()
+                export_params = exportfmt_dlg.get_export_parameters()
+                exception_queue = Queue.Queue()
+                export_text_thd = workerthread.WorkerThread(exception_queue=exception_queue,
+                                                            target=self.model.export_txt,
+                                                            args=(file_dlg.GetPath(), self.view.data_panel.data),
+                                                            kwargs=export_params)
+                export_text_thd.start()
+                while True:
+                    export_text_thd.join(0.125)
+                    if not export_text_thd.is_alive():
+                        try:
+                            exc_type, exc = exception_queue.get(block=False)
+                            err_msg = "An error occurred during export:\n{0}".format(exc)
+                            err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                                       caption="Unable To Export File", style=wx.ICON_ERROR)
+                            err_dlg.ShowModal()
+                        except Queue.Empty:
+                            pass
+                        break
+                    wx.GetApp().Yield()
+                wx.EndBusyCursor()
+            exportfmt_dlg.Destroy()
+
     def on_import_dicom(self, evt):
         """Handles request to add DICOM/DICONDE data to data folder"""
         file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file',
                                  style=wx.FD_OPEN)
         if file_dlg.ShowModal() == wx.ID_OK:
             try:
+                import dicom
+
                 wx.BeginBusyCursor()
                 exception_queue = Queue.Queue()
                 imp_dicom_thd = workerthread.WorkerThread(exception_queue=exception_queue,
@@ -216,7 +282,7 @@ class MainUIController(object):
                         except Queue.Empty:
                             pass
                         break
-                    wx.Yield()
+                    wx.GetApp().Yield()
                 self.view.data_panel.populate()
             except ImportError: # pydicom not installed
                 err_dlg = wx.MessageDialog(self.view, message="Please install the pydicom module.",
@@ -238,8 +304,7 @@ class MainUIController(object):
             confirm_deletion_dlg = wx.MessageDialog(parent=self.view.parent,
                                                     caption="Delete File?",
                                                     message="Are you sure you want to delete this"\
-                                                            " file?"
-                                                    ,
+                                                            " file?",
                                                     style=wx.OK | wx.CANCEL)
             if confirm_deletion_dlg.ShowModal() == wx.ID_OK:
                 self.model.remove_data(self.view.data_panel.data)
@@ -248,45 +313,31 @@ class MainUIController(object):
     def on_preview_data(self, evt):
         """Handles request to preview data"""
         if self.view.data_panel.data is not None:
-            import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
-            if import_dlg.ShowModal() == wx.ID_OK:
-                read_parameters = import_dlg.get_import_parameters()
-                wx.BeginBusyCursor()
-                data_window = preview_window.PreviewWindow(parent=self.view,
-                                                           data_file=self.view.data_panel.data,
-                                                           **read_parameters)
-                data_window.Show()
-                wx.EndBusyCursor()
-            import_dlg.Destroy()
+            wx.BeginBusyCursor()
+            data_window = preview_window.PreviewWindow(parent=self.view,
+                                                       data_file=self.view.data_panel.data)
+            data_window.Show()
+            wx.EndBusyCursor()
+
 
     def on_plot_data(self, evt):
         """Handles request to generate X-Y plot of selected data"""
         if self.view.data_panel.data is not None:
-            import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
-            if import_dlg.ShowModal() == wx.ID_OK:
-                read_parameters = import_dlg.get_import_parameters()
-                wx.BeginBusyCursor()
-                plt_window = plotwindow.PlotWindow(self.view, data_file=self.view.data_panel.data,
-                                                   **read_parameters)
-                if plt_window.has_data:
-                    plt_window.Show()
-                wx.EndBusyCursor()
-            import_dlg.Destroy()
+            wx.BeginBusyCursor()
+            plt_window = plotwindow.PlotWindow(self.view, data_file=self.view.data_panel.data)
+            if plt_window.has_data:
+                plt_window.Show()
+            wx.EndBusyCursor()
 
     def on_imageplot_data(self, evt):
         """Handles request to generate image plot of selected data"""
         if self.view.data_panel.data is not None:
-            import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
-            if import_dlg.ShowModal() == wx.ID_OK:
-                read_parameters = import_dlg.get_import_parameters()
-                wx.BeginBusyCursor()
-                plt_window = plotwindow.ImgPlotWindow(parent=self.view,
-                                                      data_file=self.view.data_panel.data,
-                                                      **read_parameters)
-                if plt_window.has_data:
-                    plt_window.Show()
-                wx.EndBusyCursor()
-            import_dlg.Destroy()
+            wx.BeginBusyCursor()
+            plt_window = plotwindow.ImgPlotWindow(parent=self.view,
+                                                  data_file=self.view.data_panel.data)
+            if plt_window.has_data:
+                plt_window.Show()
+            wx.EndBusyCursor()
 
     def on_run_podtk(self, evt):
         """Handles request to run POD Toolkit"""

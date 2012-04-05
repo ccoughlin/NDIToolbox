@@ -36,8 +36,7 @@ class ThumbnailPanelController(object):
                     readtext_params = import_dlg.get_import_parameters()
                     thumbnail = model.multiprocess_plot(data_fname,
                                                         self.view.bitmap_width / 100,
-                                                        self.view.bitmap_height / 100,
-                                                        **readtext_params)
+                                                        self.view.bitmap_height / 100)
 
             else:
                 # Thumbnail found, skip generation

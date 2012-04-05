@@ -39,10 +39,16 @@ class UI(wx.Frame):
     def init_file_menu(self):
         """Creates the File menu"""
         self.file_mnu = wx.Menu()
-        dicom_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Import DICOM/DICONDE...",
+        self.import_mnu = wx.Menu()
+        txt_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="Text File (CSV, etc.)...",
+                               help="Imports delimited ASCII data file")
+        self.import_mnu.AppendItem(txt_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_import_text, id=txt_mnui.GetId())
+        dicom_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="DICOM/DICONDE...",
                                  help="Imports a DICOM / DICONDE data file")
-        self.file_mnu.AppendItem(dicom_mnui)
+        self.import_mnu.AppendItem(dicom_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_import_dicom, id=dicom_mnui.GetId())
+        self.file_mnu.AppendMenu(wx.ID_ANY, 'Import...', self.import_mnu)
         userpath_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Choose Data Folder...",
                                     help="Specify the local storage folder")
         self.file_mnu.AppendItem(userpath_mnui)
@@ -128,6 +134,11 @@ class UI(wx.Frame):
                                                        bitmap=self.controller.get_bitmap(
                                                            'Plus.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_add_data, self.add_data_tool)
+        # Export data to ASCII
+        self.export_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Export Data',
+                                                          shortHelp="Exports selected data to text file",
+                                                          bitmap=self.controller.get_bitmap('Save.png'))
+        self.Bind(wx.EVT_TOOL, self.controller.on_export_text, self.export_data_tool)
         # Remove data from data folder
         self.remove_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Remove Data',
                                                           shortHelp='Remove data from data folder',
@@ -143,16 +154,14 @@ class UI(wx.Frame):
         # Plot data
         self.plot_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'X-Y Plot',
                                                         shortHelp='Generates X-Y plot of selected'\
-                                                                  ' data'
-                                                        ,
+                                                                  ' data',
                                                         bitmap=self.controller.get_bitmap(
                                                             'Stats2.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_plot_data, self.plot_data_tool)
         # Image plot of data
         self.imageplot_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Image Plot',
                                                              shortHelp='Generates image plot of '\
-                                                                       'selected data'
-                                                             ,
+                                                                       'selected data',
                                                              bitmap=self.controller.get_bitmap(
                                                                  'imgplt.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_imageplot_data, self.imageplot_data_tool)
@@ -167,6 +176,8 @@ class UI(wx.Frame):
     def enable_data_tools(self, enable=True):
         """Enables toolbar buttons that operate on a selected data file,
         or disables if enable is set to False."""
+        self.toolbar.EnableTool(self.export_data_tool.GetId(), enable)
+        self.toolbar.EnableTool(self.remove_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.preview_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.plot_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.imageplot_data_tool.GetId(), enable)

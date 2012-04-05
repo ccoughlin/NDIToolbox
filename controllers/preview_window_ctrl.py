@@ -11,9 +11,9 @@ __author__ = 'Chris R. Coughlin'
 class PreviewWindowController(object):
     """Controller for the PreviewWindow"""
 
-    def __init__(self, view, data_file, **read_text_params):
+    def __init__(self, view, data_file):
         self.view = view
-        self.model = PreviewWindowModel(self, data_file, **read_text_params)
+        self.model = PreviewWindowModel(self, data_file)
 
     def load_data(self):
         """Loads the instance's data file"""

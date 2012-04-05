@@ -57,19 +57,19 @@ def plot_pipe(data, title, width, height, pipe):
     pipe.close()
 
 
-def plot(data_filename, width, height, **import_params):
+def plot(data_filename, width, height):
     """Returns a PNG plot of the specified data file's dataset"""
-    data = mainmodel.get_data(data_filename, **import_params)
+    data = mainmodel.get_data(data_filename)
     return gen_thumbnail(plot_stream(data,
                                      os.path.basename(data_filename),
                                      width, height),
                          data_filename)
 
 
-def multiprocess_plot(data_filename, width, height, **import_params):
+def multiprocess_plot(data_filename, width, height):
     """Spawns a subprocess to generate the plot, and returns the result as a PNG wxBitmap.
     The result is also saved to the thumbnails folder for reuse."""
-    data = mainmodel.get_data(data_filename, **import_params)
+    data = mainmodel.get_data(data_filename)
     in_conn, out_conn = Pipe()
     plot_proc = Process(target=plot_pipe,
                         args=(data, os.path.basename(data_filename), width, height, out_conn))

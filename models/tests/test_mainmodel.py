@@ -8,6 +8,7 @@ __author__ = 'Chris R. Coughlin'
 import models.mainmodel as model
 import models.abstractplugin as abstractplugin
 import controllers.pathfinder as pathfinder
+import h5py
 import numpy as np
 import os
 import random
@@ -45,7 +46,9 @@ class TestMainModel(unittest.TestCase):
         self.sample_data_basename = "sample.dat"
         self.sample_data_file = os.path.join(os.path.dirname(__file__),
                                              self.sample_data_basename)
-        np.savetxt(self.sample_data_file, self.sample_data)
+        #np.savetxt(self.sample_data_file, self.sample_data)
+        with h5py.File(self.sample_data_file, 'w') as fidout:
+            fidout.create_dataset(self.sample_data_basename, data=self.sample_data)
         self.mock_controller = ""
         self.model = model.MainModel(self.mock_controller)
 
@@ -106,22 +109,70 @@ class TestMainModel(unittest.TestCase):
 
     def test_get_data(self):
         """Verify get_data function returns a NumPy array"""
-        import_parameters = {'delimiter': ''}
-        read_data = model.get_data(self.sample_data_file, **import_parameters)
+        read_data = model.get_data(self.sample_data_file)
         self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
 
     def test_save_data(self):
         """Verify save_data function saves NumPy array to disk"""
-        #save_data(data_fname, data, **export_params):
+        #save_data(data_fname, data):
         sample_filename = "test_savedata.dat"
         sample_path = os.path.join(os.path.dirname(__file__), sample_filename)
-        export_params = {'delim_char': ':'}
-        model.save_data(sample_path, self.sample_data, **export_params)
-        self.assertTrue(os.path.exists(sample_path))
-        read_data = np.loadtxt(sample_path, delimiter=export_params['delim_char'])
-        self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
-        if os.path.exists(sample_path):
-            os.remove(sample_path)
+        model.save_data(sample_path, self.sample_data)
+        self.assertTrue(os.path.exists(sample_path + ".hdf5"))
+        #read_data = np.loadtxt(sample_path, delimiter=export_params['delim_char'])
+        with h5py.File(sample_path + ".hdf5", "r") as fidin:
+            froot, ext = os.path.splitext(os.path.basename(sample_filename))
+            for key in fidin.keys():
+                if key.startswith(froot):
+                    read_data = fidin[key][...]
+                    self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
+        if os.path.exists(sample_path + ".hdf5"):
+            os.remove(sample_path + ".hdf5")
+
+    def test_import_txt(self):
+        """Verify import of ASCII delimited data files"""
+        sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files',
+                                        '1.25 from hole Single Column.asc')
+        assert(os.path.exists(sample_data_file))
+        import_params = {'delimiter': None}
+        expected_data = np.loadtxt(sample_data_file, delimiter=import_params['delimiter'])
+        self.model.import_txt(sample_data_file, **import_params)
+        dest_file = os.path.join(pathfinder.data_path(),
+                                 os.path.basename(sample_data_file) + ".hdf5")
+        self.assertTrue(os.path.exists(dest_file))
+        with h5py.File(dest_file, "r") as fidin:
+            root, ext = os.path.splitext(os.path.basename(dest_file))
+            for key in fidin.keys():
+                if key.startswith(root):
+                    read_data = fidin[key][...]
+                    self.assertListEqual(expected_data.tolist(), read_data.tolist())
+        try:
+            if os.path.exists(dest_file):
+                os.remove(dest_file)
+        except WindowsError: # file in use
+            pass
+
+    def test_export_txt(self):
+        """Verify export of data to delimited ASCII"""
+        # Use integer data to avoid the floating point conversion to/from files
+        sample_data = self.sample_data.astype(np.int64)
+        sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files',
+                                        'sample.hdf5')
+        dest_file = os.path.join(os.path.dirname(__file__), 'support_files',
+                                 'sample.txt')
+        with h5py.File(sample_data_file, "w") as fidout:
+            fidout.create_dataset(os.path.basename(sample_data_file), data=sample_data)
+            export_params = {'delimiter': ','}
+            self.model.export_txt(dest_file, sample_data_file, **export_params)
+            retrieved_data = np.genfromtxt(dest_file, delimiter=export_params['delimiter'])
+            self.assertListEqual(sample_data.tolist(), retrieved_data.tolist())
+        try:
+            if os.path.exists(sample_data_file):
+                os.remove(sample_data_file)
+            if os.path.exists(dest_file):
+                os.remove(dest_file)
+        except WindowsError: # file in use
+            pass
 
     def test_import_dicom(self):
         """Verify import of DICOM / DICONDE data"""
@@ -144,12 +195,20 @@ class TestMainModel(unittest.TestCase):
                         except TypeError:
                             print(dicom_data_file)
                         dest_file = os.path.join(pathfinder.data_path(),
-                                                 os.path.basename(dicom_data_file))
+                                                 os.path.basename(dicom_data_file) + ".hdf5")
                         self.assertTrue(os.path.exists(dest_file))
-                        read_data = np.loadtxt(dest_file, delimiter=',')
-                        self.assertListEqual(dicom_arr.tolist(), read_data.tolist())
-                        if os.path.exists(dest_file):
-                            os.remove(dest_file)
+                        #read_data = np.loadtxt(dest_file, delimiter=',')
+                        with h5py.File(dest_file, "r") as fidin:
+                            froot, ext = os.path.splitext(os.path.basename(dest_file))
+                            for key in fidin.keys():
+                                if key.startswith(froot):
+                                    read_data = fidin[key][...]
+                                    self.assertListEqual(dicom_arr.tolist(), read_data.tolist())
+                        try:
+                            if os.path.exists(dest_file):
+                                os.remove(dest_file)
+                        except WindowsError: # File in use
+                            pass
         except ImportError:
             return
 
@@ -261,8 +320,8 @@ class TestMainModel(unittest.TestCase):
         self.assertEqual(is_win2k, model.is_win2k())
 
     def tearDown(self):
-        if os.path.exists(self.sample_data_file):
-            os.remove(self.sample_data_file)
+        if os.path.exists(self.sample_data_file + ".hdf5"):
+            os.remove(self.sample_data_file + ".hdf5")
 
 if __name__ == "__main__":
     random.seed()

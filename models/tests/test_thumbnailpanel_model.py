@@ -7,6 +7,7 @@ __author__ = 'Chris R. Coughlin'
 
 from controllers import pathfinder
 import models.thumbnailpanel_model as model
+import h5py
 from matplotlib.figure import Figure
 import numpy as np
 import wx
@@ -26,7 +27,9 @@ class TestThumbnailPanelModel(unittest.TestCase):
         self.sample_data = np.array(random_data)
         self.sample_data_file = os.path.normpath(
             os.path.join(os.path.dirname(__file__), "sample.dat"))
-        np.savetxt(self.sample_data_file, self.sample_data)
+        #np.savetxt(self.sample_data_file, self.sample_data)
+        with h5py.File(self.sample_data_file, 'w') as fidout:
+            fidout.create_dataset(os.path.basename(self.sample_data_file), data=self.sample_data)
 
     def test_create_plot(self):
         """Verify plot function returns a matplotlib Figure"""
@@ -57,10 +60,9 @@ class TestThumbnailPanelModel(unittest.TestCase):
 
     def test_multiprocess_plot(self):
         """Verify multiprocess_plot function returns a wx Bitmap instance"""
-        import_parameters = {'delimiter': ''}
         app = wx.PySimpleApp()
         plot_bmp = model.multiprocess_plot(self.sample_data_file, width=10,
-                                           height=19, **import_parameters)
+                                           height=19)
         self.assertTrue(isinstance(plot_bmp, wx.Bitmap))
 
     def test_gen_thumbnail(self):

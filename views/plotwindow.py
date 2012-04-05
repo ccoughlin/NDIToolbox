@@ -18,10 +18,10 @@ import Queue
 class PlotWindow(wx.Frame):
     """Basic wxPython UI element for displaying matplotlib plots"""
 
-    def __init__(self, parent, data_file, **readtext_params):
+    def __init__(self, parent, data_file):
         self.parent = parent
         self.data_file = data_file
-        self.controller = PlotWindowController(self, data_file, **readtext_params)
+        self.controller = PlotWindowController(self, data_file)
         self.load_data()
 
     def has_data(self):
@@ -203,10 +203,10 @@ class PlotWindow(wx.Frame):
 class ImgPlotWindow(PlotWindow):
     """Specialized PlotWindow for handling imgplots"""
 
-    def __init__(self, parent, data_file, **readtext_params):
+    def __init__(self, parent, data_file):
         self.parent = parent
         self.data_file = data_file
-        self.controller = ImgPlotWindowController(self, data_file, **readtext_params)
+        self.controller = ImgPlotWindowController(self, data_file)
         self.load_data()
 
     def init_plot_menu(self):

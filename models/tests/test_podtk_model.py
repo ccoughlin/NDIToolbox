@@ -9,6 +9,7 @@ import unittest
 from models import podtk_model
 from models import configobj
 from controllers import pathfinder
+import h5py
 import numpy as np
 import os
 import os.path
@@ -25,7 +26,9 @@ class TestPODWindowModel(unittest.TestCase):
         self.sample_data_basename = "sample.dat"
         self.sample_data_file = os.path.join(os.path.dirname(__file__),
                                              self.sample_data_basename)
-        np.savetxt(self.sample_data_file, self.sample_data)
+        #np.savetxt(self.sample_data_file, self.sample_data)
+        with h5py.File(self.sample_data_file, 'w') as fidout:
+            fidout.create_dataset(self.sample_data_basename, data=self.sample_data)
 
     def random_data(self):
         """Returns a list of random data"""
@@ -47,15 +50,16 @@ class TestPODWindowModel(unittest.TestCase):
 
     def test_save_data(self):
         """Verify save_data classmethod correctly saves data"""
-        if os.path.exists(self.sample_data_file):
-            os.remove(self.sample_data_file)
+        if os.path.exists(self.sample_data_file + ".hdf5"):
+            os.remove(self.sample_data_file + ".hdf5")
         self.model.save_data(self.sample_data_file, self.sample_data)
-        returned_data = self.model.load_data(self.sample_data_file)
+        assert(os.path.exists(self.sample_data_file + ".hdf5"))
+        returned_data = self.model.load_data(self.sample_data_file + ".hdf5")
         self.assertListEqual(returned_data.tolist(), self.sample_data.tolist())
 
     def tearDown(self):
-        if os.path.exists(self.sample_data_file):
-            os.remove(self.sample_data_file)
+        if os.path.exists(self.sample_data_file + ".hdf5"):
+            os.remove(self.sample_data_file + ".hdf5")
 
 
 class TestPODModel(unittest.TestCase):

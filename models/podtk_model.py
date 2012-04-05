@@ -50,15 +50,13 @@ class PODWindowModel(object):
 
     @classmethod
     def load_data(cls, file_name):
-        """Returns NumPy array from the specified CSV file."""
-        import_params = {'delimiter': ','}
-        return mainmodel.get_data(file_name, **import_params)
+        """Returns NumPy array from the specified file."""
+        return mainmodel.get_data(file_name)
 
     @classmethod
     def save_data(cls, file_name, data):
         """Saves NumPy array data to the specified file name"""
-        export_params = {'delimiter': ','}
-        mainmodel.save_data(file_name, data, **export_params)
+        mainmodel.save_data(file_name, data)
 
 
 class PODModel(abstractplugin.AbstractPlugin):

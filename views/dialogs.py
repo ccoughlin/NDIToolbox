@@ -144,6 +144,82 @@ class ImportTextDialog(wx.Dialog):
         return params
 
 
+class ExportTextDialog(wx.Dialog):
+    """Specify export parameters for saving data to delimited ASCII"""
+
+    def __init__(self, parent, id=-1, title="Export Text File", pos=wx.DefaultPosition,
+                 size=wx.DefaultSize, style=wx.DEFAULT_DIALOG_STYLE, name=wx.DialogNameStr):
+        super(ExportTextDialog, self).__init__(parent, id, title, pos, size, style, name)
+        self.delimiter_choices = {"Comma": ",",
+                                  "Space": " ",
+                                  "TAB": "\t"}
+        self.format_choices = {"Float (1.00)": "%f",
+                               "Integer (1)": "%i",
+                               "Scientific Notation (1.00E2)": "%e"}
+        self.eol_choices = {"Windows (CR/LF)": "\r\n",
+                            "POSIX (LF)": "\n"}
+        self.generate()
+
+    def generate(self):
+        """Creates the UI"""
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.fsizer = wx.FlexGridSizer(cols=2)
+
+        delim_lbl = wx.StaticText(self, wx.ID_ANY, u'Delimiter Character:',
+                                  wx.DefaultPosition, wx.DefaultSize)
+        self.fsizer.Add(delim_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
+                        ui_defaults.widget_margin)
+        self.delim_combobox = wx.ComboBox(self, wx.ID_ANY, self.delimiter_choices.keys()[0],
+                                          wx.DefaultPosition, wx.DefaultSize,
+                                          self.delimiter_choices.keys())
+        self.delim_combobox.SetSelection(0)
+        self.fsizer.Add(self.delim_combobox, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
+                        ui_defaults.widget_margin)
+        fmt_lbl = wx.StaticText(self, wx.ID_ANY, u'Format',
+                                wx.DefaultPosition, wx.DefaultSize)
+        self.fsizer.Add(fmt_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
+                        ui_defaults.widget_margin)
+        self.fmt_combobox = wx.ComboBox(self, wx.ID_ANY, self.format_choices.keys()[0],
+                                        wx.DefaultPosition, wx.DefaultSize,
+                                        self.format_choices.keys())
+        self.fmt_combobox.SetSelection(0)
+        self.fsizer.Add(self.fmt_combobox, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
+                        ui_defaults.widget_margin)
+        nline_lbl = wx.StaticText(self, wx.ID_ANY, u'End Of Line Character', wx.DefaultPosition,
+                                  wx.DefaultSize)
+        self.fsizer.Add(nline_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
+                        ui_defaults.widget_margin)
+        self.nline_combobox = wx.ComboBox(self, wx.ID_ANY, self.eol_choices.keys()[0],
+                                          wx.DefaultPosition, wx.DefaultSize,
+                                          self.eol_choices.keys())
+        self.nline_combobox.SetSelection(0)
+        self.fsizer.Add(self.nline_combobox, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
+                        ui_defaults.widget_margin)
+        self.sizer.Add(self.fsizer, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
+        self._generate_std_buttons()
+        self.SetSizerAndFit(self.sizer)
+
+    def _generate_std_buttons(self):
+        """Generates the standard OK/Cancel dialog buttons"""
+        self.stdbtns = wx.StdDialogButtonSizer()
+        ok_btn = wx.Button(self, wx.ID_OK)
+        cancel_btn = wx.Button(self, wx.ID_CANCEL)
+        self.stdbtns.AddButton(ok_btn)
+        self.stdbtns.AddButton(cancel_btn)
+        self.stdbtns.Realize()
+        self.sizer.Add(self.stdbtns, ui_defaults.lbl_pct, ui_defaults.sizer_flags,
+                       ui_defaults.widget_margin)
+
+    def get_export_parameters(self):
+        """Returns a dict of the text export parameters"""
+        params = {}
+        params['delimiter'] = self.delimiter_choices.get(self.delim_combobox.GetStringSelection(),
+                                                         ",")
+        params['format'] = self.format_choices.get(self.fmt_combobox.GetStringSelection(), "%f")
+        params['newline'] = self.eol_choices.get(self.nline_combobox.GetStringSelection(), "\n")
+        return params
+
+
 class IntegerRangeDialog(wx.Dialog):
     """Dialog to specify a numeric range.  Defaults to allowing
     any integer between 0 and the maximum for an integer for the

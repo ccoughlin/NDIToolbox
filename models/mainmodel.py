@@ -9,6 +9,7 @@ from controllers import pathfinder
 from models import abstractplugin
 from models import config
 import numpy as np
+import h5py
 import imp
 import inspect
 import os
@@ -16,25 +17,23 @@ import os.path
 import shutil
 import sys
 
-def get_data(data_fname, **import_params):
-    """Loads the data from an ASCII-delimited text file"""
-    comment_char = import_params.get('commentchar', '#')
-    delim_char = import_params.get('delimiter', None)
-    header_lines = import_params.get('skipheader', 0)
-    footer_lines = import_params.get('skipfooter', 0)
-    cols_to_read = import_params.get('usecols', None)
-    transpose_data = import_params.get('transpose', False)
-    data = np.genfromtxt(data_fname, comments=comment_char, delimiter=delim_char,
-                         skip_header=header_lines, skip_footer=footer_lines, usecols=cols_to_read,
-                         unpack=transpose_data)
-    return data
+def get_data(data_fname):
+    with h5py.File(data_fname, 'r') as fidin:
+        root, ext = os.path.splitext(os.path.basename(data_fname))
+        for key in fidin.keys():
+            if key.startswith(root):
+                return fidin[key][...]
 
 
-def save_data(data_fname, data, **export_params):
-    """Saves the data to data_fname using the specified ASCII
-     formatting parameters."""
-    delim_char = export_params.get('delimiter', None)
-    np.savetxt(data_fname, data, delimiter=delim_char)
+def save_data(data_fname, data):
+    """Saves the data to the HDF5 file data_fname"""
+    root, ext = os.path.splitext(data_fname)
+    output_filename = data_fname
+    hdf5_ext = '.hdf5'
+    if ext.lower() != hdf5_ext:
+        output_filename += hdf5_ext
+    with h5py.File(output_filename, 'w') as fidout:
+        fidout.create_dataset(os.path.basename(data_fname), data=data)
 
 
 def load_plugins():
@@ -182,6 +181,30 @@ class MainModel(object):
         """Adds the specified data file to the data folder"""
         shutil.copy(data_file, pathfinder.data_path())
 
+    def export_txt(self, dest, src, **export_params):
+        """Exports the NumPy array data to the text file data_fname,
+        using the supplied export parameters."""
+        delim_char = export_params.get('delimiter', None)
+        newline = export_params.get('newline', '\n')
+        fmt = export_params.get('format', '%f')
+        data = get_data(src)
+        np.savetxt(dest, data, fmt=fmt, delimiter=delim_char, newline=newline)
+
+    def import_txt(self, data_fname, **import_params):
+        """Loads the data from an ASCII-delimited text file, and copies
+        the data to a new HDF5 file in the data folder"""
+        comment_char = import_params.get('commentchar', '#')
+        delim_char = import_params.get('delimiter', None)
+        header_lines = import_params.get('skipheader', 0)
+        footer_lines = import_params.get('skipfooter', 0)
+        cols_to_read = import_params.get('usecols', None)
+        transpose_data = import_params.get('transpose', False)
+        data = np.genfromtxt(data_fname, comments=comment_char, delimiter=delim_char,
+                             skip_header=header_lines, skip_footer=footer_lines, usecols=cols_to_read,
+                             unpack=transpose_data)
+        output_fname = os.path.join(pathfinder.data_path(), os.path.basename(data_fname))
+        save_data(output_fname, data)
+
     def import_dicom(self, data_file):
         """Imports a DICOM/DICONDE pixel map"""
         import dicom
@@ -194,7 +217,7 @@ class MainModel(object):
         # when data format is finalized
         if di_struct.pixel_array.ndim > 2:
             return
-        save_data(di_fname, di_struct.pixel_array, **export_parameters)
+        save_data(di_fname, di_struct.pixel_array)
 
     def remove_data(self, data_file):
         """Removes specified file from the device"""

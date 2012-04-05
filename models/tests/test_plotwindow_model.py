@@ -19,10 +19,8 @@ class TestBasicPlotWindowModel(unittest.TestCase):
     def setUp(self):
         self.mock_controller = ""
         self.mock_data_file = ""
-        self.mock_read_parameters = {}
         self.basic_model = model.BasicPlotWindowModel(self.mock_controller,
-                                                      self.mock_data_file,
-                                                      **self.mock_read_parameters)
+                                                      self.mock_data_file)
 
     def random_data(self):
         """Returns a list of random data"""
@@ -69,9 +67,7 @@ class TestPlotWindowModel(unittest.TestCase):
     def setUp(self):
         self.mock_controller = ""
         self.mock_data_file = ""
-        self.mock_read_parameters = {}
-        self.model = model.PlotWindowModel(self.mock_controller, self.mock_data_file,
-                                           **self.mock_read_parameters)
+        self.model = model.PlotWindowModel(self.mock_controller, self.mock_data_file)
 
     def random_data(self):
         """Returns a list of random data"""
@@ -128,8 +124,7 @@ class TestImgPlotWindowModel(unittest.TestCase):
         self.mock_controller = ""
         self.mock_data_file = ""
         self.mock_read_parameters = {}
-        self.model = model.ImgPlotWindowModel(self.mock_controller, self.mock_data_file,
-                                              **self.mock_read_parameters)
+        self.model = model.ImgPlotWindowModel(self.mock_controller, self.mock_data_file)
 
     def random_data(self):
         """Generates a random list of data"""
