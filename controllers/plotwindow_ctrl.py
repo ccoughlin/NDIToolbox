@@ -137,6 +137,8 @@ class BasicPlotWindowController(object):
                 plugin_class, check_plugin_config_instance = self.model.get_plugin(plugin[0])
                 if hasattr(check_plugin_config_instance, "config"):
                     cfg = self.configure_plugin_dlg(check_plugin_config_instance)
+                    if cfg is None:
+                        return
                 plugin_queue = multiprocessing.Queue()
                 plugin_process = multiprocessing.Process(target=plugin_wrapper,
                                                          args=(

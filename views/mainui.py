@@ -26,6 +26,7 @@ class UI(wx.Frame):
         self.init_menu()
         self.init_ui()
         self.controller.verify_userpath()
+        self.controller.verify_imports()
         self.Bind(wx.EVT_CLOSE, self.controller.on_quit)
 
     def init_menu(self):

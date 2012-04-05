@@ -10,8 +10,10 @@ from models import workerthread
 import views.plotwindow as plotwindow
 import views.preview_window as preview_window
 import views.dialogs as dlg
+from views import podtk
 import controllers.pathfinder as pathfinder
 import wx
+import imp
 import os.path
 import Queue
 import sys
@@ -33,6 +35,23 @@ class MainUIController(object):
             self.set_userpath()
         self.model.check_user_path()
         self.model.copy_system_plugins()
+
+    def verify_imports(self):
+        """Ensures third-party dependencies are installed; shows
+        error dialog and exits if a module is missing."""
+        dependencies = ['h5py', 'dicom', 'matplotlib', 'numpy', 'scipy']
+        for module in dependencies:
+            try:
+                imp.find_module(module)
+            except ImportError: # Module not installed / not found
+                msg = ' '.join(["Unable to find the '{0}' module.".format(module),
+                                "Please ensure the module is installed and",
+                                "restart NDIToolbox."])
+                err_dlg = wx.MessageDialog(self.view, message=msg,
+                                           caption="{0} Module Not Found".format(module), style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+                sys.exit(0)
 
     def get_icon_bmp(self):
         """Returns a PNG wx.Bitmap of the application's
@@ -262,8 +281,6 @@ class MainUIController(object):
                                  style=wx.FD_OPEN)
         if file_dlg.ShowModal() == wx.ID_OK:
             try:
-                import dicom
-
                 wx.BeginBusyCursor()
                 exception_queue = Queue.Queue()
                 imp_dicom_thd = workerthread.WorkerThread(exception_queue=exception_queue,
@@ -284,11 +301,6 @@ class MainUIController(object):
                         break
                     wx.GetApp().Yield()
                 self.view.data_panel.populate()
-            except ImportError: # pydicom not installed
-                err_dlg = wx.MessageDialog(self.view, message="Please install the pydicom module.",
-                                           caption="Unable To Import Data", style=wx.ICON_ERROR)
-                err_dlg.ShowModal()
-                err_dlg.Destroy()
             except TypeError: # 3D array not implemented
                 err_dlg = wx.MessageDialog(self.view,
                                            message="3D Arrays are not supported in this version.",
@@ -341,7 +353,5 @@ class MainUIController(object):
 
     def on_run_podtk(self, evt):
         """Handles request to run POD Toolkit"""
-        from views import podtk
-
         podtk_ui = podtk.PODWindow(parent=self.view)
         podtk_ui.Show()

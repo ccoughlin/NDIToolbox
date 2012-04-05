@@ -8,6 +8,7 @@ __author__ = 'Chris R. Coughlin'
 from controllers import pathfinder
 from models import abstractplugin
 from models import config
+import dicom
 import numpy as np
 import h5py
 import imp
@@ -207,8 +208,6 @@ class MainModel(object):
 
     def import_dicom(self, data_file):
         """Imports a DICOM/DICONDE pixel map"""
-        import dicom
-
         di_struct = dicom.read_file(data_file)
         export_parameters = {'delimiter': ','}
         di_fname = os.path.join(pathfinder.data_path(),

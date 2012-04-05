@@ -440,9 +440,11 @@ class ConfigurePluginDialog(wx.Dialog):
         """Generates the standard OK/Cancel dialog buttons"""
         self.stdbtns = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK)
+        cancel_btn = wx.Button(self, wx.ID_CANCEL)
         self.stdbtns.AddButton(ok_btn)
+        self.stdbtns.AddButton(cancel_btn)
         self.stdbtns.Realize()
-        self.sizer.Add(self.stdbtns, ui_defaults.lbl_pct, ui_defaults.sizer_flags, 0)
+        self.sizer.Add(self.stdbtns, ui_defaults.lbl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
 
     def populate_config(self):
         config_ctrls = {}
