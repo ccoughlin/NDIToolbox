@@ -153,11 +153,11 @@ class ExportTextDialog(wx.Dialog):
         self.delimiter_choices = {"Comma": ",",
                                   "Space": " ",
                                   "TAB": "\t"}
-        self.format_choices = {"Float (1.00)": "%f",
-                               "Integer (1)": "%i",
-                               "Scientific Notation (1.00E2)": "%e"}
-        self.eol_choices = {"Windows (CR/LF)": "\r\n",
-                            "POSIX (LF)": "\n"}
+        self.format_choices = {"Float (e.g. 1.00)": "%f",
+                               "Integer (e.g. 1)": "%i",
+                               "Scientific Notation (e.g. 1.00E2)": "%e"}
+        self.eol_choices = {"Linefeed (\\n)": "\n",
+                            "Carriage Return + Linefeed (\\r\\n)": "\r\n"}
         self.generate()
 
     def generate(self):

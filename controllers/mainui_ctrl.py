@@ -232,7 +232,7 @@ class MainUIController(object):
         if file_dlg.ShowModal() == wx.ID_OK:
             exportfmt_dlg = dlg.ExportTextDialog(parent=self.view.parent)
             if exportfmt_dlg.ShowModal() == wx.ID_OK:
-                wx.BusyCursor()
+                wx.BeginBusyCursor()
                 export_params = exportfmt_dlg.get_export_parameters()
                 exception_queue = Queue.Queue()
                 export_text_thd = workerthread.WorkerThread(exception_queue=exception_queue,
