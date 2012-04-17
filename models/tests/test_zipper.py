@@ -8,7 +8,6 @@ __author__ = 'Chris R. Coughlin'
 import unittest
 import filecmp
 import os
-import os.path
 import shutil
 import sys
 import zipfile

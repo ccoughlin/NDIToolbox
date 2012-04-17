@@ -12,7 +12,6 @@ import models.zipper as zipper
 import cStringIO
 import unittest
 import os
-import os.path
 import random
 import string
 import threading

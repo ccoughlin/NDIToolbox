@@ -14,7 +14,6 @@ import h5py
 import imp
 import inspect
 import os
-import os.path
 import shutil
 import sys
 

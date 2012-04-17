@@ -35,6 +35,8 @@ def create_plot(data, title, width, height):
     else:
         img = axes.imshow(data, cmap=cm.get_cmap('Spectral'))
         figure.colorbar(img)
+    if len(title) > 20:
+        title = ''.join([title[:10], "...", title[-10:]])
     axes.set_title(title)
     axes.grid(True)
     return figure

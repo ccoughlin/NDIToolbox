@@ -108,6 +108,7 @@ class UI(wx.Frame):
         Name("thumbnail_panel").Caption("Preview Plot").MinSize(wx.Size(300, 300)).
         Bottom().CloseButton(False).MinimizeButton(True).MaximizeButton(True).
         Floatable(True).Dockable(True))
+        self.enable_preview_panel(self.controller.get_preview_state())
         self.SetIcon(self.controller.get_icon())
         self._mgr.Update()
 
@@ -182,6 +183,16 @@ class UI(wx.Frame):
         self.toolbar.EnableTool(self.preview_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.plot_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.imageplot_data_tool.GetId(), enable)
+
+    def enable_preview_panel(self, enable=True):
+        """Shows or hides the plot thumbnail panel"""
+        pane_info = self._mgr.GetPane("thumbnail_panel")
+        if enable:
+            pane_info.Bottom()
+            pane_info.Show()
+        else:
+            pane_info.Hide()
+        self._mgr.Update()
 
 
 def main():

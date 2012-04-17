@@ -171,8 +171,10 @@ class MainUIController(object):
     def on_preview_toggle(self, evt):
         """Handles toggling data thumbnail plot previews"""
         preview_state = self.view.toolbar.GetToolState(self.view.gen_bitmaps_tool.GetId())
-        self.set_thumb(panel=self.view.thumbnail_panel, data_file=self.view.data_panel.data,
-                       enable=preview_state)
+        if preview_state:
+            self.set_thumb(panel=self.view.thumbnail_panel, data_file=self.view.data_panel.data,
+                           enable=preview_state)
+        self.view.enable_preview_panel(preview_state)
         self.model.set_preview_state(preview_state)
 
     def on_refresh_data(self, evt):

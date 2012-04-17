@@ -14,7 +14,6 @@ import wx
 import hashlib
 from multiprocessing import Process, Pipe, freeze_support
 import os
-import os.path
 import unittest
 import random
 import StringIO

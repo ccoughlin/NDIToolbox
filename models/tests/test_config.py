@@ -10,7 +10,6 @@ from models import config
 from controllers import pathfinder
 import ConfigParser
 import os
-import os.path
 
 class TestConfigure(unittest.TestCase):
     def setUp(self):

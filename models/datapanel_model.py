@@ -7,7 +7,6 @@ __author__ = 'Chris R. Coughlin'
 
 from controllers import pathfinder
 import os
-import os.path
 
 class DataPanelModel(object):
     """Model for the DataPanel"""

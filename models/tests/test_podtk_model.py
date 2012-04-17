@@ -12,7 +12,6 @@ from controllers import pathfinder
 import h5py
 import numpy as np
 import os
-import os.path
 import random
 import shutil
 

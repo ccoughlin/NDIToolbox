@@ -10,7 +10,6 @@ from models import zipper
 from controllers import pathfinder
 import cStringIO
 import os
-import os.path
 import SimpleHTTPServer
 import SocketServer
 import random

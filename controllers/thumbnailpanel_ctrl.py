@@ -6,7 +6,6 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 from controllers import pathfinder
-from views.dialogs import ImportTextDialog
 from models import thumbnailpanel_model as model
 import wx
 import os.path
@@ -30,13 +29,9 @@ class ThumbnailPanelController(object):
             thumb_fname = model.thumbnail_name(data_fname)
             if not os.path.exists(thumb_fname):
                 # No thumbnail for this file exists, generate
-                # TODO - redo data import if text files not used in final product
-                import_dlg = ImportTextDialog(parent=self.view.parent)
-                if import_dlg.ShowModal() == wx.ID_OK:
-                    readtext_params = import_dlg.get_import_parameters()
-                    thumbnail = model.multiprocess_plot(data_fname,
-                                                        self.view.bitmap_width / 100,
-                                                        self.view.bitmap_height / 100)
+                thumbnail = model.multiprocess_plot(data_fname,
+                                                    self.view.bitmap_width / 100,
+                                                    self.view.bitmap_height / 100)
 
             else:
                 # Thumbnail found, skip generation

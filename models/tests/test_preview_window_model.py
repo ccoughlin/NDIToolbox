@@ -9,7 +9,6 @@ from models import preview_window_model
 import h5py
 import numpy as np
 import os
-import os.path
 import random
 import unittest
 
