@@ -118,7 +118,7 @@ class MainUIController(object):
              "\nLead Developer:  Chris Coughlin")
         )
         about_project_logo_dlg = dlg.AboutDialog(parent=self.view, title="About This Program",
-                                                 msg=project_msg, url="www.nditoolbox.com", logobmp_fname=project_logo)
+                                                 msg=project_msg, url="http://www.nditoolbox.com", logobmp_fname=project_logo)
         about_project_logo_dlg.ShowModal()
         about_project_logo_dlg.Destroy()
 
@@ -140,7 +140,7 @@ class MainUIController(object):
              "providing the highest quality materials science products and services."))
         about_tri_dlg = dlg.AboutDialog(parent=self.view, title="About TRI",
                                         msg=tri_msg,
-                                        url="www.tri-austin.com",
+                                        url="http://www.tri-austin.com",
                                         logobmp_fname=tri_logo)
         about_tri_dlg.ShowModal()
         about_tri_dlg.Destroy()
@@ -153,7 +153,7 @@ class MainUIController(object):
                                 "Axialis IconWorkshop."))
         about_axialisicons_dlg = dlg.AboutDialog(parent=self.view, title="About Axialis Icons",
                                                  msg=axialis_msg,
-                                                 url="www.axialis.com",
+                                                 url="http://www.axialis.com",
                                                  logobmp_fname=axialis_logo)
         about_axialisicons_dlg.ShowModal()
         about_axialisicons_dlg.Destroy()
