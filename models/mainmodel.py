@@ -45,7 +45,7 @@ def load_plugins():
     plugins = []
     if not plugins_folder in sys.path:
         sys.path.append(plugins_folder)
-    for root, dir, files in os.walk(pathfinder.plugins_path()):
+    for root, dirs, files in os.walk(pathfinder.plugins_path()):
         for module_file in files:
             module_name, module_extension = os.path.splitext(module_file)
             if module_extension == os.extsep + "py":
@@ -168,7 +168,7 @@ class MainModel(object):
         """Copies plugins that ship with the application
         to the user's plugins folder."""
         system_plugins_folder = os.path.join(pathfinder.app_path(), 'plugins')
-        for root, dir, files in os.walk(system_plugins_folder):
+        for root, dirs, files in os.walk(system_plugins_folder):
             for module_file in files:
                 module_name, module_extension = os.path.splitext(module_file)
                 if module_extension == os.extsep + "py":

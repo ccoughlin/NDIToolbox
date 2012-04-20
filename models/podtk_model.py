@@ -29,7 +29,7 @@ class PODWindowModel(object):
         pod_models = []
         if not models_folder in sys.path:
             sys.path.append(models_folder)
-        for root, dir, files in os.walk(pathfinder.podmodels_path()):
+        for root, dirs, files in os.walk(pathfinder.podmodels_path()):
             for model_file in files:
                 model_name, model_extension = os.path.splitext(model_file)
                 module_hdl = None

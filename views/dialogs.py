@@ -8,7 +8,6 @@ import wx
 from wx.lib.masked.numctrl import NumCtrl
 from wx.lib import statbmp, wordwrap
 from wx import ProgressDialog
-import os.path
 import sys
 import textwrap
 import webbrowser

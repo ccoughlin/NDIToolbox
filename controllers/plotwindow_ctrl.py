@@ -141,9 +141,7 @@ class BasicPlotWindowController(object):
                         return
                 plugin_queue = multiprocessing.Queue()
                 plugin_process = multiprocessing.Process(target=plugin_wrapper,
-                                                         args=(
-                                                             plugin_class, self.data, plugin_queue,
-                                                             cfg))
+                                                         args=(plugin_class, self.data, plugin_queue, cfg))
                 plugin_process.daemon = True
                 plugin_process.start()
                 keepGoing = True
