@@ -312,6 +312,49 @@ class MainUIController(object):
             finally:
                 wx.EndBusyCursor()
 
+    def on_import_image(self, evt):
+        """Handles request to add image data to data folder"""
+        img_wildcards = ["All Files (*.*)|*.*", "BMP (*.bmp)|*.bmp", "DCX (*.dcx)|*.dcx",
+                         "EPS (*.eps)|*.eps", "GIF (*.gif)|*.gif", "IM (*.im)|*.im",
+                         "IMT (*.imt)|*.imt", "JPEG (*.jpg,*.jpeg)|*.jpg;*.jpeg",
+                         "PCX (*.pcx)|*.pcx", "PNG (*.png)|*.png", "PPM (*.ppm)|*.ppm",
+                         "PSD (*.psd)|*.psd", "SGI (*.sgi)|*.sgi", "TGA (*.tga)|*.tga",
+                         "TIFF (*.tiff)|*.tiff", "XPM (*.xpm)|*.xpm"]
+        file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file',
+                                 wildcard="|".join(img_wildcards), style=wx.FD_OPEN)
+        if file_dlg.ShowModal() == wx.ID_OK:
+            flatten_img = True
+            msg = "The image data should be converted to grayscale for data analysis.  Proceed?"
+            flatten_dlg = wx.MessageDialog(parent=self.view.parent,
+                                           message=msg,
+                                           caption="Flatten Palette?",
+                                           style=wx.YES_NO|wx.YES_DEFAULT)
+            if flatten_dlg.ShowModal() == wx.ID_NO:
+                flatten_img = False
+            try:
+                wx.BeginBusyCursor()
+                exception_queue = Queue.Queue()
+                imp_img_thd = workerthread.WorkerThread(exception_queue=exception_queue,
+                                                          target=self.model.import_img,
+                                                          args=(file_dlg.GetPath(), flatten_img))
+                imp_img_thd.start()
+                while True:
+                    imp_img_thd.join(0.125)
+                    if not imp_img_thd.is_alive():
+                        try:
+                            exc_type, exc = exception_queue.get(block=False)
+                            err_msg = "An error occurred during import:\n{0}".format(exc)
+                            err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                                       caption="Unable To Import File", style=wx.ICON_ERROR)
+                            err_dlg.ShowModal()
+                        except Queue.Empty:
+                            pass
+                        break
+                    wx.GetApp().Yield()
+                self.view.data_panel.populate()
+            finally:
+                wx.EndBusyCursor()
+
     def on_remove_data(self, evt):
         """Handles request to remove data from data folder"""
         if self.view.data_panel.data is not None:

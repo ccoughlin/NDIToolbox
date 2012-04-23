@@ -49,6 +49,10 @@ class UI(wx.Frame):
                                  help="Imports a DICOM / DICONDE data file")
         self.import_mnu.AppendItem(dicom_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_import_dicom, id=dicom_mnui.GetId())
+        img_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="Image...",
+                               help="Imports an image file")
+        self.Bind(wx.EVT_MENU, self.controller.on_import_image, id=img_mnui.GetId())
+        self.import_mnu.AppendItem(img_mnui)
         self.file_mnu.AppendMenu(wx.ID_ANY, 'Import...', self.import_mnu)
         userpath_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Choose Data Folder...",
                                     help="Specify the local storage folder")

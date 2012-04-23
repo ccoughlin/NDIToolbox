@@ -10,6 +10,7 @@ import models.abstractplugin as abstractplugin
 import controllers.pathfinder as pathfinder
 import h5py
 import numpy as np
+import scipy.misc
 import os
 import random
 import shutil
@@ -211,6 +212,28 @@ class TestMainModel(unittest.TestCase):
                             pass
         except ImportError:
             return
+
+    def test_import_img(self):
+        """Verify import of images"""
+        sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files',
+                                        'austin_sky320x240.jpg')
+        assert(os.path.exists(sample_data_file))
+        expected_data = scipy.misc.imread(sample_data_file, flatten=True)
+        self.model.import_img(sample_data_file, flatten=True)
+        dest_file = os.path.join(pathfinder.data_path(),
+                                 os.path.basename(sample_data_file) + ".hdf5")
+        self.assertTrue(os.path.exists(dest_file))
+        with h5py.File(dest_file, "r") as fidin:
+            root, ext = os.path.splitext(os.path.basename(dest_file))
+            for key in fidin.keys():
+                if key.startswith(root):
+                    read_data = fidin[key][...]
+                    self.assertListEqual(expected_data.tolist(), read_data.tolist())
+        try:
+            if os.path.exists(dest_file):
+                os.remove(dest_file)
+        except WindowsError: # file in use
+            pass
 
     def test_load_plugins(self):
         """Verify the main model loads available plugins"""

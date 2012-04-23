@@ -10,6 +10,7 @@ from models import abstractplugin
 from models import config
 import dicom
 import numpy as np
+import scipy.misc
 import h5py
 import imp
 import inspect
@@ -208,7 +209,6 @@ class MainModel(object):
     def import_dicom(self, data_file):
         """Imports a DICOM/DICONDE pixel map"""
         di_struct = dicom.read_file(data_file)
-        export_parameters = {'delimiter': ','}
         di_fname = os.path.join(pathfinder.data_path(),
                                 os.path.basename(data_file))
         # TODO - implement support for 3D arrays
@@ -216,6 +216,13 @@ class MainModel(object):
         if di_struct.pixel_array.ndim > 2:
             return
         save_data(di_fname, di_struct.pixel_array)
+
+    def import_img(self, data_file, flatten=True):
+        """Imports an image file, by default flattening
+        the image to a single layer grayscale."""
+        img_arr = scipy.misc.imread(data_file, flatten)
+        img_fname = os.path.join(pathfinder.data_path(), os.path.basename(data_file))
+        save_data(img_fname, img_arr)
 
     def remove_data(self, data_file):
         """Removes specified file from the device"""
