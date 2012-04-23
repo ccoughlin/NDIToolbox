@@ -11,12 +11,23 @@ import controllers.pathfinder as pathfinder
 import h5py
 import numpy as np
 import scipy.misc
+import imp
 import os
 import random
 import shutil
 import sys
 import tempfile
 import unittest
+
+def skipIfModuleNotInstalled(*modules):
+    """Skipping test decorator - skips test if import of module
+    fails."""
+    try:
+        for module in modules:
+            imp.find_module(module)
+        return lambda func: func
+    except ImportError:
+        return unittest.skip("Required module(s) not installed.")
 
 def deleted_user_path():
     """Utility function to delete empty folders in the user data folders,
@@ -175,44 +186,43 @@ class TestMainModel(unittest.TestCase):
         except WindowsError: # file in use
             pass
 
+    @skipIfModuleNotInstalled("dicom")
     def test_import_dicom(self):
         """Verify import of DICOM / DICONDE data"""
-        try:
-            import dicom
-            # Load the ASTM DICONDE example files,
-            # save, then ensure the resulting arrays
-            # are identical
-            diconde_folder = os.path.join(os.path.dirname(__file__), 'support_files')
-            for root, dirs, files in os.walk(diconde_folder):
-                for fname in files:
-                    dicom_data_file = os.path.join(root, fname)
-                    basename, ext = os.path.splitext(dicom_data_file)
-                    # Simple check to ensure we're looking at DICOM files
-                    if ext.lower() == '.dcm':
-                        dicom_data = dicom.read_file(dicom_data_file)
-                        dicom_arr = dicom_data.pixel_array
-                        try:
-                            self.model.import_dicom(dicom_data_file)
-                        except TypeError:
-                            print(dicom_data_file)
-                        dest_file = os.path.join(pathfinder.data_path(),
-                                                 os.path.basename(dicom_data_file) + ".hdf5")
-                        self.assertTrue(os.path.exists(dest_file))
-                        #read_data = np.loadtxt(dest_file, delimiter=',')
-                        with h5py.File(dest_file, "r") as fidin:
-                            froot, ext = os.path.splitext(os.path.basename(dest_file))
-                            for key in fidin.keys():
-                                if key.startswith(froot):
-                                    read_data = fidin[key][...]
-                                    self.assertListEqual(dicom_arr.tolist(), read_data.tolist())
-                        try:
-                            if os.path.exists(dest_file):
-                                os.remove(dest_file)
-                        except WindowsError: # File in use
-                            pass
-        except ImportError:
-            return
+        # Load the ASTM DICONDE example files,
+        # save, then ensure the resulting arrays
+        # are identical
+        import dicom
+        diconde_folder = os.path.join(os.path.dirname(__file__), 'support_files')
+        for root, dirs, files in os.walk(diconde_folder):
+            for fname in files:
+                dicom_data_file = os.path.join(root, fname)
+                basename, ext = os.path.splitext(dicom_data_file)
+                # Simple check to ensure we're looking at DICOM files
+                if ext.lower() == '.dcm':
+                    dicom_data = dicom.read_file(dicom_data_file)
+                    dicom_arr = dicom_data.pixel_array
+                    try:
+                        self.model.import_dicom(dicom_data_file)
+                    except TypeError:
+                        print(dicom_data_file)
+                    dest_file = os.path.join(pathfinder.data_path(),
+                                             os.path.basename(dicom_data_file) + ".hdf5")
+                    self.assertTrue(os.path.exists(dest_file))
+                    #read_data = np.loadtxt(dest_file, delimiter=',')
+                    with h5py.File(dest_file, "r") as fidin:
+                        froot, ext = os.path.splitext(os.path.basename(dest_file))
+                        for key in fidin.keys():
+                            if key.startswith(froot):
+                                read_data = fidin[key][...]
+                                self.assertListEqual(dicom_arr.tolist(), read_data.tolist())
+                    try:
+                        if os.path.exists(dest_file):
+                            os.remove(dest_file)
+                    except WindowsError: # File in use
+                        pass
 
+    @skipIfModuleNotInstalled("Image", "PIL")
     def test_import_img(self):
         """Verify import of images"""
         sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files',

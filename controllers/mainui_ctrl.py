@@ -314,6 +314,19 @@ class MainUIController(object):
 
     def on_import_image(self, evt):
         """Handles request to add image data to data folder"""
+        try:
+            from PIL import Image
+        except ImportError:
+            try:
+                import Image
+            except ImportError: # PIL not installed
+                err_dlg = wx.MessageDialog(self.view,
+                                           message="Please install the Python Imaging Library (PIL).",
+                                           caption="PIL Module Required", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+                return
+
         img_wildcards = ["All Files (*.*)|*.*", "BMP (*.bmp)|*.bmp", "DCX (*.dcx)|*.dcx",
                          "EPS (*.eps)|*.eps", "GIF (*.gif)|*.gif", "IM (*.im)|*.im",
                          "IMT (*.imt)|*.imt", "JPEG (*.jpg,*.jpeg)|*.jpg;*.jpeg",
