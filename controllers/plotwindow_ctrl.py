@@ -352,6 +352,21 @@ class ImgPlotWindowController(BasicPlotWindowController):
         self.colorbar = None
         self.init_plot_defaults()
 
+    def check_data_dims(self):
+        """If the data is a 3D array, set the data to a single 2D
+        slice."""
+        if self.data.ndim == 3:
+            min_slice_idx = 0
+            max_slice_idx = self.data.shape[2]-1
+            msg = "Please specify a slice index to plot from the 3D array."
+            rng_caption = "Slice From Array ({0}-{1}):".format(min_slice_idx, max_slice_idx)
+            slice_dlg = wx.NumberEntryDialog(self.view, message=msg, prompt=rng_caption,
+                                             caption="Specify 2D Slice", value=0, min=min_slice_idx,
+                                             max=max_slice_idx)
+            if slice_dlg.ShowModal() == wx.ID_OK:
+                self.model.slice_data(slice_dlg.GetValue())
+            slice_dlg.Destroy()
+
     def init_plot_defaults(self):
         super(ImgPlotWindowController, self).init_plot_defaults()
         self.colormap = cm.get_cmap('Spectral')
@@ -364,7 +379,7 @@ class ImgPlotWindowController(BasicPlotWindowController):
                 # save current values to reapply after plot
                 titles = self.get_titles()
                 self.view.axes.cla()
-                self.view.img = self.view.axes.imshow(data, cmap=self.colormap)
+                self.view.img = self.view.axes.imshow(data, aspect="auto", origin="lower", cmap=self.colormap)
                 if self.colorbar:
                     self.view.figure.delaxes(self.view.figure.axes[1])
                     self.view.figure.subplots_adjust(right=0.90)
@@ -480,3 +495,33 @@ class ImgPlotWindowController(BasicPlotWindowController):
             if self.view.img is not None:
                 self.view.img.set_cmap(self.colormap)
                 self.refresh_plot()
+
+    @replace_plot
+    def on_flipud(self, evt):
+        """Handles request to flip the data vertically"""
+        self.model.flipud_data()
+
+    @replace_plot
+    def on_fliplr(self, evt):
+        """Handles request to flip the data horizontally"""
+        self.model.fliplr_data()
+
+    @replace_plot
+    def on_rot90ccw(self, evt):
+        """Handles request to rotate data 90 degrees counterclockwise"""
+        self.model.rotate_data(1)
+        
+    @replace_plot
+    def on_rot90cw(self, evt):
+        """Handles request to rotate data 90 degrees clockwise"""
+        self.model.rotate_data(3)
+
+    @replace_plot
+    def on_rot180(self, evt):
+        """Handles request to rotate data 180 degrees"""
+        self.model.rotate_data(2)
+
+    @replace_plot
+    def on_transpose(self, evt):
+        """Handles request to transpose data"""
+        self.model.transpose_data()

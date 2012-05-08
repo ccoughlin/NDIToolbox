@@ -25,8 +25,14 @@ class TestPreviewWindowModel(unittest.TestCase):
             fidout.create_dataset(os.path.basename(self.sample_data_file), data=self.sample_data)
 
     def random_data(self):
-        """Returns a list of random data"""
-        return [random.uniform(-100, 100) for i in range(25)]
+        """Generates a random list of data"""
+        return np.array([random.uniform(-100, 100) for i in range(25)])
+
+    def random3D_data(self):
+        """Generates a random 3D array of data"""
+        raw_array = np.array([random.uniform(-100, 100) for i in range(24)])
+        three_d_array = raw_array.reshape((3, 2, 4))
+        return three_d_array
 
     def test_init(self):
         """Verify instantiation and initial settings"""
@@ -39,6 +45,16 @@ class TestPreviewWindowModel(unittest.TestCase):
         a_model = preview_window_model.PreviewWindowModel(self.mock_ctrl, self.sample_data_file)
         a_model.load_data()
         self.assertListEqual(self.sample_data.tolist(), a_model.data.tolist())
+
+    def test_slice_data(self):
+        """Verify a 3D array is replaced by a 2D slice"""
+        a_model = preview_window_model.PreviewWindowModel(self.mock_ctrl, self.sample_data_file)
+        three_d_array = self.random3D_data()
+        a_model.data = three_d_array
+        slice_idx = random.choice(range(three_d_array.shape[2]))
+        expected_data = three_d_array[:, :, slice_idx]
+        a_model.slice_data(slice_idx)
+        self.assertListEqual(expected_data.tolist(), a_model.data.tolist())
 
     def tearDown(self):
         if os.path.exists(self.sample_data_file + ".hdf5"):

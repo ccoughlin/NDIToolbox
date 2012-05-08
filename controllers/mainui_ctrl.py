@@ -87,9 +87,15 @@ class MainUIController(object):
     def get_default_position(self):
         """Returns the default (x, y) coordinates of the
         main application window"""
-        coordinates = self.model.get_coords()
-        if not coordinates:
-            return (0, 0)
+        coordinates = (0, 0)
+        cfg_coordinates = self.model.get_coords()
+        # Basic sanity check - ensure negative dimensions
+        # weren't provided
+        if cfg_coordinates:
+            if cfg_coordinates[0] > 0:
+                coordinates[0] = cfg_coordinates[0]
+            if cfg_coordinates[1] > 0:
+                coordinates[1] = cfg_coordinates[1]
         return coordinates
 
     def get_preview_state(self):

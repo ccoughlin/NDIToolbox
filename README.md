@@ -9,6 +9,7 @@ NDIToolbox is an extensible signal and image processing application written in P
 Features
 ----------
 * Plot and preview NDE data files
+* Some basic data manipulation routines (more added all the time)
 * Uses the open source Hierarchical Data Format (<http://www.hdfgroup.org/HDF5/>) for data files - access your data from any number of other tools including Java, MATLAB, IDL, and C/C++
 * Generate thumbnails of data files - makes it easier to browse through reams of data
 * Extensible with plugins - write your own NDI analysis scripts without worrying about creating a user interface
@@ -25,6 +26,7 @@ NDIToolbox is a Python (<http://www.python.org>) application and should run on m
 * matplotlib (<http://matplotlib.sf.net>)
 * pydicom (<http://code.google.com/p/pydicom>)
 * HDF5 for Python (<http://code.google.com/p/h5py/>)
+* Python Imaging Library (<http://www.pythonware.com/products/pil/>) (only necessary if you need to import images)
 
 Installation
 -------------

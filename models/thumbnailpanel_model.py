@@ -70,15 +70,19 @@ def plot(data_filename, width, height):
 
 def multiprocess_plot(data_filename, width, height):
     """Spawns a subprocess to generate the plot, and returns the result as a PNG wxBitmap.
-    The result is also saved to the thumbnails folder for reuse."""
+    The result is also saved to the thumbnails folder for reuse.  If the data has more than
+    two dimensions, returns None and no thumbnail image is produced.
+    """
     data = mainmodel.get_data(data_filename)
-    in_conn, out_conn = Pipe()
-    plot_proc = Process(target=plot_pipe,
-                        args=(data, os.path.basename(data_filename), width, height, out_conn))
-    plot_proc.start()
-    img_stream = in_conn.recv()
-    plot_proc.join()
-    return gen_thumbnail(img_stream, data_filename)
+    if data.ndim < 3:
+        in_conn, out_conn = Pipe()
+        plot_proc = Process(target=plot_pipe,
+                            args=(data, os.path.basename(data_filename), width, height, out_conn))
+        plot_proc.start()
+        img_stream = in_conn.recv()
+        plot_proc.join()
+        return gen_thumbnail(img_stream, data_filename)
+    return None
 
 
 def gen_thumbnail(image_stream, data_filename):

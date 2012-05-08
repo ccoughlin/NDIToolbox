@@ -209,6 +209,35 @@ class ImgPlotWindow(PlotWindow):
         self.controller = ImgPlotWindowController(self, data_file)
         self.load_data()
 
+    def load_data(self):
+        """Loads the data set and plots"""
+        exception_queue = Queue.Queue()
+        data_thd = workerthread.WorkerThread(exception_queue=exception_queue,
+                                             target=self.controller.load_data)
+        data_thd.start()
+        while True:
+            data_thd.join(0.125)
+            if not data_thd.is_alive():
+                try:
+                    exc_type, exc = exception_queue.get(block=False)
+                    err_msg = "An error occurred while loading data:\n{0}".format(exc)
+                    if len(err_msg) > 150:
+                        # Truncate NumPy's genfromtxt() method's lengthy error messages
+                        err_msg = ''.join([err_msg[:150], "\n(continued)"])
+                    err_dlg = wx.MessageDialog(self.parent, message=err_msg,
+                                               caption="Unable To Load Data", style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                except Queue.Empty:
+                    pass
+                break
+            wx.GetApp().Yield(True)
+        self.title = 'Plot - {0}'.format(os.path.basename(self.data_file))
+        wx.Frame.__init__(self, id=wx.ID_ANY, parent=self.parent, title=self.title)
+        self.init_menu()
+        self.init_ui()
+        self.controller.check_data_dims()
+        self.controller.plot(self.controller.data)
+
     def init_plot_menu(self):
         """Creates the Plot menu"""
         self.plot_mnu = wx.Menu()
@@ -234,8 +263,7 @@ class ImgPlotWindow(PlotWindow):
         self.Bind(wx.EVT_MENU, self.controller.on_toggle_grid, id=gridtoggle_mnui.GetId())
         self.preview_cmaps_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Preview Colormaps',
                                               help='Preview available colormaps')
-        self.Bind(wx.EVT_MENU, self.controller.on_preview_cmaps, id=self.preview_cmaps_mnui.GetId
-            ())
+        self.Bind(wx.EVT_MENU, self.controller.on_preview_cmaps, id=self.preview_cmaps_mnui.GetId())
         self.plot_mnu.AppendItem(self.preview_cmaps_mnui)
         self.select_cmap_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Select Colormap...',
                                             help='Selects colormap')
@@ -245,6 +273,27 @@ class ImgPlotWindow(PlotWindow):
 
     def init_specific_ops_menu(self):
         """Implements imgplot-specific operations for the Operations menu"""
+        self.manip_mnu = wx.Menu() # Data manipulations
+        self.flip_mnu = wx.Menu() # Flip data
+        self.flipud_mnui = wx.MenuItem(self.flip_mnu, wx.ID_ANY, text="Vertically")
+        self.Bind(wx.EVT_MENU, self.controller.on_flipud, id=self.flipud_mnui.GetId())
+        self.flip_mnu.AppendItem(self.flipud_mnui)
+        self.fliplr_mnui = wx.MenuItem(self.flip_mnu, wx.ID_ANY, text="Horizontally")
+        self.Bind(wx.EVT_MENU, self.controller.on_fliplr, id=self.fliplr_mnui.GetId())
+        self.flip_mnu.AppendItem(self.fliplr_mnui)
+        self.manip_mnu.AppendMenu(wx.ID_ANY, 'Flip', self.flip_mnu)
+        self.rot_mnu = wx.Menu() # Rotate data
+        self.rot90ccw_mnui = wx.MenuItem(self.rot_mnu, wx.ID_ANY, text="90 Degrees CCW")
+        self.Bind(wx.EVT_MENU, self.controller.on_rot90ccw, id=self.rot90ccw_mnui.GetId())
+        self.rot_mnu.AppendItem(self.rot90ccw_mnui)
+        self.rot90cw_mnui = wx.MenuItem(self.rot_mnu, wx.ID_ANY, text="90 Degreees CW")
+        self.Bind(wx.EVT_MENU, self.controller.on_rot90cw, id=self.rot90cw_mnui.GetId())
+        self.rot_mnu.AppendItem(self.rot90cw_mnui)
+        self.rot180_mnui = wx.MenuItem(self.rot_mnu, wx.ID_ANY, text="180 Degrees")
+        self.Bind(wx.EVT_MENU, self.controller.on_rot180, id=self.rot180_mnui.GetId())
+        self.rot_mnu.AppendItem(self.rot180_mnui)
+        self.manip_mnu.AppendMenu(wx.ID_ANY, 'Rotate', self.rot_mnu)
+        self.ops_mnu.AppendMenu(wx.ID_ANY, 'Flip/Rotate Data', self.manip_mnu)
         self.detrend_mnu = wx.Menu() # Detrending menu
         self.detrend_constantx_mnui = wx.MenuItem(self.detrend_mnu, wx.ID_ANY,
                                                   text="Constant Horizontal")
@@ -267,5 +316,7 @@ class ImgPlotWindow(PlotWindow):
                   id=self.detrend_lineary_mnui.GetId())
         self.detrend_mnu.AppendItem(self.detrend_lineary_mnui)
         self.ops_mnu.AppendMenu(wx.ID_ANY, 'Detrend Data', self.detrend_mnu)
-
+        self.transpose_mnui = wx.MenuItem(self.ops_mnu, wx.ID_ANY, text="Transpose Data")
+        self.Bind(wx.EVT_MENU, self.controller.on_transpose, id=self.transpose_mnui.GetId())
+        self.ops_mnu.AppendItem(self.transpose_mnui)
     

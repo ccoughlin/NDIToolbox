@@ -128,11 +128,17 @@ class TestImgPlotWindowModel(unittest.TestCase):
 
     def random_data(self):
         """Generates a random list of data"""
-        return [random.uniform(-100, 100) for i in range(25)]
+        return np.array([random.uniform(-100, 100) for i in range(25)])
+
+    def random3D_data(self):
+        """Generates a random 3D array of data"""
+        raw_array = np.array([random.uniform(-100, 100) for i in range(24)])
+        three_d_array = raw_array.reshape((3, 2, 4))
+        return three_d_array
 
     def test_average_detrend(self):
         """Verify mean detrending along an axis"""
-        self.model.original_data = np.array(self.random_data())
+        self.model.original_data = self.random_data()
         self.model.revert_data()
         expected_data = scipy.signal.detrend(self.model.original_data, type='constant')
         self.model.detrend_data(0, 'constant')
@@ -140,10 +146,54 @@ class TestImgPlotWindowModel(unittest.TestCase):
 
     def test_linear_detrend(self):
         """Verify linear detrending along an axis"""
-        self.model.original_data = np.array(self.random_data())
+        self.model.original_data = self.random_data()
         self.model.revert_data()
         expected_data = scipy.signal.detrend(self.model.original_data, type='linear')
         self.model.detrend_data(0, 'linear')
+        self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+
+    def test_slice_data(self):
+        """Verify a 3D array is replaced by a 2D slice"""
+        three_d_array = self.random3D_data()
+        self.model.original_data = three_d_array
+        self.model.revert_data()
+        slice_idx = random.choice(range(three_d_array.shape[2]))
+        expected_data = three_d_array[:, :, slice_idx]
+        self.model.slice_data(slice_idx)
+        self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+
+    def test_flipud_data(self):
+        """Verify data are flipped vertically"""
+        self.model.original_data = self.random_data()
+        self.model.revert_data()
+        expected_data = np.flipud(self.model.data)
+        self.model.flipud_data()
+        self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+
+    def test_fliplr_data(self):
+        """Verify data are flipped horizontally"""
+        three_d_array = self.random3D_data()
+        self.model.original_data = np.array(three_d_array)
+        self.model.revert_data()
+        expected_data = np.fliplr(self.model.data)
+        self.model.fliplr_data()
+        self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+
+    def test_rotate_data(self):
+        """Verify data are rotated counter-clockwise"""
+        self.model.original_data = self.random3D_data()
+        self.model.revert_data()
+        num_rotations = random.choice((1, 2, 3))
+        expected_data = np.rot90(self.model.data, k=num_rotations)
+        self.model.rotate_data(num_rotations)
+        self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+
+    def test_transpose_data(self):
+        """Verify data are transposed"""
+        self.model.original_data = self.random3D_data()
+        self.model.revert_data()
+        expected_data = self.model.data.T
+        self.model.transpose_data()
         self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
 
 if __name__ == "__main__":

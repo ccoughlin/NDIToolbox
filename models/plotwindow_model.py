@@ -114,11 +114,43 @@ class ImgPlotWindowModel(BasicPlotWindowModel):
     def __init__(self, controller, data_file):
         super(ImgPlotWindowModel, self).__init__(controller, data_file)
 
+    def slice_data(self, slice_idx):
+        """Sets the 3D self.data to a single 2D slice."""
+        if self.data is not None:
+            if self.data.ndim == 3:
+                min_slice_idx = 0
+                max_slice_idx = self.data.shape[2]-1
+                self.data = self.data[:, :, slice_idx]
+                self.original_data = self.data
+
     def detrend_data(self, axis, type):
         """Applies a detrend (where type is 'constant' for average or 'linear')
         to the data along the specified axis number."""
         if self.data is not None:
             self.data = scipy.signal.detrend(self.data, axis, type)
+
+    def flipud_data(self):
+        """Flips the data vertically"""
+        if self.data is not None:
+            self.data = np.flipud(self.data)
+
+    def fliplr_data(self):
+        """Flips the data horizontally"""
+        if self.data is not None:
+            self.data = np.fliplr(self.data)
+
+    def rotate_data(self, num_rotations=1):
+        """Rotates the data 90 degrees counterclockwise for
+        each count in num_rotations (defaults to 1 rotation)"""
+        if self.data is not None:
+            self.data = np.rot90(self.data, num_rotations)
+
+    def transpose_data(self):
+        """Transposes the data, i.e. an array Aij with i
+        rows and j columns becomes an array A'ji with j
+        rows and i columns."""
+        if self.data is not None:
+            self.data = self.data.T
 
     def generate_colormap_strip(self):
         """Returns a NumPy ndarray suitable for displaying a colormap.

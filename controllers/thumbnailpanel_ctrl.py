@@ -23,7 +23,9 @@ class ThumbnailPanelController(object):
 
     def plot_thumb(self, data_fname, width, height):
         """Creates (if necessary) and retrieves a matplotlib plot of the specified
-        data file, returning a wx Bitmap"""
+        data file, returning a wx Bitmap or None if the data could not be plotted
+        (e.g. attempting to plot 3D data)
+        """
         thumbnail = self.empty_bitmap(width, height)
         if data_fname:
             thumb_fname = model.thumbnail_name(data_fname)

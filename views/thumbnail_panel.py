@@ -35,8 +35,11 @@ class ThumbnailPanel(wx.Panel):
     def plot_thumb(self, data_fname):
         """Generates a plot of the specified data file and sets the ThumbnailPanel's bitmap
         accordingly"""
-        self.figure_bmp.SetBitmap(
-            self.controller.plot_thumb(data_fname, self.bitmap_width, self.bitmap_height))
+        thumbnail = self.controller.plot_thumb(data_fname, self.bitmap_width, self.bitmap_height)
+        if thumbnail is not None:
+            self.figure_bmp.SetBitmap(thumbnail)
+        else:
+            self.plot_blank()
 
     def plot_blank(self):
         """Sets the ThumbnailPanel's bitmap to a placeholder bitmap when thumbnails are disabled"""

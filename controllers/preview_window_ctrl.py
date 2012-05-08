@@ -15,9 +15,17 @@ class PreviewWindowController(object):
         self.view = view
         self.model = PreviewWindowModel(self, data_file)
 
+    @property
+    def data(self):
+        return self.model.data
+
     def load_data(self):
         """Loads the instance's data file"""
         self.model.load_data()
+
+    def slice_data(self, slice_idx):
+        """Sets the 3D data to a viewable 2D slice"""
+        self.model.slice_data(slice_idx)
 
     def populate_spreadsheet(self):
         """Fills the PreviewWindow's spreadsheet with the

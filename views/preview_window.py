@@ -45,6 +45,17 @@ class PreviewWindow(wx.Frame):
                     pass
                 break
             wx.GetApp().Yield(True)
+        if self.controller.data.ndim == 3:
+            min_slice_idx = 0
+            max_slice_idx = self.controller.data.shape[2]-1
+            msg = "Please specify a slice index to plot from the 3D array."
+            rng_caption = "Slice From Array ({0}-{1}):".format(min_slice_idx, max_slice_idx)
+            slice_dlg = wx.NumberEntryDialog(self, message=msg, prompt=rng_caption,
+                                             caption="Specify 2D Slice", value=0, min=min_slice_idx,
+                                             max=max_slice_idx)
+            if slice_dlg.ShowModal() == wx.ID_OK:
+                self.controller.slice_data(slice_dlg.GetValue())
+            slice_dlg.Destroy()
         self.controller.populate_spreadsheet()
 
     def init_ui(self):
