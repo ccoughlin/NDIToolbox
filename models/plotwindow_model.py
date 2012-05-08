@@ -26,7 +26,7 @@ class BasicPlotWindowModel(object):
 
     def revert_data(self):
         """Reverts to original data set"""
-        self.data = np.array(self.original_data)
+        self.data = self.original_data
 
     def get_plugins(self):
         """Returns a list of available plugins"""
