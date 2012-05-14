@@ -171,6 +171,11 @@ class UI(wx.Frame):
                                                              bitmap=self.controller.get_bitmap(
                                                                  'imgplt.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_imageplot_data, self.imageplot_data_tool)
+        # MegaNDE plot of 3D data
+        self.megaplot_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Mega Plot',
+                                                            shortHelp='Generates A, B, and C scans of selected data',
+                                                            bitmap=self.controller.get_bitmap('dsfplot16.png'))
+        self.Bind(wx.EVT_TOOL, self.controller.on_megaplot_data, self.megaplot_data_tool)
         self.disable_data_tools()
         self.toolbar.Realize()
 
@@ -187,6 +192,7 @@ class UI(wx.Frame):
         self.toolbar.EnableTool(self.preview_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.plot_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.imageplot_data_tool.GetId(), enable)
+        self.toolbar.EnableTool(self.megaplot_data_tool.GetId(), enable)
 
     def enable_preview_panel(self, enable=True):
         """Shows or hides the plot thumbnail panel"""

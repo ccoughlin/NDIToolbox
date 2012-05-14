@@ -7,9 +7,11 @@ __author__ = 'Chris R. Coughlin'
 from views import dialogs
 from views import fetchplugin_dialog
 from models import mainmodel
+from models import ndescanhandler
 import pathfinder
 import models.plotwindow_model as model
 import matplotlib
+import matplotlib.axes
 from matplotlib import cm
 import wx
 import wx.lib.dialogs
@@ -25,11 +27,20 @@ def replace_plot(fn):
     @wraps(fn)
     def wrapped(self, *args, **kwargs):
         if self.model.data is not None:
-            self.view.axes.hold()
+            if isinstance(self.view.axes, matplotlib.axes.Subplot):
+                self.view.axes.hold()
+            else:
+                for ax in self.view.axes:
+                    ax.hold()
             fn(self, *args, **kwargs)
             self.plot(self.model.data)
             self.refresh_plot()
-            self.view.axes.hold()
+
+            if isinstance(self.view.axes, matplotlib.axes.Subplot):
+                self.view.axes.hold()
+            else:
+                for ax in self.view.axes:
+                    ax.hold()
 
     return wrapped
 
@@ -342,8 +353,8 @@ class PlotWindowController(BasicPlotWindowController):
                     rng_dlg.Destroy()
 
 
-class ImgPlotWindowController(BasicPlotWindowController):
-    """Controller for ImgPlotWindow class"""
+class BasicImgPlotWindowController(BasicPlotWindowController):
+    """Base class for ImgPlotWindow Controllers"""
 
     def __init__(self, view, data_file):
         self.view = view
@@ -352,74 +363,9 @@ class ImgPlotWindowController(BasicPlotWindowController):
         self.colorbar = None
         self.init_plot_defaults()
 
-    def check_data_dims(self):
-        """If the data is a 3D array, set the data to a single 2D
-        slice."""
-        if self.data.ndim == 3:
-            min_slice_idx = 0
-            max_slice_idx = self.data.shape[2]-1
-            msg = "Please specify a slice index to plot from the 3D array."
-            rng_caption = "Slice From Array ({0}-{1}):".format(min_slice_idx, max_slice_idx)
-            slice_dlg = wx.NumberEntryDialog(self.view, message=msg, prompt=rng_caption,
-                                             caption="Specify 2D Slice", value=0, min=min_slice_idx,
-                                             max=max_slice_idx)
-            if slice_dlg.ShowModal() == wx.ID_OK:
-                self.model.slice_data(slice_dlg.GetValue())
-            slice_dlg.Destroy()
-
     def init_plot_defaults(self):
-        super(ImgPlotWindowController, self).init_plot_defaults()
+        super(BasicImgPlotWindowController, self).init_plot_defaults()
         self.colormap = cm.get_cmap('Spectral')
-
-    def plot(self, data):
-        """Plots the dataset"""
-        if data is not None:
-            try:
-                # matplotlib forgets settings with replots -
-                # save current values to reapply after plot
-                titles = self.get_titles()
-                self.view.axes.cla()
-                self.view.img = self.view.axes.imshow(data, aspect="auto", origin="lower", cmap=self.colormap)
-                if self.colorbar:
-                    self.view.figure.delaxes(self.view.figure.axes[1])
-                    self.view.figure.subplots_adjust(right=0.90)
-                self.colorbar = self.view.figure.colorbar(self.view.img)
-                self.set_titles(plot=titles['plot'], x=titles['x'], y=titles['y'])
-                self.view.axes.grid(self.axes_grid)
-            except TypeError as err: # Tried to imgplot 1D array
-                err_msg = "{0}".format(err)
-                err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                           caption="Unable To Plot Data", style=wx.ICON_ERROR)
-                err_dlg.ShowModal()
-                err_dlg.Destroy()
-            except OverflowError as err: # Data too large to plot
-                err_msg = "{0}".format(err)
-                err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                           caption="Unable To Plot Data", style=wx.ICON_ERROR)
-                err_dlg.ShowModal()
-                err_dlg.Destroy()
-
-    def on_detrend_meanx(self, evt):
-        """Applies constant (mean) detrend in X"""
-        self.detrend(axis=0, type='constant')
-
-    def on_detrend_meany(self, evt):
-        """Applies constant (mean) detrend in Y"""
-        self.detrend(axis=1, type='constant')
-
-    def on_detrend_linearx(self, evt):
-        """Applies linear detrend in X"""
-        self.detrend(axis=0, type='linear')
-
-    def on_detrend_lineary(self, evt):
-        """Applies linear detrend in Y"""
-        self.detrend(axis=1, type='linear')
-
-    @replace_plot
-    def detrend(self, axis, type):
-        """Applies detrend along specified axis of specified type.
-        Refreshes the plot."""
-        self.model.detrend_data(axis, type)
 
     def on_set_cbarlbl(self, evt):
         """Sets the label for the imgplot's colorbar"""
@@ -496,6 +442,77 @@ class ImgPlotWindowController(BasicPlotWindowController):
                 self.view.img.set_cmap(self.colormap)
                 self.refresh_plot()
 
+class ImgPlotWindowController(BasicImgPlotWindowController):
+    """Controller for ImgPlotWindow class"""
+
+    def __init__(self, view, data_file):
+        super(ImgPlotWindowController, self).__init__(view, data_file)
+
+    def check_data_dims(self):
+        """If the data is a 3D array, set the data to a single 2D
+        slice."""
+        if self.data.ndim == 3:
+            min_slice_idx = 0
+            max_slice_idx = self.data.shape[2]-1
+            msg = "Please specify a slice index to plot from the 3D array."
+            rng_caption = "Slice From Array ({0}-{1}):".format(min_slice_idx, max_slice_idx)
+            slice_dlg = wx.NumberEntryDialog(self.view, message=msg, prompt=rng_caption,
+                                             caption="Specify 2D Slice", value=0, min=min_slice_idx,
+                                             max=max_slice_idx)
+            if slice_dlg.ShowModal() == wx.ID_OK:
+                self.model.slice_data(slice_dlg.GetValue())
+            slice_dlg.Destroy()
+
+    def plot(self, data):
+        """Plots the dataset"""
+        if data is not None:
+            try:
+                # matplotlib forgets settings with replots -
+                # save current values to reapply after plot
+                titles = self.get_titles()
+                self.view.axes.cla()
+                self.view.img = self.view.axes.imshow(data, aspect="auto", origin="lower", cmap=self.colormap)
+                if self.colorbar:
+                    self.view.figure.delaxes(self.view.figure.axes[1])
+                    self.view.figure.subplots_adjust(right=0.90)
+                self.colorbar = self.view.figure.colorbar(self.view.img)
+                self.set_titles(plot=titles['plot'], x=titles['x'], y=titles['y'])
+                self.view.axes.grid(self.axes_grid)
+            except TypeError as err: # Tried to imgplot 1D array
+                err_msg = "{0}".format(err)
+                err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                           caption="Unable To Plot Data", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+            except OverflowError as err: # Data too large to plot
+                err_msg = "{0}".format(err)
+                err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                           caption="Unable To Plot Data", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+
+    def on_detrend_meanx(self, evt):
+        """Applies constant (mean) detrend in X"""
+        self.detrend(axis=0, type='constant')
+
+    def on_detrend_meany(self, evt):
+        """Applies constant (mean) detrend in Y"""
+        self.detrend(axis=1, type='constant')
+
+    def on_detrend_linearx(self, evt):
+        """Applies linear detrend in X"""
+        self.detrend(axis=0, type='linear')
+
+    def on_detrend_lineary(self, evt):
+        """Applies linear detrend in Y"""
+        self.detrend(axis=1, type='linear')
+
+    @replace_plot
+    def detrend(self, axis, type):
+        """Applies detrend along specified axis of specified type.
+        Refreshes the plot."""
+        self.model.detrend_data(axis, type)
+
     @replace_plot
     def on_flipud(self, evt):
         """Handles request to flip the data vertically"""
@@ -525,3 +542,196 @@ class ImgPlotWindowController(BasicPlotWindowController):
     def on_transpose(self, evt):
         """Handles request to transpose data"""
         self.model.transpose_data()
+
+class MegaPlotWindowController(BasicImgPlotWindowController):
+    """Controller for MegaPlotWindows"""
+
+    def __init__(self, view, data_file):
+        self.view = view
+        self.slice_idx = 0
+        self.axes_grid = True
+        # TODO - may need to subclass model in the future
+        self.model = model.ImgPlotWindowModel(self, data_file)
+        self.colorbar = None
+        self.init_plot_defaults()
+
+    def plot(self, data):
+        """Plots the dataset"""
+        if data is not None:
+            self.scnr = ndescanhandler.NDEScanHandler(self.data)
+            try:
+                self.plot_cscan(self.slice_idx)
+            except TypeError as err: # Tried to imgplot 1D array
+                err_msg = "{0}".format(err)
+                err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                           caption="Unable To Plot Data", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+            except OverflowError as err: # Data too large to plot
+                err_msg = "{0}".format(err)
+                err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                           caption="Unable To Plot Data", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+
+    def plot_ascan(self, xpos, ypos):
+        """Takes the waveform through z at the given (x,y)
+        position and plots in the A scan plot"""
+        ascan_data = self.scnr.ascan_data(xpos, ypos)
+        self.view.ascan_axes.cla()
+        self.view.ascan_plt = self.view.ascan_axes.plot(ascan_data)
+        self.view.ascan_axes.autoscale_view(tight=True)
+        self.view.ascan_axes.set_title("A Scan x={0} y={1}".format(xpos, ypos))
+
+    def plot_hbscan(self, slice_idx, ypos):
+        """Takes the horizontal slice through the C scan at z=slice_idx
+        and plots in the horizontal B scan plot"""
+        hbscan_data = self.scnr.hbscan_data(slice_idx, ypos)
+        self.view.hbscan_axes.cla()
+        self.view.hbscan_plt = self.view.hbscan_axes.plot(hbscan_data)
+        self.view.hbscan_axes.autoscale_view(tight=True)
+        self.view.hbscan_axes.set_title("Horizontal B Scan y={0} z={1}".format(ypos, slice_idx))
+
+    def plot_vbscan(self, slice_idx, xpos):
+        """Takes the vertical slice through the C scan at z=slice_idx
+        and plots in the vertical B scan plot"""
+        vbscan_data = self.scnr.vbscan_data(slice_idx, xpos)
+        self.view.vbscan_axes.cla()
+        self.view.vbscan_plt = self.view.vbscan_axes.plot(vbscan_data)
+        self.view.vbscan_axes.autoscale_view(tight=True)
+        self.view.vbscan_axes.set_title("Vertical B Scan x={0} z={1}".format(xpos, slice_idx))
+
+    def plot_cscan(self, slice_idx):
+        """Takes the z-axis slice at slice_idx and plots in the C scan image plot"""
+        cscan_data = self.scnr.cscan_data(slice_idx)
+        self.view.cscan_axes.cla()
+        self.view.cscan_img = self.view.cscan_axes.imshow(cscan_data, aspect='auto',
+                                                          origin='lower', cmap=self.colormap,
+                                                          interpolation='nearest')
+        self.view.cscan_axes.set_title("C Scan z={0}".format(slice_idx))
+
+    def get_plot_choice(self):
+        """Presents single choice dialog to the user to select an Axes to modify."""
+        plot_choices = ["A-Scan", "Horizontal B-Scan", "Vertical B-Scan", "C-Scan"]
+        choice_dlg = wx.SingleChoiceDialog(parent=self.view, message="Please select a plot to modify.",
+                                           caption="Available Plots", choices=plot_choices)
+        if choice_dlg.ShowModal() == wx.ID_OK:
+            return self.view.axes[choice_dlg.GetSelection()]
+        choice_dlg.Destroy()
+        return None
+
+    def on_set_xlabel(self, evt):
+        """Handles the set x-axis label event"""
+        axis = self.get_plot_choice()
+        if axis is not None:
+            label_dlg = wx.TextEntryDialog(parent=self.view.parent,
+                                           message="Enter a new label for the X-Axis",
+                                           caption="Set X Axis Label",
+                                           defaultValue=self.get_titles(axis)['x'])
+            if label_dlg.ShowModal() == wx.ID_OK:
+                self.set_titles(axis, x=label_dlg.GetValue())
+            label_dlg.Destroy()
+
+    def on_set_ylabel(self, evt):
+        """Handles the set y-axis label event"""
+        axis = self.get_plot_choice()
+        if axis is not None:
+            label_dlg = wx.TextEntryDialog(parent=self.view.parent,
+                                           message="Enter a new label for the Y-Axis",
+                                           caption="Set Y Axis Label",
+                                           defaultValue=self.get_titles(axis)['y'])
+            if label_dlg.ShowModal() == wx.ID_OK:
+                self.set_titles(axis, y=label_dlg.GetValue())
+            label_dlg.Destroy()
+
+    def on_set_plottitle(self, evt):
+        """Handles the set x-axis label event"""
+        axis = self.get_plot_choice()
+        if axis is not None:
+            label_dlg = wx.TextEntryDialog(parent=self.view.parent,
+                                           message="Enter a new title for the plot",
+                                           caption="Set Plot Title",
+                                           defaultValue=self.get_titles(axis)['plot'])
+            if label_dlg.ShowModal() == wx.ID_OK:
+                self.set_titles(axis, plot=label_dlg.GetValue())
+            label_dlg.Destroy()
+
+    def get_titles(self, axes_inst):
+        """Returns the current titles for the specified AxesSubplot instance's
+        plot, x and y axes as a dict with keys 'plot', 'x', 'y'."""
+        if isinstance(axes_inst, matplotlib.axes.Subplot):
+            titles = {'plot': axes_inst.get_title(),
+                      'x': axes_inst.get_xlabel(),
+                      'y': axes_inst.get_ylabel()}
+            return titles
+        return None
+
+    def set_titles(self, axes_inst, plot=None, x=None, y=None):
+        """Sets one or more of plot, x, or y axis titles to specified
+        string for the specified AxesSubplot instance.
+        If not specified, title is left unchanged."""
+        if isinstance(axes_inst, matplotlib.axes.Subplot):
+            if plot:
+                axes_inst.set_title(plot)
+            if x:
+                axes_inst.set_xlabel(x)
+            if y:
+                axes_inst.set_ylabel(y)
+            self.refresh_plot()
+
+    def on_click(self, evt):
+        """Handles mouse click in the C Scan - update other plots"""
+        if evt.inaxes == self.view.cscan_axes:
+            xpos = int(evt.xdata)
+            ypos = int(evt.ydata)
+            self.update_plot(xpos, ypos)
+
+    def on_sliceidx_change(self, evt):
+        """Responds to changes in the z position spin control"""
+        self.update_plot(self.view.xpos_sc.GetValue(), self.view.ypos_sc.GetValue(),
+                         self.view.slice_sc.GetValue())
+
+    def on_xy_change(self, evt):
+        """Responds to changes in the x position and y position spin controls"""
+        self.update_plot(self.view.xpos_sc.GetValue(), self.view.ypos_sc.GetValue())
+
+    @replace_plot
+    def update_plot(self, xpos, ypos, slice_idx=None):
+        """Updates the A and B scans based on the provided
+        (x,y) position in the data.  If slice_idx is provided
+        the C scan plot is updated to that position, default
+        is to leave unchanged if slice_idx is None."""
+        self.view.xpos_sc.SetValue(xpos)
+        self.view.ypos_sc.SetValue(ypos)
+        self.plot_ascan(xpos, ypos)
+        self.plot_hbscan(self.slice_idx, ypos)
+        self.plot_vbscan(self.slice_idx, xpos)
+        if slice_idx is not None:
+            self.slice_idx = slice_idx
+            self.plot_cscan(self.slice_idx)
+        self.refresh_plot()
+
+    def on_select_cmap(self, evt):
+        """Generates a list of available matplotlib colormaps and sets the plot's
+        colormap to the user's choice."""
+        colormaps = self.model.get_colormap_choices()
+        cmap_dlg = wx.lib.dialogs.singleChoiceDialog(self.view.parent, "Select Colormap",
+                                                     "Please select a colormap for this plot.",
+                                                     colormaps)
+        if cmap_dlg.accepted is True:
+            colormap = cmap_dlg.selection
+            if colormap == '':
+                self.colormap = cm.spectral
+            else:
+                self.colormap = cm.get_cmap(colormap)
+            if self.view.cscan_img is not None:
+                self.view.cscan_img.set_cmap(self.colormap)
+                self.refresh_plot()
+
+    @replace_plot
+    def on_toggle_grid(self, evt):
+        """Toggles the plot's grid on or off"""
+        for ax in self.view.axes:
+            ax.grid()
+        self.axes_grid = not self.axes_grid
+        self.refresh_plot()

@@ -6,10 +6,11 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 import ui_defaults
-from controllers.plotwindow_ctrl import PlotWindowController, ImgPlotWindowController
+from controllers.plotwindow_ctrl import PlotWindowController, ImgPlotWindowController, MegaPlotWindowController
 from models import workerthread
 import wx
 from matplotlib.figure import Figure
+from matplotlib.widgets import Cursor
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import NavigationToolbar2Wx
 import os.path
@@ -41,7 +42,7 @@ class PlotWindow(wx.Frame):
                     exc_type, exc = exception_queue.get(block=False)
                     err_msg = "An error occurred while loading data:\n{0}".format(exc)
                     if len(err_msg) > 150:
-                        # Truncate NumPy's genfromtxt() method's lengthy error messages
+                        # Truncate lengthy error messages
                         err_msg = ''.join([err_msg[:150], "\n(continued)"])
                     err_dlg = wx.MessageDialog(self.parent, message=err_msg,
                                                caption="Unable To Load Data", style=wx.ICON_ERROR)
@@ -222,7 +223,7 @@ class ImgPlotWindow(PlotWindow):
                     exc_type, exc = exception_queue.get(block=False)
                     err_msg = "An error occurred while loading data:\n{0}".format(exc)
                     if len(err_msg) > 150:
-                        # Truncate NumPy's genfromtxt() method's lengthy error messages
+                        # Truncate lengthy error messages
                         err_msg = ''.join([err_msg[:150], "\n(continued)"])
                     err_dlg = wx.MessageDialog(self.parent, message=err_msg,
                                                caption="Unable To Load Data", style=wx.ICON_ERROR)
@@ -319,4 +320,118 @@ class ImgPlotWindow(PlotWindow):
         self.transpose_mnui = wx.MenuItem(self.ops_mnu, wx.ID_ANY, text="Transpose Data")
         self.Bind(wx.EVT_MENU, self.controller.on_transpose, id=self.transpose_mnui.GetId())
         self.ops_mnu.AppendItem(self.transpose_mnui)
-    
+
+
+class MegaPlotWindow(PlotWindow):
+    """Specialized four-panel PlotWindow for displaying
+    A, B, and C scans of a three-dimensional dataset"""
+
+    def __init__(self, parent, data_file):
+        self.parent = parent
+        self.data_file = data_file
+        self.controller = MegaPlotWindowController(self, data_file)
+        self.load_data()
+
+    @property
+    def axes(self):
+        """Returns a tuple of all the view's axes"""
+        return (self.ascan_axes, self.hbscan_axes,
+                self.vbscan_axes, self.cscan_axes)
+
+    def init_ui(self):
+        """Creates the PlotWindow UI"""
+        parent_x, parent_y = self.parent.GetPositionTuple()
+        parent_w, parent_h = self.parent.GetSize()
+        self.SetPosition((parent_x + parent_w + ui_defaults.widget_margin,
+                          ui_defaults.widget_margin))
+        self.main_panel = wx.Panel(self)
+        self.main_panel_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+        # Controls for specifying (x,y,z) position in 3D dataset
+        self.ctrl_panel = wx.Panel(self.main_panel)
+        self.ctrl_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        info_lbl = wx.StaticText(self.ctrl_panel, wx.ID_ANY, u"Coordinates In Data:", wx.DefaultPosition,
+                                 wx.DefaultSize)
+        self.ctrl_sizer.Add(info_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
+        xpos_lbl = wx.StaticText(self.ctrl_panel, wx.ID_ANY, u"X Position", wx.DefaultPosition, wx.DefaultSize)
+        self.ctrl_sizer.Add(xpos_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
+        self.xpos_sc = wx.SpinCtrl(self.ctrl_panel, wx.ID_ANY, value="", min=0, max=self.controller.data.shape[0] - 1)
+        self.Bind(wx.EVT_SPINCTRL, self.controller.on_xy_change, self.xpos_sc)
+        self.ctrl_sizer.Add(self.xpos_sc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
+        ypos_lbl = wx.StaticText(self.ctrl_panel, wx.ID_ANY, u"Y Position", wx.DefaultPosition, wx.DefaultSize)
+        self.ctrl_sizer.Add(ypos_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
+        self.ypos_sc = wx.SpinCtrl(self.ctrl_panel, wx.ID_ANY, value="", min=0, max=self.controller.data.shape[0] - 1)
+        self.Bind(wx.EVT_SPINCTRL, self.controller.on_xy_change, self.ypos_sc)
+        self.ctrl_sizer.Add(self.ypos_sc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
+        self.slice_sc = wx.SpinCtrl(self.ctrl_panel, wx.ID_ANY, value="", min=0, max=self.controller.data.shape[2] - 1)
+        self.Bind(wx.EVT_SPINCTRL, self.controller.on_sliceidx_change, self.slice_sc)
+        slice_lbl = wx.StaticText(self.ctrl_panel, wx.ID_ANY, u"Slice Index", wx.DefaultPosition, wx.DefaultSize)
+        self.ctrl_sizer.Add(slice_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
+        self.ctrl_sizer.Add(self.slice_sc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
+        self.ctrl_panel.SetSizerAndFit(self.ctrl_sizer)
+        self.main_panel_sizer.Add(self.ctrl_panel, ui_defaults.lbl_pct, ui_defaults.sizer_flags,
+                                  ui_defaults.widget_margin)
+
+        self.figure = Figure(figsize=(6, 6))
+        self.canvas = FigureCanvas(self.main_panel, wx.ID_ANY, self.figure)
+        self.ascan_axes = self.figure.add_subplot(221)
+        self.vbscan_axes = self.figure.add_subplot(222)
+        self.hbscan_axes = self.figure.add_subplot(223)
+        self.cscan_axes = self.figure.add_subplot(224)
+        self.cscan_cursor = Cursor(self.cscan_axes, useblit=True, color="white", alpha=0.5)
+        self.figure.canvas.mpl_connect("button_press_event", self.controller.on_click)
+        self.main_panel_sizer.Add(self.canvas, 1, ui_defaults.sizer_flags, 0)
+        self.add_toolbar()
+        self.SetIcon(self.parent.GetIcon())
+
+        self.main_panel.SetSizerAndFit(self.main_panel_sizer)
+        self.sizer.Add(self.main_panel, 1, ui_defaults.sizer_flags, 0)
+        self.SetSizerAndFit(self.sizer)
+
+    def add_toolbar(self):
+        """Creates the matplotlib toolbar (zoom, pan/scroll, etc.)
+        for the plot"""
+        self.toolbar = NavigationToolbar2Wx(self.canvas)
+        self.toolbar.Realize()
+        if wx.Platform == '__WXMAC__':
+            self.SetToolBar(self.toolbar)
+        else:
+            tw, th = self.toolbar.GetSizeTuple()
+            fw, fh = self.canvas.GetSizeTuple()
+            self.toolbar.SetSize(wx.Size(fw, th))
+            self.main_panel_sizer.Add(self.toolbar, 0, wx.LEFT | wx.EXPAND, 0)
+        self.toolbar.update()
+
+    def init_plot_menu(self):
+        """Creates the Plot menu"""
+        self.plot_mnu = wx.Menu()
+        plottitle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set Plot Title",
+                                     help="Set Plot Title")
+        self.Bind(wx.EVT_MENU, self.controller.on_set_plottitle, id=plottitle_mnui.GetId())
+        self.plot_mnu.AppendItem(plottitle_mnui)
+        xlbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set X Axis Label",
+                                help="Set X Axis Label")
+        self.Bind(wx.EVT_MENU, self.controller.on_set_xlabel, id=xlbl_mnui.GetId())
+        self.plot_mnu.AppendItem(xlbl_mnui)
+        ylbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set Y Axis Label",
+                                help="Set Y Axis Label")
+        self.Bind(wx.EVT_MENU, self.controller.on_set_ylabel, id=ylbl_mnui.GetId())
+        self.plot_mnu.AppendItem(ylbl_mnui)
+
+        gridtoggle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Toggle Grid",
+                                      help="Turns grid on or off")
+        self.plot_mnu.AppendItem(gridtoggle_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_toggle_grid, id=gridtoggle_mnui.GetId())
+        self.preview_cmaps_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Preview Colormaps',
+                                              help='Preview available colormaps')
+        self.Bind(wx.EVT_MENU, self.controller.on_preview_cmaps, id=self.preview_cmaps_mnui.GetId())
+        self.plot_mnu.AppendItem(self.preview_cmaps_mnui)
+        self.select_cmap_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Select Colormap...',
+                                            help='Selects colormap')
+        self.Bind(wx.EVT_MENU, self.controller.on_select_cmap, id=self.select_cmap_mnui.GetId())
+        self.plot_mnu.AppendItem(self.select_cmap_mnui)
+        self.menubar.Append(self.plot_mnu, "&Plot")
+
+    def init_specific_ops_menu(self):
+        pass

@@ -124,7 +124,8 @@ class MainUIController(object):
              "\nLead Developer:  Chris Coughlin")
         )
         about_project_logo_dlg = dlg.AboutDialog(parent=self.view, title="About This Program",
-                                                 msg=project_msg, url="http://www.nditoolbox.com", logobmp_fname=project_logo)
+                                                 msg=project_msg, url="http://www.nditoolbox.com",
+                                                 logobmp_fname=project_logo)
         about_project_logo_dlg.ShowModal()
         about_project_logo_dlg.Destroy()
 
@@ -253,7 +254,7 @@ class MainUIController(object):
                 wx.EndBusyCursor()
 
     def on_export_text(self, evt):
-        """Handels request to export selected data to delimited ASCII"""
+        """Handles request to export selected data to delimited ASCII"""
         file_dlg = wx.FileDialog(parent=self.view, message="Please specify a data file",
                                  style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         if file_dlg.ShowModal() == wx.ID_OK:
@@ -347,15 +348,15 @@ class MainUIController(object):
             flatten_dlg = wx.MessageDialog(parent=self.view.parent,
                                            message=msg,
                                            caption="Flatten Palette?",
-                                           style=wx.YES_NO|wx.YES_DEFAULT)
+                                           style=wx.YES_NO | wx.YES_DEFAULT)
             if flatten_dlg.ShowModal() == wx.ID_NO:
                 flatten_img = False
             try:
                 wx.BeginBusyCursor()
                 exception_queue = Queue.Queue()
                 imp_img_thd = workerthread.WorkerThread(exception_queue=exception_queue,
-                                                          target=self.model.import_img,
-                                                          args=(file_dlg.GetPath(), flatten_img))
+                                                        target=self.model.import_img,
+                                                        args=(file_dlg.GetPath(), flatten_img))
                 imp_img_thd.start()
                 while True:
                     imp_img_thd.join(0.125)
@@ -414,6 +415,23 @@ class MainUIController(object):
             if plt_window.has_data:
                 plt_window.Show()
             wx.EndBusyCursor()
+
+    def on_megaplot_data(self, evt):
+        """Handles request to generate megaplot of selected data"""
+        if self.view.data_panel.data is not None:
+            wx.BeginBusyCursor()
+            try:
+                plt_window = plotwindow.MegaPlotWindow(parent=self.view, data_file=self.view.data_panel.data)
+                if plt_window.has_data:
+                    plt_window.Show()
+            except IndexError: # data not 3D
+                err_dlg = wx.MessageDialog(self.view,
+                                           message="Data must have three dimensions.",
+                                           caption="Unable To Plot Data", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+            finally:
+                wx.EndBusyCursor()
 
     def on_run_podtk(self, evt):
         """Handles request to run POD Toolkit"""
