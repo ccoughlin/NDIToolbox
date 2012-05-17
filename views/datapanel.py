@@ -32,8 +32,7 @@ class DataPanel(wx.Panel):
     def init_ui(self):
         """Generates the data panel"""
         self.panel_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.data_tree = wx.TreeCtrl(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
-                                     style=wx.TR_HIDE_ROOT | wx.TR_ROW_LINES | wx.TR_ROW_LINES)
+        self.data_tree = wx.TreeCtrl(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize)
         self.data_tree_root = self.data_tree.AddRoot(pathfinder.data_path())
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.controller.on_tree_selection_changed,
                   self.data_tree)
