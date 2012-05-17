@@ -12,6 +12,7 @@ import views.preview_window as preview_window
 import views.dialogs as dlg
 from views import podtk
 import controllers.pathfinder as pathfinder
+import controllers.open_file as open_file
 import wx
 import imp
 import os.path
@@ -202,6 +203,23 @@ class MainUIController(object):
             self.model.copy_data(file_dlg.GetPath())
             self.view.data_panel.populate()
             wx.EndBusyCursor()
+
+    def on_browse_userpath(self, evt):
+        """Handles request to browse to the default userpath"""
+        try:
+            open_file.open_file(pathfinder.user_path())
+        except IOError: # file not found
+            err_msg = "Unable to find folder '{0}'.\nPlease ensure the folder exists.".format(browse_fldr)
+            err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                       caption="Unable To Open Folder", style=wx.ICON_ERROR)
+            err_dlg.ShowModal()
+            err_dlg.Destroy()
+        except OSError as err: # other OS error
+            err_msg = "Unable to browse to data folder, error reported was:\n{0}".format(err)
+            err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                       caption="Unable To Open Folder", style=wx.ICON_ERROR)
+            err_dlg.ShowModal()
+            err_dlg.Destroy()
 
     def on_choose_userpath(self, evt):
         """Handles request to set the default userpath"""

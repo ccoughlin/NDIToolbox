@@ -54,6 +54,11 @@ class UI(wx.Frame):
         self.Bind(wx.EVT_MENU, self.controller.on_import_image, id=img_mnui.GetId())
         self.import_mnu.AppendItem(img_mnui)
         self.file_mnu.AppendMenu(wx.ID_ANY, 'Import...', self.import_mnu)
+        self.file_mnu.AppendSeparator()
+        browsedata_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Show Data Folder",
+                                      help="Opens the local storage folder")
+        self.file_mnu.AppendItem(browsedata_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_browse_userpath, id=browsedata_mnui.GetId())
         userpath_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Choose Data Folder...",
                                     help="Specify the local storage folder")
         self.file_mnu.AppendItem(userpath_mnui)
@@ -203,6 +208,11 @@ class UI(wx.Frame):
         else:
             pane_info.Hide()
         self._mgr.Update()
+
+    def refresh(self):
+        """Convenience function for outside classes to force
+        a refresh of the list of available data files."""
+        self.data_panel.populate()
 
 
 def main():

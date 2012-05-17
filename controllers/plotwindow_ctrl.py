@@ -17,6 +17,7 @@ import wx
 import wx.lib.dialogs
 from functools import wraps
 import multiprocessing
+import os.path
 import Queue
 
 def replace_plot(fn):
@@ -184,11 +185,16 @@ class BasicPlotWindowController(object):
 
     def on_save_data(self, evt):
         """Handles request to save current data set to disk"""
+        default_path, default_file = os.path.split(self.model.data_file)
+        wild_card = "NDIToolbox data files (*.hdf5)|*.hdf5|All files (*.*)|*.*"
         save_dlg = wx.FileDialog(self.view, message="Save File As...",
-                                 defaultDir=pathfinder.data_path(),
-                                 style=wx.SAVE | wx.OVERWRITE_PROMPT)
+                                 defaultDir=default_path,
+                                 defaultFile=default_file,
+                                 wildcard=wild_card,
+                                 style=wx.SAVE|wx.OVERWRITE_PROMPT)
         if save_dlg.ShowModal() == wx.ID_OK:
             mainmodel.save_data(save_dlg.GetPath(), self.data)
+            self.view.parent.refresh()
         save_dlg.Destroy()
 
     def on_revert(self, evt):

@@ -198,9 +198,9 @@ class ModelTreeContextMenu(wx.Menu):
 
     def generate_rootmenu(self):
         '''Generate a menu when right-clicking the root'''
-        add_model = wx.MenuItem(self, wx.NewId(), 'Add Model')
+        add_model = wx.MenuItem(self, wx.NewId(), 'Install Model')
         self.AppendItem(add_model)
-        self.Bind(wx.EVT_MENU, self.controller.on_add_model, id=add_model.GetId())
+        self.Bind(wx.EVT_MENU, self.controller.on_install_model, id=add_model.GetId())
 
     def generate_modelmenu(self):
         '''Contextual menu for right-clicking on a model'''
