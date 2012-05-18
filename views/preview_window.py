@@ -80,7 +80,7 @@ class PreviewWindow(wx.Frame):
         self.Bind(wx.EVT_TOOL, self.controller.on_tb_click, id=20)
         self.Bind(wx.EVT_TOOL, self.controller.on_tb_click, id=wx.ID_SAVE)
         self.spreadsheet_tb.Realize()
-        self.main_panel_sizer.Add(self.spreadsheet_tb, 0, wx.EXPAND, border=ui_defaults.widget_margin)
+        self.main_panel_sizer.Add(self.spreadsheet_tb, 0, wx.TOP, border=0)
 
     def get_bitmap(self, bitmap_name):
         """Given the base name for a file, returns a wx Bitmap instance from the bitmap folder"""
