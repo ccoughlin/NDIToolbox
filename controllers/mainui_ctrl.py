@@ -273,7 +273,7 @@ class MainUIController(object):
 
     def on_export_text(self, evt):
         """Handles request to export selected data to delimited ASCII"""
-        file_dlg = wx.FileDialog(parent=self.view, message="Please specify a data file",
+        file_dlg = wx.FileDialog(parent=self.view, message="Please specify an output filename.",
                                  style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         if file_dlg.ShowModal() == wx.ID_OK:
             exportfmt_dlg = dlg.ExportTextDialog(parent=self.view.parent)

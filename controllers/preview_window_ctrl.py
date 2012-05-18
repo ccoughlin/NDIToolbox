@@ -60,3 +60,22 @@ class PreviewWindowController(object):
                                            caption="Unable To Preview Data", style=wx.ICON_ERROR)
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
+
+    def on_tb_click(self, evt):
+        """Handles button click event from toolbar"""
+        button = evt.GetId()
+        if button == wx.ID_SAVE:
+            self.export_text()
+        elif button == 20: # Refresh data
+            wx.BeginBusyCursor()
+            self.populate_spreadsheet()
+            wx.EndBusyCursor()
+
+    def export_text(self):
+        """Exports current spreadsheet to CSV file"""
+        file_dlg = wx.FileDialog(parent=self.view, message="Please specify an output file",
+                                 style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        if file_dlg.ShowModal() == wx.ID_OK:
+            wx.BeginBusyCursor()
+            self.view.spreadsheet.WriteCSV(file_dlg.GetPath())
+            wx.EndBusyCursor()
