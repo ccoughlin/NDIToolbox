@@ -46,6 +46,11 @@ class TestPathFinder(unittest.TestCase):
         bmap_path = os.path.join(self.app_path, 'resources', 'bitmaps')
         self.assertEqual(bmap_path, pathfinder.bitmap_path())
 
+    def test_textfiles_path(self):
+        """Verify correct text files path"""
+        help_path = os.path.join(self.app_path, 'resources', 'textfiles')
+        self.assertEqual(help_path, pathfinder.textfiles_path())
+
     def test_data_path(self):
         """Verify correct data path"""
         data_path = os.path.join(self.user_path, 'data')

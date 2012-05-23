@@ -99,7 +99,7 @@ class FetchPluginDialogController(object):
             self.fetch_plugin()
             readme = self.model.get_readme(self.get_configured_url())
             text_display_dlg = dialogs.TextDisplayDialog(parent=self.view, text=readme,
-                                                         title='README')
+                                                         title='README', style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
             text_display_dlg.Show()
         except Exception as err:
             err_msg = "{0}".format(err)

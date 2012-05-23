@@ -1,0 +1,14 @@
+To create a line or X-Y plot from a three-dimensional array, set one of the axes to -1 to take a slice through the data in that dimension.  Next, specify coordinates in the other two dimensions:  the plot will be taken with this position as the starting point through to the end of the data in that dimension.
+
+= Common NDE Plots =
+
+Vertical B-scan:  set Y=-1, specify X and Z coordinates
+Horizontal B-scan:  set X=-1, specify Y and Z coordinates
+A-scan:  set Z=-1, specify X and Y coordinates
+
+= Example =
+Suppose you have taken an ultrasonic scan of a part that's produced a dataset that is 309x309x643.  Looking at the image plot of this data for Z=333, you notice a flaw in this C-scan at the coordinates (x=39, y=150).
+
+- To produce the Vertical B-scan, set Y=-1, X=39, and Z=333.
+- To produce the Horizontal B-scan, set X=-1, Y=150, Z=333.
+- Finally, if you'd like to see the A-scan at this position, set Z=-1, X=39, and Y=150.

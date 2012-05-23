@@ -312,10 +312,18 @@ class PlotWindowController(BasicPlotWindowController):
                 # matplotlib forgets settings with replots -
                 # save current values to reset after the replot
                 titles = self.get_titles()
-                if 2 in data.shape:
+                if 2 in data.shape: # Assume data is X, Y
                     self.view.axes.plot(data[0], data[1])
                 elif data.ndim == 1:
                     self.view.axes.plot(data)
+                elif data.ndim == 3:
+                    # 3D data; offer to take a slice in X, Y, or Z to plot
+                    slice_dlg = dialogs.Slice3DDataDialog(parent=self.view, data=data,
+                                                        title="Select Axis To Plot")
+                    if slice_dlg.ShowModal() == wx.ID_OK:
+                        data = slice_dlg.get_data_slice()
+                        self.plot(data)
+                    slice_dlg.Destroy()
                 self.set_titles(plot=titles['plot'], x=titles['x'], y=titles['y'])
                 self.view.axes.grid(self.axes_grid)
             except OverflowError as err: # Data too large to plot

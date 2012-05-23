@@ -6,6 +6,7 @@ import os.path
 import sys
 
 def normalized(path_fn):
+    """Decorator to normalize (os.path.normcase) paths"""
     def normalize():
         return os.path.normcase(path_fn())
 
@@ -72,6 +73,10 @@ def bitmap_path():
     """Returns the path to application bitmaps"""
     return os.path.join(resource_path(), 'bitmaps')
 
+@normalized
+def textfiles_path():
+    """Returns the path to application textfiles"""
+    return os.path.join(resource_path(), 'textfiles')
 
 @normalized
 def data_path():

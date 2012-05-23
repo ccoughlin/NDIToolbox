@@ -1,13 +1,15 @@
 """dialogs.py - customized wxPython dialogs and convenience functions"""
-import os
 
 __author__ = 'Chris R. Coughlin'
 
 import views.ui_defaults as ui_defaults
+from controllers import pathfinder
 import wx
 from wx.lib.masked.numctrl import NumCtrl
 from wx.lib import statbmp, wordwrap
 from wx import ProgressDialog
+import os
+import os.path
 import sys
 import textwrap
 import webbrowser
@@ -459,14 +461,14 @@ class ConfigurePluginDialog(wx.Dialog):
         return config
 
 
-class TextDisplayDialog(wx.Frame):
+class TextDisplayDialog(wx.Dialog):
     """Simple wxPython window to display large blocks of text"""
 
     def __init__(self, text, parent=None, wrap=True, *args, **kwargs):
         self.parent = parent
         self.text = text
         self.wrap_text = wrap
-        wx.Frame.__init__(self, parent, *args, **kwargs)
+        wx.Dialog.__init__(self, parent, *args, **kwargs)
         if self.parent is not None:
             self.SetIcon(self.parent.GetIcon())
         self.init_ui()
@@ -528,3 +530,83 @@ class TextDisplayDialog(wx.Frame):
     def on_ok_btn(self, evt):
         """Handles request to close the window"""
         self.Destroy()
+
+class Slice3DDataDialog(wx.Dialog):
+    """Dialog to select an index in one of the axes of an array"""
+
+    def __init__(self, data, parent=None, *args, **kwargs):
+        self.parent = parent
+        self.data = data
+        super(Slice3DDataDialog, self).__init__(parent, *args, **kwargs)
+        if self.parent is not None:
+            self.SetIcon(self.parent.GetIcon())
+        self.init_ui()
+
+    def init_ui(self):
+        """Initializes and lays out the UI"""
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.main_panel = wx.Panel(self)
+        self.main_panel_sizer = wx.BoxSizer(wx.VERTICAL)
+        description_lbl = wx.StaticText(self.main_panel, wx.ID_ANY, "Please specify axis indices.")
+        self.main_panel_sizer.Add(description_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
+                                  ui_defaults.widget_margin)
+        self._generate_axis_ctrls()
+
+        self.main_panel.SetSizer(self.main_panel_sizer)
+        self.sizer.Add(self.main_panel, 1, ui_defaults.sizer_flags, 0)
+        self._generate_std_buttons()
+        self.SetSizerAndFit(self.sizer)
+
+    def _generate_axis_ctrls(self):
+        """Creates and adds the SpinCtrls for each axis to the dialog"""
+        def generate_axis_sc(axis_idx):
+            """Helper function to return a SpinCtrl with minimum and maximum
+            values set according to the dimensions of the data's axis"""
+            return wx.SpinCtrl(self.main_panel, wx.ID_ANY, min=-1, max=self.data.shape[axis_idx]-1)
+        self.axes = {"X Axis":generate_axis_sc(0),
+                     "Y Axis":generate_axis_sc(1),
+                     "Z Axis":generate_axis_sc(2)}
+        for axis_name, axis_sc in sorted(self.axes.items()):
+            axis_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            axis_lbl = wx.StaticText(self.main_panel, wx.ID_ANY, axis_name)
+            axis_sizer.Add(axis_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
+                           ui_defaults.widget_margin)
+            axis_sizer.Add(axis_sc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
+                           ui_defaults.widget_margin)
+            self.main_panel_sizer.Add(axis_sizer, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
+
+    def _generate_std_buttons(self):
+        """Generates the standard OK/Cancel dialog buttons"""
+        self.stdbtns = wx.StdDialogButtonSizer()
+        help_btn = wx.Button(self, wx.ID_HELP)
+        self.Bind(wx.EVT_BUTTON, self.on_help, help_btn)
+        ok_btn = wx.Button(self, wx.ID_OK)
+        ok_btn.SetFocus()
+        cancel_btn = wx.Button(self, wx.ID_CANCEL)
+        self.stdbtns.AddButton(help_btn)
+        self.stdbtns.AddButton(ok_btn)
+        self.stdbtns.AddButton(cancel_btn)
+        self.stdbtns.Realize()
+        self.sizer.Add(self.stdbtns, ui_defaults.lbl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
+
+    def get_data_slice(self):
+        """Returns a slice of the dialog's 3D NumPy array."""
+        x_idx = self.axes["X Axis"].GetValue()
+        y_idx = self.axes["Y Axis"].GetValue()
+        z_idx = self.axes["Z Axis"].GetValue()
+        if x_idx == -1:
+            x_idx = slice(None)
+        if y_idx == -1:
+            y_idx = slice(None)
+        if z_idx == -1:
+            z_idx = slice(None)
+        return self.data[y_idx, x_idx, z_idx]
+
+    def on_help(self, evt):
+        """Responds to request for help with the dialog
+        by displaying basic how-to info"""
+        with open(os.path.join(pathfinder.textfiles_path(), "slice3d_dlg.txt"), "rb") as fidin:
+            help_dlg = TextDisplayDialog(text=fidin.readlines(), parent=self, title="Slicing 3D Data",
+                                         style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
+            help_dlg.ShowModal()
+            help_dlg.Destroy()

@@ -136,7 +136,8 @@ class MainUIController(object):
         with open(license_file, 'rb') as fidin:
             license = fidin.readlines()
             license_dlg = dlg.TextDisplayDialog(parent=self.view, text=''.join(license),
-                                                title="License Information")
+                                                title="License Information",
+                                                style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
             license_dlg.Show()
 
     def on_about_tri(self, evt):
