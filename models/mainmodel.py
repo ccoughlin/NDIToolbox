@@ -211,10 +211,6 @@ class MainModel(object):
         di_struct = dicom.read_file(data_file)
         di_fname = os.path.join(pathfinder.data_path(),
                                 os.path.basename(data_file))
-        # TODO - implement support for 3D arrays
-        # when data format is finalized
-        if di_struct.pixel_array.ndim > 2:
-            return
         save_data(di_fname, di_struct.pixel_array)
 
     def import_img(self, data_file, flatten=True):
