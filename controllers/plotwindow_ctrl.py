@@ -746,14 +746,18 @@ class MegaPlotWindowController(BasicImgPlotWindowController):
         self.axes_grid = not self.axes_grid
         self.refresh_plot()
 
+    @replace_plot
     def on_rectify(self, evt):
         """Handles request to apply rectification to A-scan plot"""
-        self.model.rectify_full()
+        xpos = self.view.xpos_sc.GetValue()
+        ypos = self.view.ypos_sc.GetValue()
+        self.plot_ascan(self.model.rectify_full(self.scnr.ascan_data(xpos, ypos)), xpos, ypos)
 
     def get_gates(self):
         """Returns a dict listing available window functions"""
         return self.model.gates
 
+    @replace_plot
     def on_apply_gate(self, evt):
         """Handles request to apply window function ('gate' in UT)
         to A-scan"""
