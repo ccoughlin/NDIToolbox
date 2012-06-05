@@ -364,6 +364,10 @@ class MegaPlotWindow(PlotWindow):
         self.ypos_sc = wx.SpinCtrl(self.ctrl_panel, wx.ID_ANY, value="", min=0, max=self.controller.data.shape[0] - 1)
         self.Bind(wx.EVT_SPINCTRL, self.controller.on_xy_change, self.ypos_sc)
         self.ctrl_sizer.Add(self.ypos_sc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
+        self.slice_cb = wx.CheckBox(self.ctrl_panel, wx.ID_ANY, "Plot Z Index As C Scan", style=wx.ALIGN_RIGHT)
+        self.slice_cb.SetToolTipString(u"Use the specified index in Z as the C Scan plot data")
+        self.slice_cb.SetValue(True)
+        self.ctrl_sizer.Add(self.slice_cb, ui_defaults.lbl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
         self.slice_sc = wx.SpinCtrl(self.ctrl_panel, wx.ID_ANY, value="", min=0, max=self.controller.data.shape[2] - 1)
         self.Bind(wx.EVT_SPINCTRL, self.controller.on_sliceidx_change, self.slice_sc)
         slice_lbl = wx.StaticText(self.ctrl_panel, wx.ID_ANY, u"Slice Index", wx.DefaultPosition, wx.DefaultSize)
@@ -373,7 +377,7 @@ class MegaPlotWindow(PlotWindow):
         self.main_panel_sizer.Add(self.ctrl_panel, ui_defaults.lbl_pct, ui_defaults.sizer_flags,
                                   ui_defaults.widget_margin)
 
-        self.figure = Figure(figsize=(6, 6))
+        self.figure = Figure()
         self.canvas = FigureCanvas(self.main_panel, wx.ID_ANY, self.figure)
         self.ascan_axes = self.figure.add_subplot(221)
         self.vbscan_axes = self.figure.add_subplot(222)
@@ -434,4 +438,24 @@ class MegaPlotWindow(PlotWindow):
         self.menubar.Append(self.plot_mnu, "&Plot")
 
     def init_specific_ops_menu(self):
-        pass
+        """Creates any plot-specific Operations menu items"""
+        self.setcscan_mnui = wx.MenuItem(self.ops_mnu, wx.ID_ANY, text="Define C Scan",
+                                         help="Specify function to generate C Scan")
+        self.Bind(wx.EVT_MENU, self.controller.on_define_cscan, id=self.setcscan_mnui.GetId())
+        self.ops_mnu.AppendItem(self.setcscan_mnui)
+        self.rect_mnu = wx.Menu() # Rectification operations
+        self.fullrect_mnui = wx.MenuItem(self.rect_mnu, wx.ID_ANY, text="Full",
+                                         help="Full Rectification")
+        self.Bind(wx.EVT_MENU, self.controller.on_rectify, id=self.fullrect_mnui.GetId())
+        self.rect_mnu.AppendItem(self.fullrect_mnui)
+        self.ops_mnu.AppendMenu(wx.ID_ANY, 'Rectify', self.rect_mnu)
+
+        self.gate_mnu = wx.Menu() # Gates operations
+        for gate_idx, params in self.controller.get_gates().items():
+            gate_lbl = params[0]
+            gate_id = params[1]
+            gate_desc = "Applies a {0} gate function to the data".format(gate_lbl)
+            gate_mnui = wx.MenuItem(self.gate_mnu, id=gate_id, text=gate_lbl, help=gate_desc)
+            self.gate_mnu.AppendItem(gate_mnui)
+            self.Bind(wx.EVT_MENU, self.controller.on_apply_gate, id=gate_mnui.GetId())
+        self.ops_mnu.AppendMenu(wx.ID_ANY, 'Gates', self.gate_mnu)

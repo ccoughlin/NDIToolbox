@@ -8,7 +8,6 @@ from views import dialogs
 from views import fetchplugin_dialog
 from models import mainmodel
 from models import ndescanhandler
-import pathfinder
 import models.plotwindow_model as model
 import matplotlib
 import matplotlib.axes
@@ -191,7 +190,7 @@ class BasicPlotWindowController(object):
                                  defaultDir=default_path,
                                  defaultFile=default_file,
                                  wildcard=wild_card,
-                                 style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                                 style=wx.SAVE | wx.OVERWRITE_PROMPT)
         if save_dlg.ShowModal() == wx.ID_OK:
             mainmodel.save_data(save_dlg.GetPath(), self.data)
             self.view.parent.refresh()
@@ -258,10 +257,6 @@ class BasicPlotWindowController(object):
         self.refresh_plot()
         evt.Skip()
 
-    def on_rectify(self, evt):
-        """Handles request to apply rectification"""
-        self.rectify_full()
-
     @replace_plot
     def revert(self):
         """Reverts data to original"""
@@ -319,7 +314,7 @@ class PlotWindowController(BasicPlotWindowController):
                 elif data.ndim == 3:
                     # 3D data; offer to take a slice in X, Y, or Z to plot
                     slice_dlg = dialogs.Slice3DDataDialog(parent=self.view, data=data,
-                                                        title="Select Axis To Plot")
+                                                          title="Select Axis To Plot")
                     if slice_dlg.ShowModal() == wx.ID_OK:
                         data = slice_dlg.get_data_slice()
                         self.plot(data)
@@ -365,6 +360,10 @@ class PlotWindowController(BasicPlotWindowController):
                     err_dlg.Destroy()
                 finally:
                     rng_dlg.Destroy()
+
+    def on_rectify(self, evt):
+        """Handles request to apply rectification"""
+        self.rectify_full()
 
 
 class BasicImgPlotWindowController(BasicPlotWindowController):
@@ -456,6 +455,7 @@ class BasicImgPlotWindowController(BasicPlotWindowController):
                 self.view.img.set_cmap(self.colormap)
                 self.refresh_plot()
 
+
 class ImgPlotWindowController(BasicImgPlotWindowController):
     """Controller for ImgPlotWindow class"""
 
@@ -467,7 +467,7 @@ class ImgPlotWindowController(BasicImgPlotWindowController):
         slice."""
         if self.data.ndim == 3:
             min_slice_idx = 0
-            max_slice_idx = self.data.shape[2]-1
+            max_slice_idx = self.data.shape[2] - 1
             msg = "Please specify a slice index to plot from the 3D array."
             rng_caption = "Slice From Array ({0}-{1}):".format(min_slice_idx, max_slice_idx)
             slice_dlg = wx.NumberEntryDialog(self.view, message=msg, prompt=rng_caption,
@@ -475,6 +475,7 @@ class ImgPlotWindowController(BasicImgPlotWindowController):
                                              max=max_slice_idx)
             if slice_dlg.ShowModal() == wx.ID_OK:
                 self.model.slice_data(slice_dlg.GetValue())
+                self.model.original_data = self.model.data
             slice_dlg.Destroy()
 
     def plot(self, data):
@@ -541,7 +542,7 @@ class ImgPlotWindowController(BasicImgPlotWindowController):
     def on_rot90ccw(self, evt):
         """Handles request to rotate data 90 degrees counterclockwise"""
         self.model.rotate_data(1)
-        
+
     @replace_plot
     def on_rot90cw(self, evt):
         """Handles request to rotate data 90 degrees clockwise"""
@@ -557,6 +558,7 @@ class ImgPlotWindowController(BasicImgPlotWindowController):
         """Handles request to transpose data"""
         self.model.transpose_data()
 
+
 class MegaPlotWindowController(BasicImgPlotWindowController):
     """Controller for MegaPlotWindows"""
 
@@ -564,8 +566,7 @@ class MegaPlotWindowController(BasicImgPlotWindowController):
         self.view = view
         self.slice_idx = 0
         self.axes_grid = True
-        # TODO - may need to subclass model in the future
-        self.model = model.ImgPlotWindowModel(self, data_file)
+        self.model = model.MegaPlotWindowModel(self, data_file)
         self.colorbar = None
         self.init_plot_defaults()
 
@@ -574,7 +575,8 @@ class MegaPlotWindowController(BasicImgPlotWindowController):
         if data is not None:
             self.scnr = ndescanhandler.NDEScanHandler(self.data)
             try:
-                self.plot_cscan(self.slice_idx)
+                if self.view.slice_cb.IsChecked():
+                    self.plot_cscan(self.scnr.cscan_data(self.slice_idx), self.slice_idx)
             except TypeError as err: # Tried to imgplot 1D array
                 err_msg = "{0}".format(err)
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
@@ -588,36 +590,29 @@ class MegaPlotWindowController(BasicImgPlotWindowController):
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
 
-    def plot_ascan(self, xpos, ypos):
-        """Takes the waveform through z at the given (x,y)
-        position and plots in the A scan plot"""
-        ascan_data = self.scnr.ascan_data(xpos, ypos)
+    def plot_ascan(self, ascan_data, xpos, ypos):
+        """Plots the provided A-scan data"""
         self.view.ascan_axes.cla()
         self.view.ascan_plt = self.view.ascan_axes.plot(ascan_data)
         self.view.ascan_axes.autoscale_view(tight=True)
         self.view.ascan_axes.set_title("A Scan x={0} y={1}".format(xpos, ypos))
 
-    def plot_hbscan(self, slice_idx, ypos):
-        """Takes the horizontal slice through the C scan at z=slice_idx
-        and plots in the horizontal B scan plot"""
-        hbscan_data = self.scnr.hbscan_data(slice_idx, ypos)
+    def plot_hbscan(self, hbscan_data, ypos, slice_idx):
+        """Plots the provided horizontal B-scan data"""
         self.view.hbscan_axes.cla()
         self.view.hbscan_plt = self.view.hbscan_axes.plot(hbscan_data)
         self.view.hbscan_axes.autoscale_view(tight=True)
         self.view.hbscan_axes.set_title("Horizontal B Scan y={0} z={1}".format(ypos, slice_idx))
 
-    def plot_vbscan(self, slice_idx, xpos):
-        """Takes the vertical slice through the C scan at z=slice_idx
-        and plots in the vertical B scan plot"""
-        vbscan_data = self.scnr.vbscan_data(slice_idx, xpos)
+    def plot_vbscan(self, vbscan_data, xpos, slice_idx):
+        """Plots the provided vertical B-scan data"""
         self.view.vbscan_axes.cla()
         self.view.vbscan_plt = self.view.vbscan_axes.plot(vbscan_data)
         self.view.vbscan_axes.autoscale_view(tight=True)
         self.view.vbscan_axes.set_title("Vertical B Scan x={0} z={1}".format(xpos, slice_idx))
 
-    def plot_cscan(self, slice_idx):
-        """Takes the z-axis slice at slice_idx and plots in the C scan image plot"""
-        cscan_data = self.scnr.cscan_data(slice_idx)
+    def plot_cscan(self, cscan_data, slice_idx):
+        """Plots the supplied C-scan data"""
         self.view.cscan_axes.cla()
         self.view.cscan_img = self.view.cscan_axes.imshow(cscan_data, aspect='auto',
                                                           origin='lower', cmap=self.colormap,
@@ -717,12 +712,13 @@ class MegaPlotWindowController(BasicImgPlotWindowController):
         is to leave unchanged if slice_idx is None."""
         self.view.xpos_sc.SetValue(xpos)
         self.view.ypos_sc.SetValue(ypos)
-        self.plot_ascan(xpos, ypos)
-        self.plot_hbscan(self.slice_idx, ypos)
-        self.plot_vbscan(self.slice_idx, xpos)
+        self.plot_ascan(self.scnr.ascan_data(xpos, ypos), xpos, ypos)
+        self.plot_hbscan(self.view.cscan_img.get_array()[ypos, :], self.slice_idx, ypos)
+        self.plot_vbscan(self.view.cscan_img.get_array()[:, xpos], self.slice_idx, xpos)
         if slice_idx is not None:
             self.slice_idx = slice_idx
-            self.plot_cscan(self.slice_idx)
+            if self.view.slice_cb.IsChecked():
+                self.plot_cscan(self.scnr.cscan_data(self.slice_idx), self.slice_idx)
         self.refresh_plot()
 
     def on_select_cmap(self, evt):
@@ -749,3 +745,71 @@ class MegaPlotWindowController(BasicImgPlotWindowController):
             ax.grid()
         self.axes_grid = not self.axes_grid
         self.refresh_plot()
+
+    def on_rectify(self, evt):
+        """Handles request to apply rectification to A-scan plot"""
+        self.model.rectify_full()
+
+    def get_gates(self):
+        """Returns a dict listing available window functions"""
+        return self.model.gates
+
+    def on_apply_gate(self, evt):
+        """Handles request to apply window function ('gate' in UT)
+        to A-scan"""
+        self.apply_gate(evt.GetId())
+
+    def apply_gate(self, gate_id):
+        if self.model.data is not None:
+            rng_dlg = dialogs.FloatRangeDialog("Please specify the gate region.")
+            if rng_dlg.ShowModal() == wx.ID_OK:
+                try:
+                    start_pos, end_pos = rng_dlg.GetValue()
+                    xpos = self.view.xpos_sc.GetValue()
+                    ypos = self.view.ypos_sc.GetValue()
+                    ascan_data = self.scnr.ascan_data(xpos, ypos)
+                    self.plot_ascan(self.model.apply_gate(ascan_data, gate_id, start_pos, end_pos), xpos, ypos)
+                except ValueError as err: # negative dimensions
+                    err_msg = "{0}".format(err)
+                    err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                               caption="Unable To Apply Gate", style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                    err_dlg.Destroy()
+                finally:
+                    rng_dlg.Destroy()
+
+    def on_define_cscan(self, evt):
+        """Handles request to define the data used
+        to produce the C Scan imgplot"""
+        self.view.slice_cb.SetValue(False)
+        self.define_cscan()
+
+    @replace_plot
+    def define_cscan(self):
+        """Specify a range of data and a function
+        to generate a C Scan plot"""
+        if self.model.data is not None:
+            rng_dlg = dialogs.FloatRangeDialog("Please specify the index range in Z.")
+            if rng_dlg.ShowModal() == wx.ID_OK:
+                try:
+                    start_pos, end_pos = rng_dlg.GetValue()
+                    fn_dlg = wx.SingleChoiceDialog(parent=self.view, caption="Choose C Scan Function",
+                                                   message="Please choose a function to generate the C Scan data.",
+                                                   choices=self.scnr.available_cscan_function_names)
+                    if fn_dlg.ShowModal() == wx.ID_OK:
+                        wx.BeginBusyCursor()
+                        cscan_data = self.scnr.gen_cscan(start_pos, end_pos,
+                                                         fn=self.scnr.available_cscan_functions[fn_dlg.GetSelection()])
+                        self.plot_cscan(cscan_data, self.slice_idx)
+                        plot_title = "C Scan {0} z={1}:{2}".format(
+                            self.scnr.available_cscan_function_names[fn_dlg.GetSelection()], start_pos, end_pos)
+                        self.set_titles(self.view.cscan_axes, plot=plot_title)
+                        wx.EndBusyCursor()
+                except ValueError as err:
+                    err_msg = "{0}".format(err)
+                    err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                               caption="Unable To Generate C Scan", style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                    err_dlg.Destroy()
+                finally:
+                    rng_dlg.Destroy()

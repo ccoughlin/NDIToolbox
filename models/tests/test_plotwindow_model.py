@@ -102,7 +102,7 @@ class TestPlotWindowModel(unittest.TestCase):
             gate_id = self.model.gates.get(gate)[1]
             start_idx = 2
             end_idx = 4
-            expected_data = self.model.apply_window(gate_fn, self.model.data,
+            expected_data = model.TwoDManipMixin().apply_window(gate_fn, self.model.data,
                                                     start_idx, end_idx)
             self.model.apply_gate(gate_id, start_idx, end_idx)
             self.assertListEqual(original_data.tolist(), self.model.original_data.tolist())

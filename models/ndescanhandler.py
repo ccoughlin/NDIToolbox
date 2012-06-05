@@ -19,6 +19,18 @@ class NDEScanHandler(object):
         assert np_array.ndim == 3
         self.data = np_array
 
+    @property
+    def available_cscan_functions(self):
+        """Returns a list of functions currently available to
+        generate a C-scan array from a 3D array"""
+        return [np.amax, np.amin, np.ptp, np.average, np.mean, np.median]
+
+    @property
+    def available_cscan_function_names(self):
+        """Returns a human-friendly list of function names available
+        to generate a C-scan array from a 3D array"""
+        return ["Maximum", "Minimum", "Peak-To-Peak", "Weighted Average", "Mean", "Median"]
+
     def cscan_data(self, slice_idx):
         """Returns the 2D slice of the 3D array
         at index z=slice_idx."""
@@ -61,6 +73,6 @@ class NDEScanHandler(object):
         if fn is None:
             cscan_data = np.amax(data, axis=2)
         else:
-            assert fn in [np.amax, np.amin, np.ptp, np.average, np.mean, np.median]
+            assert fn in self.available_cscan_functions
             cscan_data = fn(data, axis=2)
         return cscan_data
