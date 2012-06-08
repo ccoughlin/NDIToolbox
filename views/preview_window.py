@@ -6,6 +6,7 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 from controllers.preview_window_ctrl import PreviewWindowController
 from controllers import pathfinder
 from models import workerthread
+from views import dialogs
 import ui_defaults
 import wxspreadsheet
 import wx
@@ -47,15 +48,10 @@ class PreviewWindow(wx.Frame):
                 break
             wx.GetApp().Yield(True)
         if self.controller.data.ndim == 3:
-            min_slice_idx = 0
-            max_slice_idx = self.controller.data.shape[2] - 1
-            msg = "Please specify a slice index to preview from the 3D array."
-            rng_caption = "Slice From Array ({0}-{1}):".format(min_slice_idx, max_slice_idx)
-            slice_dlg = wx.NumberEntryDialog(self, message=msg, prompt=rng_caption,
-                                             caption="Specify 2D Slice", value=0, min=min_slice_idx,
-                                             max=max_slice_idx)
+            slice_dlg = dialogs.PlanarSliceDialog(parent=self, data=self.controller.data,
+                                                  title="Specify 2D Plane")
             if slice_dlg.ShowModal() == wx.ID_OK:
-                self.controller.slice_data(slice_dlg.GetValue())
+                self.controller.data = slice_dlg.get_data_slice()
             slice_dlg.Destroy()
         self.controller.populate_spreadsheet()
 

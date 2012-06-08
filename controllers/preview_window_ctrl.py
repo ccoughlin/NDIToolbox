@@ -19,6 +19,10 @@ class PreviewWindowController(object):
     def data(self):
         return self.model.data
 
+    @data.setter
+    def data(self, new_data):
+        self.model.data = new_data
+
     def load_data(self):
         """Loads the instance's data file"""
         self.model.load_data()

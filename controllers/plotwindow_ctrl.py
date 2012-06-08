@@ -313,7 +313,7 @@ class PlotWindowController(BasicPlotWindowController):
                     self.view.axes.plot(data)
                 elif data.ndim == 3:
                     # 3D data; offer to take a slice in X, Y, or Z to plot
-                    slice_dlg = dialogs.Slice3DDataDialog(parent=self.view, data=data,
+                    slice_dlg = dialogs.LinearSliceDialog(parent=self.view, data=data,
                                                           title="Select Axis To Plot")
                     if slice_dlg.ShowModal() == wx.ID_OK:
                         data = slice_dlg.get_data_slice()
@@ -466,15 +466,10 @@ class ImgPlotWindowController(BasicImgPlotWindowController):
         """If the data is a 3D array, set the data to a single 2D
         slice."""
         if self.data.ndim == 3:
-            min_slice_idx = 0
-            max_slice_idx = self.data.shape[2] - 1
-            msg = "Please specify a slice index to plot from the 3D array."
-            rng_caption = "Slice From Array ({0}-{1}):".format(min_slice_idx, max_slice_idx)
-            slice_dlg = wx.NumberEntryDialog(self.view, message=msg, prompt=rng_caption,
-                                             caption="Specify 2D Slice", value=0, min=min_slice_idx,
-                                             max=max_slice_idx)
+            slice_dlg = dialogs.PlanarSliceDialog(parent=self.view, data=self.data,
+                                                  title="Specify 2D Plane")
             if slice_dlg.ShowModal() == wx.ID_OK:
-                self.model.slice_data(slice_dlg.GetValue())
+                self.model.data = slice_dlg.get_data_slice()
                 self.model.original_data = self.model.data
             slice_dlg.Destroy()
 
@@ -713,8 +708,8 @@ class MegaPlotWindowController(BasicImgPlotWindowController):
         self.view.xpos_sc.SetValue(xpos)
         self.view.ypos_sc.SetValue(ypos)
         self.plot_ascan(self.scnr.ascan_data(xpos, ypos), xpos, ypos)
-        self.plot_hbscan(self.view.cscan_img.get_array()[ypos, :], self.slice_idx, ypos)
-        self.plot_vbscan(self.view.cscan_img.get_array()[:, xpos], self.slice_idx, xpos)
+        self.plot_hbscan(self.view.cscan_img.get_array()[ypos, :], slice_idx=self.slice_idx, ypos=ypos)
+        self.plot_vbscan(self.view.cscan_img.get_array()[:, xpos], slice_idx=self.slice_idx, xpos=xpos)
         if slice_idx is not None:
             self.slice_idx = slice_idx
             if self.view.slice_cb.IsChecked():

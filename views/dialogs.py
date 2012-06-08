@@ -531,13 +531,13 @@ class TextDisplayDialog(wx.Dialog):
         """Handles request to close the window"""
         self.Destroy()
 
-class Slice3DDataDialog(wx.Dialog):
-    """Dialog to select an index in one of the axes of an array"""
+class LinearSliceDialog(wx.Dialog):
+    """Dialog to select a linear slice in one of the axes of an array"""
 
     def __init__(self, data, parent=None, *args, **kwargs):
         self.parent = parent
         self.data = data
-        super(Slice3DDataDialog, self).__init__(parent, *args, **kwargs)
+        super(LinearSliceDialog, self).__init__(parent, *args, **kwargs)
         if self.parent is not None:
             self.SetIcon(self.parent.GetIcon())
         self.init_ui()
@@ -610,3 +610,111 @@ class Slice3DDataDialog(wx.Dialog):
                                          style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
             help_dlg.ShowModal()
             help_dlg.Destroy()
+
+class PlanarSliceDialog(wx.Dialog):
+    """Dialog to select a plane in X, Y, or Z in 3D data"""
+
+    def __init__(self, data, parent=None, *args, **kwargs):
+        self.parent = parent
+        self.data = data
+        super(PlanarSliceDialog, self).__init__(parent, *args, **kwargs)
+        if self.parent is not None:
+            self.SetIcon(self.parent.GetIcon())
+        self.init_ui()
+
+    @property
+    def planes(self):
+        """Returns list of available planes"""
+        return ["Parallel To X-Y (Index In Z)", "Parallel To X-Z (Index In Y)", "Parallel To Y-Z (Index In X)"]
+
+    def init_ui(self):
+        """Initializes and lays out the UI"""
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.main_panel = wx.Panel(self)
+        self.main_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        glyph_fn = os.path.join(pathfinder.bitmap_path(), "axis_glyph_sm.png")
+        glyph = wx.Bitmap(glyph_fn, type=wx.BITMAP_TYPE_PNG)
+        glyph_ctrl = statbmp.GenStaticBitmap(self.main_panel, wx.ID_ANY, glyph, style=wx.ALIGN_CENTRE_VERTICAL,
+                                             size=(glyph.GetWidth(), glyph.GetHeight()))
+        self.main_panel_sizer.Add(glyph_ctrl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
+                                  ui_defaults.widget_margin)
+        ctrl_panel = wx.Panel(self.main_panel)
+        ctrl_panel_sizer = wx.BoxSizer(wx.VERTICAL)
+        instructions_txt = '\n'.join(['To continue, please specify a plane in the 3-D data.',
+                                      'A plane is defined by an orientation and an index',
+                                      'into the data. Orientation determines which direction',
+                                      'the slice is made, and the index specifies where in',
+                                      'the remaining axis the slice is made.'])
+        instructions_lbl = wx.StaticText(ctrl_panel, wx.ID_ANY, instructions_txt)
+        ctrl_panel_sizer.Add(instructions_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
+                             ui_defaults.widget_margin)
+
+        orientation_panel = wx.Panel(ctrl_panel)
+        orientation_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        orientation_lbl = wx.StaticText(orientation_panel, wx.ID_ANY, "Orientation")
+        orientation_panel_sizer.Add(orientation_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
+                                    ui_defaults.widget_margin)
+
+        self.plane_choice = wx.Choice(orientation_panel, wx.ID_ANY, choices=self.planes)
+
+        orientation_panel_sizer.Add(self.plane_choice, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
+                             ui_defaults.widget_margin)
+        orientation_panel.SetSizerAndFit(orientation_panel_sizer)
+        ctrl_panel_sizer.Add(orientation_panel, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
+
+        idx_panel = wx.Panel(ctrl_panel)
+        idx_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        idx_lbl = wx.StaticText(idx_panel, wx.ID_ANY, "Index")
+        idx_panel_sizer.Add(idx_lbl, ui_defaults.ctrl_pct, ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
+        self.idx_sc = wx.SpinCtrl(idx_panel, wx.ID_ANY)
+        idx_panel_sizer.Add(self.idx_sc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
+                             ui_defaults.widget_margin)
+        idx_panel.SetSizerAndFit(idx_panel_sizer)
+        self.Bind(wx.EVT_CHOICE, self.on_orientation_change, self.plane_choice)
+        self.plane_choice.SetSelection(0)
+        self.set_index_limits()
+        ctrl_panel_sizer.Add(idx_panel, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
+        ctrl_panel.SetSizerAndFit(ctrl_panel_sizer)
+        self.main_panel_sizer.Add(ctrl_panel, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags, 0)
+        self.main_panel.SetSizer(self.main_panel_sizer)
+        self.sizer.Add(self.main_panel, 1, ui_defaults.sizer_flags, 0)
+        self._generate_std_buttons()
+        self.SetSizerAndFit(self.sizer)
+
+    def _generate_std_buttons(self):
+        """Generates the standard OK/Cancel dialog buttons"""
+        self.stdbtns = wx.StdDialogButtonSizer()
+        ok_btn = wx.Button(self, wx.ID_OK)
+        ok_btn.SetFocus()
+        cancel_btn = wx.Button(self, wx.ID_CANCEL)
+        self.stdbtns.AddButton(ok_btn)
+        self.stdbtns.AddButton(cancel_btn)
+        self.stdbtns.Realize()
+        self.sizer.Add(self.stdbtns, ui_defaults.lbl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
+
+    def on_orientation_change(self, evt):
+        """Handles change in orientation choice"""
+        self.set_index_limits()
+
+    def set_index_limits(self):
+        """Sets appropriate maximum for index based on selected orientation"""
+        if self.data is not None:
+            data_shape = self.data.shape
+            selected_plane_idx = self.plane_choice.GetSelection()
+            if selected_plane_idx == 0: # Z index
+                max_idx = data_shape[2]- 1
+            elif selected_plane_idx == 1: # Y index
+                max_idx = data_shape[0] - 1
+            elif selected_plane_idx == 2: # X index
+                max_idx = data_shape[1] - 1
+            self.idx_sc.SetRange(0, max_idx)
+
+    def get_data_slice(self):
+        idx = self.idx_sc.GetValue()
+        selected_plane_idx = self.plane_choice.GetSelection()
+        if selected_plane_idx == 0: # Z index
+            return self.data[:, :, idx]
+        elif selected_plane_idx == 1: # Y index
+            return self.data[:, idx, :]
+        elif selected_plane_idx == 2: # X index
+            return self.data[idx, :, :]
