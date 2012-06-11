@@ -710,11 +710,13 @@ class PlanarSliceDialog(wx.Dialog):
             self.idx_sc.SetRange(0, max_idx)
 
     def get_data_slice(self):
+        """Returns a planar slice of the 3D data from the current
+        orientation and index choices"""
         idx = self.idx_sc.GetValue()
         selected_plane_idx = self.plane_choice.GetSelection()
         if selected_plane_idx == 0: # Z index
             return self.data[:, :, idx]
         elif selected_plane_idx == 1: # Y index
-            return self.data[:, idx, :]
-        elif selected_plane_idx == 2: # X index
             return self.data[idx, :, :]
+        elif selected_plane_idx == 2: # X index
+            return self.data[:, idx, :]
