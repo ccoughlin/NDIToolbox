@@ -430,11 +430,12 @@ class BasicImgPlotWindowController(BasicPlotWindowController):
         figure = plt.figure(figsize=(5, 8))
         figure.subplots_adjust(top=0.99, bottom=0.01, left=0.2, right=0.99)
         for i, m in enumerate(colormaps):
-            ax = plt.subplot(num_maps, 1, i + 1)
-            plt.axis('off')
-            plt.imshow(colormap_strip, aspect='auto', cmap=plt.get_cmap(m), origin='lower')
-            pos = list(ax.get_position().bounds)
-            figure.text(pos[0] - 0.01, pos[1], m, fontsize=10, horizontalalignment='right')
+            if not m.endswith("_r"):
+                ax = plt.subplot(num_maps, 1, i + 1)
+                plt.axis('off')
+                plt.imshow(colormap_strip, aspect='auto', cmap=plt.get_cmap(m), origin='lower')
+                pos = list(ax.get_position().bounds)
+                figure.text(pos[0] - 0.01, pos[1], m, fontsize=10, horizontalalignment='right')
         plt.show()
         wx.EndBusyCursor()
 

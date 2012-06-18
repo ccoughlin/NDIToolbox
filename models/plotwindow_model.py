@@ -124,7 +124,7 @@ class ThreeDManipMixin(object):
 
     def get_colormap_choices(self):
         """Returns a list of the available imgplot colormaps"""
-        cmap_choices = [m for m in cm.datad if not m.endswith("_r")]
+        cmap_choices = [m for m in cm.datad]
         cmap_choices.sort()
         return cmap_choices
 
