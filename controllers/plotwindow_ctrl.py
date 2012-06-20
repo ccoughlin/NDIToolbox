@@ -433,7 +433,7 @@ class BasicImgPlotWindowController(BasicPlotWindowController):
             if not m.endswith("_r"):
                 ax = plt.subplot(num_maps, 1, i + 1)
                 plt.axis('off')
-                plt.imshow(colormap_strip, aspect='auto', cmap=plt.get_cmap(m), origin='lower')
+                plt.imshow(colormap_strip, aspect='equal', cmap=plt.get_cmap(m), origin='lower')
                 pos = list(ax.get_position().bounds)
                 figure.text(pos[0] - 0.01, pos[1], m, fontsize=10, horizontalalignment='right')
         plt.show()
@@ -482,7 +482,7 @@ class ImgPlotWindowController(BasicImgPlotWindowController):
                 # save current values to reapply after plot
                 titles = self.get_titles()
                 self.view.axes.cla()
-                self.view.img = self.view.axes.imshow(data, aspect="auto", origin="lower", cmap=self.colormap)
+                self.view.img = self.view.axes.imshow(data, aspect="equal", origin="lower", cmap=self.colormap)
                 if self.colorbar:
                     self.view.figure.delaxes(self.view.figure.axes[1])
                     self.view.figure.subplots_adjust(right=0.90)
