@@ -76,5 +76,10 @@ class TestPathFinder(unittest.TestCase):
         config_path = os.path.normcase(os.path.expanduser("~/a7117.cfg"))
         self.assertEqual(config_path, pathfinder.config_path())
 
+    def test_docs_path(self):
+        """Verify correct path to documents folder"""
+        doc_path = os.path.join(self.app_path, 'docs')
+        self.assertEqual(doc_path, pathfinder.docs_path())
+
 if __name__ == "__main__":
     unittest.main()

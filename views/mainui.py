@@ -82,6 +82,15 @@ class UI(wx.Frame):
     def init_help_menu(self):
         """Creates the Help menu"""
         self.help_mnu = wx.Menu()
+        help_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="Help Topics",
+                                help="Opens the help documentation in your webbrowser")
+        self.help_mnu.AppendItem(help_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_help, id=help_mnui.GetId())
+        quickstart_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="Getting Started",
+                                      help="Opens the Getting Started Guide")
+        self.help_mnu.AppendItem(quickstart_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_quickstart, id=quickstart_mnui.GetId())
+        self.help_mnu.AppendSeparator()
         about_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="About This Program...",
                                  help="About This Program")
         self.help_mnu.AppendItem(about_mnui)

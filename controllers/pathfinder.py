@@ -40,6 +40,10 @@ def user_path():
         _config.set_app_option({upath_key: default_upath})
         return default_upath
 
+@normalized
+def docs_path():
+    """Returns the path to the HTML documentation."""
+    return os.path.join(app_path(), 'docs')
 
 @normalized
 def resource_path():

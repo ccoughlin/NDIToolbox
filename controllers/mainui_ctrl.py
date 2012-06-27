@@ -18,6 +18,7 @@ import imp
 import os.path
 import Queue
 import sys
+import webbrowser
 
 class MainUIController(object):
     """Controller for the main user interface"""
@@ -107,6 +108,11 @@ class MainUIController(object):
             return True
         return preview_state
 
+    def open_url(self, url):
+        """Opens the specified URL in the user's default web browser."""
+        if url is not None:
+            webbrowser.open_new_tab(url)
+
     # Event Handlers
 
     def on_quit(self, evt):
@@ -114,6 +120,14 @@ class MainUIController(object):
         self.model.set_coords(list(self.view.GetPosition()))
         self.view._mgr.UnInit()
         self.view.Destroy()
+
+    def on_help(self, evt):
+        """Handles request to open help documents"""
+        self.open_url(os.path.join(pathfinder.docs_path(), 'index.html'))
+
+    def on_quickstart(self, evt):
+        """Handles request to open Getting Started guide"""
+        self.open_url(os.path.join(pathfinder.docs_path(), 'quickstart.html'))
 
     def on_about(self, evt):
         """Handles the About This Program event"""
