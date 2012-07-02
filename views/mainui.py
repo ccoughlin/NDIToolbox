@@ -83,13 +83,17 @@ class UI(wx.Frame):
         """Creates the Help menu"""
         self.help_mnu = wx.Menu()
         help_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="Help Topics",
-                                help="Opens the help documentation in your webbrowser")
+                                help="Opens the help documentation in your web browser")
         self.help_mnu.AppendItem(help_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_help, id=help_mnui.GetId())
         quickstart_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="Getting Started",
                                       help="Opens the Getting Started Guide")
         self.help_mnu.AppendItem(quickstart_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_quickstart, id=quickstart_mnui.GetId())
+        plugins_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="NDIToolbox Plugins",
+                                       help="Opens introduction to NDIToolbox plugins in your web browser")
+        self.help_mnu.AppendItem(plugins_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_plugins, id=plugins_mnui.GetId())
         self.help_mnu.AppendSeparator()
         about_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="About This Program...",
                                  help="About This Program")
