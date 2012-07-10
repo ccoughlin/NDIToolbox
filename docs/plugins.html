@@ -445,7 +445,7 @@ class MedianFilterPlugin(TRIPlugin):
     still be in the
     language of your choice.</p>
 
-<p>Building on the concept of JSON and similar communciations mechanisms, you can also develop your plugin as a <a
+<p>Building on the concept of JSON and similar communications mechanisms, you can also develop your plugin as a <a
         href="http://en.wikipedia.org/wiki/Software_as_a_Service">Software
     As A Service</a> application, in which the bulk of your code is hosted on a server and the local plugin communicates
     with this server to provide functionality. Not only does this approach streamline the installation process if your
@@ -479,6 +479,216 @@ class MedianFilterPlugin(TRIPlugin):
     has built-in support for remote procedure protocols such as JSON or XML-RPC, or you could implement a standard
     HTTP/HTTPS interface in much the same manner.</p>
 
+<h3>Example Plugin 1:  Server-Based</h3>
+
+<p>We've already seen example code for local plugins, now let's look at one way to keep code on the server. Consider a
+    plugin designed to <a href="http://en.wikipedia.org/wiki/Edge_detection">detect edges</a> in a 2D image plot. SciPy
+    has several routines of interest for edge detection, but suppose we've decided to use the excellent <a
+            href="http://scikits-image.org/">scikits-image</a> image processing add-on for SciPy. This makes things
+    slightly more complicated because scikits-image requires compiling some C code on installation; this can be
+    problematic for Windows users that don't have Visual Studio installed. We've therefore decided to keep most of the
+    code on a server we control so we can operate in a well-controlled environment, and have the plugin phone in for
+    calculations. </p>
+
+<p>After looking at JSON and XML-RPC, we've decided to go with Python's <a
+        href="http://docs.python.org/library/simplexmlrpcserver.html#module-SimpleXMLRPCServer">SimpleXMLRPCServer</a>.
+    There are several different edge detection algorithms we could employ, and since they'd all be run on the server
+    anyway we've decided to just run one edge detector server that can provide all the algorithms we implement. The idea
+    will be to expose an API that offers several different edge detection algorithms; we could write a single NDIToolbox
+    plugin that allows the user to select the algorithm on the fly but for the purposes of this demonstration we'll
+    write one plugin per algorithm. In this case, we'll implement the <a
+            href="http://en.wikipedia.org/wiki/Sobel_operator">Sobel</a> and
+    <a href="http://en.wikipedia.org/wiki/Canny_edge_detector">Canny</a> methods.</p>
+
+<p>On the server side, we simply need to tweak the example code shown in SimpleXMLRPCServer to provide the methods we
+    need:</p>
+
+<pre class="pre-scrollable">
+    #!/usr/bin/env python
+    """server.py - example of hosting NumPy functions on a server via XML-RPC
+
+    Chris R. Coughlin (TRI/Austin, Inc.)
+    """
+
+    # A modified version of the Python example code for SimpleXMLRPCServer
+    # http://docs.python.org/library/simplexmlrpcserver.html#module-SimpleXMLRPCServer
+    # Demonstrates one way to move large NumPy arrays between a client and server -
+    # client sends NumPy array, server performs calculations and returns results
+    from SimpleXMLRPCServer import SimpleXMLRPCServer
+    from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
+    from skimage import filter
+    import numpy as np
+    class RequestHandler(SimpleXMLRPCRequestHandler):
+        rpc_paths = ('/edge_detector',)
+
+    # Create server
+    server = SimpleXMLRPCServer(("", 8000),
+                                requestHandler=RequestHandler)
+    server.register_introspection_functions()
+
+    def sobel_edges(arr_as_list):
+        """Applies the Sobel operator to the provided data,
+        returns the edges detected.  Use numpy.array(returned_data) to
+        produce NumPy array."""
+        an_array = np.array(arr_as_list)
+        edges = filter.sobel(an_array)
+        return edges.tolist()
+    server.register_function(sobel_edges, 'sobel_edges')
+
+    def canny_edges(arr_as_list, std_dev="1.0", low_t="0.1", high_t="0.2"):
+        """Applies the Canny algorithm to the provided data,
+        returns the edges detected.  Use numpy.array(returned_data) to
+        produce NumPy array."""
+        an_array = np.array(arr_as_list)
+        sigma = float(std_dev)
+        low_threshold = float(low_t)
+        high_threshold = float(high_t)
+        edges = filter.canny(an_array, sigma, low_threshold, high_threshold)
+        return edges.tolist()
+    server.register_function(canny_edges, 'canny_edges')
+
+    # Run the server's main loop
+    server.serve_forever()
+</pre>
+
+<p>The server starts up and stays running; listening for client connections on port 8000. A client sends a NumPy array
+    (the current data set in the image plot) converted to a standard Python list; the server converts back to a NumPy
+    array and returns the edges. On the client side, the plugin will then re-convert from the Python list to a NumPy
+    array and NDIToolbox refreshes the image plot with the results.</p>
+
+<p>Looking at the scikits-image <a href="http://scikits-image.org/docs/0.6/api/skimage.filter.html#sobel">Sobel
+    documentation</a>, no parameters are necessary to run the filter. So a simple Sobel Edge Detection plugin for
+    NDIToolbox might look like this:</p>
+
+<pre class="pre-scrollable">
+    """sobel_edge_detection_plugin.py - simple A7117 plugin that demonstrates
+    XML-RPC communication by returning edges found in an image
+
+    Chris R. Coughlin (TRI/Austin, Inc.)
+    """
+
+    __author__ = 'Chris R. Coughlin'
+
+    from models.abstractplugin import TRIPlugin
+    import numpy as np
+    import xmlrpclib
+
+    class SobelPlugin(TRIPlugin):
+        """Returns absolute magnitude Sobel to find edges in an image
+        http://en.wikipedia.org/wiki/Sobel_operator"""
+
+        name = "Sobel Edge Detection"
+        description = "Applies the Sobel operator to the current data to detect edges"
+        authors = "Chris R. Coughlin (TRI/Austin, Inc.)"
+        version = "1.0"
+        url = "www.tri-austin.com"
+        copyright = "Copyright (C) 2012 TRI/Austin, Inc.  All rights reserved."
+
+        def __init__(self):
+            super(SobelPlugin, self).__init__(self.name, self.description,
+                                                  self.authors, self.url, self.copyright)
+            self.config = {'server_url':'http://172.16.100.2:8000/edge_detector'}
+            self.srvr = xmlrpclib.ServerProxy(self.config['server_url'])
+
+        def run(self):
+            """Executes the plugin - returns a new NumPy array with
+            edges detected in original data"""
+            if self._data is not None:
+                self._data = self.srvr.sobel_edges(self._data.astype(np.float64).tolist())
+</pre>
+
+<p>The only configuration option we require in this case is a pointer to the edge detection server's URL; you could
+    hard-wire this into the plugin to streamline the plugin's operation if desired. Here's an example of the Sobel
+    plugin - before and after execution:</p>
+
+<p class="centeredImage"><a href="images/sobel_edge_one.png" rel="lightbox[sobel]"
+                            title="Original C-scan"><img src="images/sobel_edge_one.png" width="313"
+                                                         height="246"/></a><a href="images/sobel_edge_two.png"
+                                                                              rel="lightbox[sobel]"
+                                                                              title="Sobel Edge Detection"><img
+        src="images/sobel_edge_two.png" width="257" height="230"/></a></p>
+
+<p>Looking at the <a href="http://scikits-image.org/docs/dev/auto_examples/plot_canny.html">Canny edge detector API</a>,
+    we can specify thresholds and a number of standard deviations. In this case, we'll add each of these parameters to
+    the plugin's <code>config</code> dict so that the user can provide arguments to the server:</p>
+
+<pre class="pre-scrollable">
+    """canny_edge_detection_plugin.py - simple A7117 plugin that demonstrates
+    XML-RPC communication by returning edges found in an image
+
+    Chris R. Coughlin (TRI/Austin, Inc.)
+    """
+
+    __author__ = 'Chris R. Coughlin'
+
+    from models.abstractplugin import TRIPlugin
+    import numpy as np
+    import xmlrpclib
+
+    class CannyPlugin(TRIPlugin):
+        """Detects edges in an image with the Canny algorithm
+        http://en.wikipedia.org/wiki/Canny_edge_detector
+        """
+
+        name = "Canny Edge Detection"
+        description = "Applies the Canny algorithm to the current data to detect edges"
+        authors = "Chris R. Coughlin (TRI/Austin, Inc.)"
+        version = "1.0"
+        url = "www.tri-austin.com"
+        copyright = "Copyright (C) 2012 TRI/Austin, Inc.  All rights reserved."
+
+        def __init__(self):
+            super(CannyPlugin, self).__init__(self.name, self.description,
+                                                  self.authors, self.url, self.copyright)
+            self.config = {'sigmas':1,
+                'low_threshold':0.1,
+                'high_threshold':0.2,
+                'server_url':'http://172.16.100.2:8000/edge_detector'}
+            self.srvr = xmlrpclib.ServerProxy(self.config['server_url'])
+
+        def run(self):
+            """Executes the plugin - returns a new NumPy array with
+            edges detected in original data"""
+            if self._data is not None:
+                self._data = self.srvr.canny_edges(self._data.astype(np.float64).tolist(),
+                    self.config['sigmas'], self.config['low_threshold'],
+                    self.config['high_threshold'])
+</pre>
+
+<p class="centeredImage"><a href="images/canny_edge_one.png" rel="lightbox[canny]"
+                            title="Original C-scan"><img src="images/canny_edge_one.png" width="267"
+                                                         height="248"/></a><a href="images/canny_edge_two.png"
+                                                                              rel="lightbox[canny]"
+                                                                              title="Canny Edge Detection"><img
+        src="images/canny_edge_two.png" width="210" height="207"/></a></p>
+
+<p>In this case the results of the Canny edge detection aren't as nice as the Sobel; but of course the user can revert
+    to their original data and try experimenting with the Canny parameters to optimize the results.</p>
+
+<p>Once we've set up an edge detection server, we'd update the source code for both plugins to change the <code>server_url</code>
+    key in the <code>config</code> dict to point to the server. Since both plugins consist of a single file,
+    installation is as simple as asking the user to copy both <code>.py</code> files to their plugins folder. Assuming
+    you'd prefer to make things easier for your users however, you'd probably want to make a proper NDIToolbox plugin
+    archive so that NDIToolbox can perform the plugin installation automatically. To do that for the Sobel plugin for
+    example, create a new ZIP <code>sobel_edge_detection_plugin.zip</code> and add
+    <code>sobel_edge_detection_plugin.py</code> and a README to the archive such as the following.</p>
+
+<pre class="pre-scrollable">
+    # README Contents
+    Sobel Edge Detection - returns detected edges in image plot data
+    Chris R. Coughlin (TRI/Austin, Inc.)
+    www.tri-austin.com
+    Uses the Sobel operation (http://en.wikipedia.org/wiki/Sobel_operator) to detect edges in 2D data.
+</pre>
+
+<p>Once we've created the <code>sobel_edge_detection_plugin.zip</code> file, we can directly provide the archive to the
+    user and have them perform a local installation. The other option is to host the archive on a server and allow the
+    user to perform a remote installation such as the Linux user shown below.</p>
+
+<p class="centeredImage"><a href="images/fetch_sobel_plugin.png" rel="lightbox"><img src="images/fetch_sobel_plugin.png"
+                                                                                     width="429" height="344"
+                                                                                     title="Remote installation of Sobel plugin"></a>
+</p>
 </div>
 
 <script src="js/libs/jquery-1.7.2.min.js"></script>
