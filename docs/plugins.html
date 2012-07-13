@@ -12,6 +12,15 @@
 
 
     <link rel="stylesheet" href="css/bootstrap.css">
+    <style type="text/css">
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+    </style>
     <link href="css/lightbox.css" rel="stylesheet"/>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -34,7 +43,27 @@
     </div>
 
 </div>
-<div class="span10">
+<div class="container-fluid">
+<div class="row-fluid">
+<div class="span3">
+    <div class="well sidebar-nav">
+        <ul class="nav nav-list">
+            <li class="nav-header">Plugins For Users</li>
+            <li><a href="#user_install">Installation</a></li>
+            <li><a href="#user_running">Running</a></li>
+            <li class="nav-header">Plugins For Developers</li>
+            <li><a href="#dev_structure">Basic Plugin Structure</a></li>
+            <li><a href="#dev_distribution">Distributing Plugins</a></li>
+            <li><a href="#dev_languages">Plugins In Other Programming Languages</a></li>
+            <li><a href="#dev_ip">Intellectual Property Considerations</a></li>
+            <li class="nav-header">Sample Plugins</li>
+            <li><a href="#dev_sample_server">Communications With A Server</a></li>
+            <li><a href="#dev_sample_java">Java Backend</a></li>
+            <li><a href="#dev_sample_cpp">Extending With C++</a></li>
+        </ul>
+    </div><!--/.well -->
+</div><!--/span-->
+<div class="span9">
 <div class="hero-unit">
     <h1>Plugins</h1>
 
@@ -62,7 +91,7 @@
 
 <a name="user"><h2>Plugins For The End User</h2></a>
 
-<h3>Installation</h3>
+<a name="user_install"><h3>Installation</h3></a>
 
 <p>All NDIToolbox plugins must be installed under your plugins folder, which is a subfolder of your NDIToolbox local
     files folder. Remember from the <a href="quickstart.html">Quick Start</a> guide that this folder will be under
@@ -101,7 +130,7 @@
 <p class="centeredImage"><a href="images/download_plugin.png" rel="lightbox" title="Download Plugin Window"><img
         src="images/download_plugin.png" width="213" height="68"/></a></p>
 
-<h3>Running A Plugin</h3>
+<a name="user_running"><h3>Running A Plugin</h3></a>
 
 <p>Once a plugin has been successfully installed, you can run it simply by selecting it from the list of plugins.
     Under the <strong>Tools</strong> menu, select the <strong>Plugins</strong> submenu, then click the name of the
@@ -162,8 +191,10 @@
 
 <p>Plugins in NDIToolbox are typically written in <a href="http://www.python.org">Python</a>, specifically Python
     2.7. Provided you stick with the required structure of an NDIToolbox plugin (detailed below), you can write the
-    majority of your application in any programming language you like as long as the plugin wrapper conforms to the
-    NDIToolbox plugin standard. You may require additional steps to ensure that any ancillary distributables
+    majority of your application in <a href="#dev_languages">any programming language</a> you like as long as the plugin
+    wrapper conforms to the
+    <a href="#dev_structure">NDIToolbox plugin standard</a>. You may require additional steps to ensure that any
+    ancillary distributables
     (runtime engines, DLLs, etc.) are installed and available.</p>
 
 <p>If you stick to Python for your plugin, you have access to a variety of third-party libraries that are guaranteed
@@ -183,11 +214,9 @@
 
 <p>When a user plots a data file, NDIToolbox scans the user's <code>plugins</code> folder looking for valid plugins and
     automatically adds them to the <strong>Plugins</strong> submenu (under <strong>Tools</strong>) in the plot window.
-    When a user selects your plugin
-    to
-    run, NDIToolbox starts your code and configures it if necessary, then passes your program a copy of the data to
-    analyze. Your plugin does its work and makes a copy of the data to pass back to NDIToolbox, which updates the
-    plot with the results.</p>
+    When a user selects your plugin to run, NDIToolbox starts your code and configures it if necessary, then passes your
+    program a copy of the data to analyze. Your plugin does its work and makes a copy of the data to pass back to
+    NDIToolbox, which updates the plot with the results.</p>
 
 <p>The main entry point for a plugin (other than the plugin's <code>__init__</code> method) is its <code>run()</code>
     method. With a few restrictions (see below) you are generally free to structure your plugin as desired, but
@@ -198,22 +227,20 @@
     (possibly) new NumPy array. The plot is refreshed to show the new data to the user.</p>
 
 <p>NDIToolbox plugins must be installed in the user's <code>plugins</code> folder. Plugins can simply be copied over, or
-    if
-    you're working with a plugin archive (see below), NDIToolbox can do it for you.</p>
+    if you're working with a plugin archive (see below), NDIToolbox can do it for you.</p>
 
-<h3>Structure Of A Plugin</h3>
+<a name="dev_structure"><h3>Structure Of A Plugin</h3></a>
 
 <p>All NDIToolbox plugins must be a subclass of <code>AbstractPlugin</code> (<code>models/abstractplugin.py</code>), and
     must define a few key fields. For convenience
     you can subclass <code>CompanyPlugin</code> (itself a subclass of <code>AbstractPlugin</code>) instead to get
-    generic entries for these
-    fields if you don't want to set them yourself. If nothing else you should at least set the <code>name</code> field
-    to
-    something unique as this is the label your plugin is given in the <strong>Plugin</strong> menu.</p>
+    generic entries for these fields if you don't want to set them yourself. If nothing else you should at least set the
+    <code>name</code> field to something unique as this is the label your plugin is given in the
+    <strong>Plugin</strong> menu.</p>
+
 <ul>
     <li><code>data</code> property (get and set): NumPy array. NDIToolbox sets the <code>data</code> property on your
-        plugin on creation, and
-        reads it back to plot the results.
+        plugin on creation, and reads it back to plot the results.
     </li>
     <li><code>description</code>
     </li>
@@ -276,10 +303,10 @@ class NormalizePlugin(TRIPlugin):
     </pre>
 
 <p>In addition, if you define a dict named <code>config</code> in your plugin, NDIToolbox will show the user a
-    configuration dialog
-    with each option and allow the user to make changes to the defaults you set in your code. For example, here's the
-    code for the Median Filter plugin that ships with NDIToolbox. By default, the Median Filter will apply a median
-    filter of rank 3 to the current data set, but the user is free to specify any other size.</p>
+    configuration dialog with each option and allow the user to make changes to the defaults you set in your code. For
+    example, here's the code for the Median Filter plugin that ships with NDIToolbox. By default, the Median Filter will
+    apply a median filter of rank 3 to the current data set, but the user is free to specify any other size.</p>
+
     <pre class="pre-scrollable">
 """medfilter_plugin.py - applies a median filter to the current data set,
 used to demonstrate incorporating configuration options in an A7117 plugin
@@ -327,8 +354,8 @@ class MedianFilterPlugin(TRIPlugin):
 
     </pre>
 
-<p>When this plugin is run, NDIToolbox displays a window that allows the end user to change the filter size. The <code>name</code>
-    and <code>description</code> attributes you specify are also displayed in this window.</p>
+<p>When this plugin is run, NDIToolbox displays a window that allows the end user to change the filter size.
+    The <code>name</code> and <code>description</code> attributes you specify are also displayed in this window.</p>
 
 <p class="centeredImage"><a href="images/medfilter_config.png" rel="lightbox"
                             title="Median Filter Configuration Window"><img src="images/medfilter_config.png"
@@ -336,26 +363,27 @@ class MedianFilterPlugin(TRIPlugin):
 
 <p>There are few restrictions on what your plugin does or how you organize your code. The only hard restriction is that
     the <code>run()</code> method can't spawn subprocesses (threads are ok however) because NDIToolbox runs the plugin
-    in a separate
-    process. You might also find it tough to build a full GUI for a plugin because of this restriction. Generally you
-    should think of a plugin as a fairly small application; if you need more functionality a better home might be under
-    the main UI's <strong>Tools</strong> menu (as we've done with the <strong>POD Toolkit</strong> for example).</p>
+    in a separate process. You might also find it tough to build a full GUI for a plugin because of this restriction.
+    Generally you should think of a plugin as a fairly small application; if you need more functionality a better home
+    might be under the main UI's <strong>Tools</strong> menu (as we've done with the <strong>POD Toolkit</strong>
+    for example).</p>
 
-<h3>Distributing Plugins</h3>
+<a name="dev_distribution"><h3>Distributing Plugins</h3></a>
 
 <p>If you'd like to share your plugin with others you can simply send them the files, or if you have access to a server
     you can host a plugin archive and have NDIToolbox download and install it for them automatically. To host a plugin
     you'll need to make a ZIP archive of all its files, and the ZIP has to follow a few rules.</p>
+
 <ol>
     <li>The ZIP has to have the same basename as your plugin's main Python source file, e.g. if your plugin is named
         <code>super_filter_plugin.py</code>, the ZIP must be named <code>super_filter_plugin.zip</code>.
     </li>
     <li>The plugin's main Python source file must be in the root folder of the ZIP.
     </li>
-    <li>The ZIP must also contain an ASCII <code>readme</code> (or <code>README</code>, <code>readme.txt</code>, <code>README.TXT</code>)
-        file in the root folder of the
-        ZIP. If the user asks for more information about the plugin before installing, this is the file that's displayed
-        to them. You should summarize what it does, who wrote it, changelog, etc.
+    <li>The ZIP must also contain an ASCII <code>readme</code> (or <code>README</code>, <code>readme.txt</code>,
+        <code>README.TXT</code>) file in the root folder of the ZIP. If the user asks for more information about the
+        plugin before installing, this is the file that's displayed to them. You should summarize what it does, who
+        wrote it, changelog, etc.
     </li>
     <li>All other files you need to ship with your plugin must be in a subfolder, and the subfolder must have the same
         basename as the ZIP and the plugin's main source file. So for example if your plugin's Python file is
@@ -371,15 +399,16 @@ class MedianFilterPlugin(TRIPlugin):
         should be considered experimental.
     </li>
 </ol>
-<p>There's an example of the proper plugin archive structure under <code>models/tests/support_files/good_medfilter_plugin.zip</code>.
-    Remember that if your plugin uses Python libraries that aren't part of the default NDIToolbox installation, you are
-    responsible for ensuring these dependencies are installed and available. Consider building a full-fledged installer
-    or using standard Python tools such as <code>easy_install</code> or <code>pip</code>
-    if your application has extensive dependencies, rather than relying on the user. This helps avoid problems with
-    versions - your application ships with a known good structure, which can reduce your support and development costs.
+<p>There's an example of the proper plugin archive structure under
+    <code>models/tests/support_files/good_medfilter_plugin.zip</code>. Remember that if your plugin uses Python
+    libraries that aren't part of the default NDIToolbox installation, you are responsible for ensuring these
+    dependencies are installed and available. Consider building a full-fledged installer or using standard Python tools
+    such as <code>easy_install</code> or <code>pip</code> if your application has extensive dependencies, rather than
+    relying on the user. This helps avoid problems with versions - your application ships with a known good structure,
+    which can reduce your support and development costs.
 </p>
 
-<h3>Plugins In Other Languages</h3>
+<a name="dev_languages"><h3>Plugins In Other Languages</h3></a>
 
 <p>Once you've written a basic plugin subclassing <code>AbstractPlugin</code> and provided a <code>run()</code> method,
     you're free to use any other programming languages to write your toolkit. When using Python as a "wrapper" over
@@ -442,17 +471,15 @@ class MedianFilterPlugin(TRIPlugin):
     protocols (<a href="http://docs.python.org/library/json.html">docs.python.org/library/json.html</a> and <a
             href="http://docs.python.org/library/xmlrpclib.html">docs.python.org/library/xmlrpclib.html</a>
     respectively). Although this will require more Python development in your application, the bulk of your code can
-    still be in the
-    language of your choice.</p>
+    still be in the language of your choice.</p>
 
 <p>Building on the concept of JSON and similar communications mechanisms, you can also develop your plugin as a <a
-        href="http://en.wikipedia.org/wiki/Software_as_a_Service">Software
-    As A Service</a> application, in which the bulk of your code is hosted on a server and the local plugin communicates
-    with this server to provide functionality. Not only does this approach streamline the installation process if your
-    plugin relies on external dependencies, it also provides an additional layer of security if you are concerned about
-    protecting intellectual property (IP).</p>
+        href="http://en.wikipedia.org/wiki/Software_as_a_Service">Software As A Service</a> application, in which the
+    bulk of your code is hosted on a server and the local plugin communicates with this server to provide functionality.
+    Not only does this approach streamline the installation process if your plugin relies on external dependencies, it
+    also provides an additional layer of security if you are concerned about protecting intellectual property (IP).</p>
 
-<h3>Intellectual Property Considerations</h3>
+<a name="dev_ip"><h3>Intellectual Property Considerations</h3></a>
 
 <p>In general we recommend staying as open as possible with your toolkit. NDIToolbox is primarily an open source
     application in keeping with our goal to encourage collaboration in the field of NDI data analysis. No code
@@ -461,11 +488,10 @@ class MedianFilterPlugin(TRIPlugin):
 
 <p>If you do need to protect intellectual property in your application, your first line of defense is to ship only
     byte-compiled Python code (i.e. the <code>.pyc</code> files rather than the <code>.py</code> source code files).
-    This offers some level of
-    protection against casual observation, however the code can be disassembled to recover the original source code. The
-    situation is much the same as the one developers face in shipping Java or .NET code, save that both Java and .NET
-    have a number of code protection products available and as of this writing we have been unable to locate analogous
-    Python products.</p>
+    This offers some level of protection against casual observation, however the code can be disassembled to recover the
+    original source code. The situation is much the same as the one developers face in shipping Java or .NET code, save
+    that both Java and .NET have a number of code protection products available and as of this writing we have been
+    unable to locate analogous Python products.</p>
 
 <p>If possible, consider also factoring out your IP into C, C++, D, or Objective C; compiling; and then calling from
     your Python code with the Python C API or another suitable bridge. These languages create final products that are
@@ -479,7 +505,7 @@ class MedianFilterPlugin(TRIPlugin):
     has built-in support for remote procedure protocols such as JSON or XML-RPC, or you could implement a standard
     HTTP/HTTPS interface in much the same manner.</p>
 
-<h3>Example Plugin 1:  Server-Based</h3>
+<a name="dev_sample_server"><h3>Example Plugin 1: Server-Based</h3></a>
 
 <p>We've already seen example code for local plugins, now let's look at one way to keep code on the server. Consider a
     plugin designed to <a href="http://en.wikipedia.org/wiki/Edge_detection">detect edges</a> in a 2D image plot. SciPy
@@ -504,51 +530,51 @@ class MedianFilterPlugin(TRIPlugin):
     need:</p>
 
 <pre class="pre-scrollable">
-    #!/usr/bin/env python
-    """server.py - example of hosting NumPy functions on a server via XML-RPC
+#!/usr/bin/env python
+"""server.py - example of hosting NumPy functions on a server via XML-RPC
 
-    Chris R. Coughlin (TRI/Austin, Inc.)
-    """
+Chris R. Coughlin (TRI/Austin, Inc.)
+"""
 
-    # A modified version of the Python example code for SimpleXMLRPCServer
-    # http://docs.python.org/library/simplexmlrpcserver.html#module-SimpleXMLRPCServer
-    # Demonstrates one way to move large NumPy arrays between a client and server -
-    # client sends NumPy array, server performs calculations and returns results
-    from SimpleXMLRPCServer import SimpleXMLRPCServer
-    from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
-    from skimage import filter
-    import numpy as np
-    class RequestHandler(SimpleXMLRPCRequestHandler):
-        rpc_paths = ('/edge_detector',)
+# A modified version of the Python example code for SimpleXMLRPCServer
+# http://docs.python.org/library/simplexmlrpcserver.html#module-SimpleXMLRPCServer
+# Demonstrates one way to move large NumPy arrays between a client and server -
+# client sends NumPy array, server performs calculations and returns results
+from SimpleXMLRPCServer import SimpleXMLRPCServer
+from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
+from skimage import filter
+import numpy as np
+class RequestHandler(SimpleXMLRPCRequestHandler):
+    rpc_paths = ('/edge_detector',)
 
-    # Create server
-    server = SimpleXMLRPCServer(("", 8000),
-                                requestHandler=RequestHandler)
-    server.register_introspection_functions()
+# Create server
+server = SimpleXMLRPCServer(("", 8000),
+                            requestHandler=RequestHandler)
+server.register_introspection_functions()
 
-    def sobel_edges(arr_as_list):
-        """Applies the Sobel operator to the provided data,
-        returns the edges detected.  Use numpy.array(returned_data) to
-        produce NumPy array."""
-        an_array = np.array(arr_as_list)
-        edges = filter.sobel(an_array)
-        return edges.tolist()
-    server.register_function(sobel_edges, 'sobel_edges')
+def sobel_edges(arr_as_list):
+    """Applies the Sobel operator to the provided data,
+    returns the edges detected.  Use numpy.array(returned_data) to
+    produce NumPy array."""
+    an_array = np.array(arr_as_list)
+    edges = filter.sobel(an_array)
+    return edges.tolist()
+server.register_function(sobel_edges, 'sobel_edges')
 
-    def canny_edges(arr_as_list, std_dev="1.0", low_t="0.1", high_t="0.2"):
-        """Applies the Canny algorithm to the provided data,
-        returns the edges detected.  Use numpy.array(returned_data) to
-        produce NumPy array."""
-        an_array = np.array(arr_as_list)
-        sigma = float(std_dev)
-        low_threshold = float(low_t)
-        high_threshold = float(high_t)
-        edges = filter.canny(an_array, sigma, low_threshold, high_threshold)
-        return edges.tolist()
-    server.register_function(canny_edges, 'canny_edges')
+def canny_edges(arr_as_list, std_dev="1.0", low_t="0.1", high_t="0.2"):
+    """Applies the Canny algorithm to the provided data,
+    returns the edges detected.  Use numpy.array(returned_data) to
+    produce NumPy array."""
+    an_array = np.array(arr_as_list)
+    sigma = float(std_dev)
+    low_threshold = float(low_t)
+    high_threshold = float(high_t)
+    edges = filter.canny(an_array, sigma, low_threshold, high_threshold)
+    return edges.tolist()
+server.register_function(canny_edges, 'canny_edges')
 
-    # Run the server's main loop
-    server.serve_forever()
+# Run the server's main loop
+server.serve_forever()
 </pre>
 
 <p>The server starts up and stays running; listening for client connections on port 8000. A client sends a NumPy array
@@ -561,40 +587,40 @@ class MedianFilterPlugin(TRIPlugin):
     NDIToolbox might look like this:</p>
 
 <pre class="pre-scrollable">
-    """sobel_edge_detection_plugin.py - simple A7117 plugin that demonstrates
-    XML-RPC communication by returning edges found in an image
+"""sobel_edge_detection_plugin.py - simple A7117 plugin that demonstrates
+XML-RPC communication by returning edges found in an image
 
-    Chris R. Coughlin (TRI/Austin, Inc.)
-    """
+Chris R. Coughlin (TRI/Austin, Inc.)
+"""
 
-    __author__ = 'Chris R. Coughlin'
+__author__ = 'Chris R. Coughlin'
 
-    from models.abstractplugin import TRIPlugin
-    import numpy as np
-    import xmlrpclib
+from models.abstractplugin import TRIPlugin
+import numpy as np
+import xmlrpclib
 
-    class SobelPlugin(TRIPlugin):
-        """Returns absolute magnitude Sobel to find edges in an image
-        http://en.wikipedia.org/wiki/Sobel_operator"""
+class SobelPlugin(TRIPlugin):
+    """Returns absolute magnitude Sobel to find edges in an image
+    http://en.wikipedia.org/wiki/Sobel_operator"""
 
-        name = "Sobel Edge Detection"
-        description = "Applies the Sobel operator to the current data to detect edges"
-        authors = "Chris R. Coughlin (TRI/Austin, Inc.)"
-        version = "1.0"
-        url = "www.tri-austin.com"
-        copyright = "Copyright (C) 2012 TRI/Austin, Inc.  All rights reserved."
+    name = "Sobel Edge Detection"
+    description = "Applies the Sobel operator to the current data to detect edges"
+    authors = "Chris R. Coughlin (TRI/Austin, Inc.)"
+    version = "1.0"
+    url = "www.tri-austin.com"
+    copyright = "Copyright (C) 2012 TRI/Austin, Inc.  All rights reserved."
 
-        def __init__(self):
-            super(SobelPlugin, self).__init__(self.name, self.description,
-                                                  self.authors, self.url, self.copyright)
-            self.config = {'server_url':'http://172.16.100.2:8000/edge_detector'}
-            self.srvr = xmlrpclib.ServerProxy(self.config['server_url'])
+    def __init__(self):
+        super(SobelPlugin, self).__init__(self.name, self.description,
+                                              self.authors, self.url, self.copyright)
+        self.config = {'server_url':'http://172.16.100.2:8000/edge_detector'}
+        self.srvr = xmlrpclib.ServerProxy(self.config['server_url'])
 
-        def run(self):
-            """Executes the plugin - returns a new NumPy array with
-            edges detected in original data"""
-            if self._data is not None:
-                self._data = self.srvr.sobel_edges(self._data.astype(np.float64).tolist())
+    def run(self):
+        """Executes the plugin - returns a new NumPy array with
+        edges detected in original data"""
+        if self._data is not None:
+            self._data = self.srvr.sobel_edges(self._data.astype(np.float64).tolist())
 </pre>
 
 <p>The only configuration option we require in this case is a pointer to the edge detection server's URL; you could
@@ -613,46 +639,46 @@ class MedianFilterPlugin(TRIPlugin):
     the plugin's <code>config</code> dict so that the user can provide arguments to the server:</p>
 
 <pre class="pre-scrollable">
-    """canny_edge_detection_plugin.py - simple A7117 plugin that demonstrates
-    XML-RPC communication by returning edges found in an image
+"""canny_edge_detection_plugin.py - simple A7117 plugin that demonstrates
+XML-RPC communication by returning edges found in an image
 
-    Chris R. Coughlin (TRI/Austin, Inc.)
+Chris R. Coughlin (TRI/Austin, Inc.)
+"""
+
+__author__ = 'Chris R. Coughlin'
+
+from models.abstractplugin import TRIPlugin
+import numpy as np
+import xmlrpclib
+
+class CannyPlugin(TRIPlugin):
+    """Detects edges in an image with the Canny algorithm
+    http://en.wikipedia.org/wiki/Canny_edge_detector
     """
 
-    __author__ = 'Chris R. Coughlin'
+    name = "Canny Edge Detection"
+    description = "Applies the Canny algorithm to the current data to detect edges"
+    authors = "Chris R. Coughlin (TRI/Austin, Inc.)"
+    version = "1.0"
+    url = "www.tri-austin.com"
+    copyright = "Copyright (C) 2012 TRI/Austin, Inc.  All rights reserved."
 
-    from models.abstractplugin import TRIPlugin
-    import numpy as np
-    import xmlrpclib
+    def __init__(self):
+        super(CannyPlugin, self).__init__(self.name, self.description,
+                                              self.authors, self.url, self.copyright)
+        self.config = {'sigmas':1,
+            'low_threshold':0.1,
+            'high_threshold':0.2,
+            'server_url':'http://172.16.100.2:8000/edge_detector'}
+        self.srvr = xmlrpclib.ServerProxy(self.config['server_url'])
 
-    class CannyPlugin(TRIPlugin):
-        """Detects edges in an image with the Canny algorithm
-        http://en.wikipedia.org/wiki/Canny_edge_detector
-        """
-
-        name = "Canny Edge Detection"
-        description = "Applies the Canny algorithm to the current data to detect edges"
-        authors = "Chris R. Coughlin (TRI/Austin, Inc.)"
-        version = "1.0"
-        url = "www.tri-austin.com"
-        copyright = "Copyright (C) 2012 TRI/Austin, Inc.  All rights reserved."
-
-        def __init__(self):
-            super(CannyPlugin, self).__init__(self.name, self.description,
-                                                  self.authors, self.url, self.copyright)
-            self.config = {'sigmas':1,
-                'low_threshold':0.1,
-                'high_threshold':0.2,
-                'server_url':'http://172.16.100.2:8000/edge_detector'}
-            self.srvr = xmlrpclib.ServerProxy(self.config['server_url'])
-
-        def run(self):
-            """Executes the plugin - returns a new NumPy array with
-            edges detected in original data"""
-            if self._data is not None:
-                self._data = self.srvr.canny_edges(self._data.astype(np.float64).tolist(),
-                    self.config['sigmas'], self.config['low_threshold'],
-                    self.config['high_threshold'])
+    def run(self):
+        """Executes the plugin - returns a new NumPy array with
+        edges detected in original data"""
+        if self._data is not None:
+            self._data = self.srvr.canny_edges(self._data.astype(np.float64).tolist(),
+                self.config['sigmas'], self.config['low_threshold'],
+                self.config['high_threshold'])
 </pre>
 
 <p class="centeredImage"><a href="images/canny_edge_one.png" rel="lightbox[canny]"
@@ -674,11 +700,11 @@ class MedianFilterPlugin(TRIPlugin):
     <code>sobel_edge_detection_plugin.py</code> and a README to the archive such as the following.</p>
 
 <pre class="pre-scrollable">
-    # README Contents
-    Sobel Edge Detection - returns detected edges in image plot data
-    Chris R. Coughlin (TRI/Austin, Inc.)
-    www.tri-austin.com
-    Uses the Sobel operation (http://en.wikipedia.org/wiki/Sobel_operator) to detect edges in 2D data.
+# README Contents
+Sobel Edge Detection - returns detected edges in image plot data
+Chris R. Coughlin (TRI/Austin, Inc.)
+www.tri-austin.com
+Uses the Sobel operation (http://en.wikipedia.org/wiki/Sobel_operator) to detect edges in 2D data.
 </pre>
 
 <p>Once we've created the <code>sobel_edge_detection_plugin.zip</code> file, we can directly provide the archive to the
@@ -689,8 +715,665 @@ class MedianFilterPlugin(TRIPlugin):
                                                                                      width="429" height="344"
                                                                                      title="Remote installation of Sobel plugin"></a>
 </p>
+
+<a name="dev_sample_java"><h3>Example Plugin 2: Java</h3></a>
+
+<p>As the first example of using other programming languages in NDIToolbox plugins, consider the case that you have
+    pre-existing data analysis code written in Java and rather than attempt to port to Python you'd like a relatively
+    easy way to re-use your existing Java code.</p>
+
+<p>Suppose that we have written a standard Java library <code>ToolboxDemoLib.jar</code> with a <code>BasicStats</code>
+    class that we'd like to call from Python:</p>
+
+<b>BasicStats.java</b>
+<pre class="pre-scrollable">
+package stats;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ * @author ccoughlin
+ */
+public class BasicStats {
+
+    public static double calcMin(List&lt;double&gt; dataList) {
+        double minVal = dataList.get(0);
+        for (double el:dataList) {
+            if (el < minVal) {
+                minVal = el;
+            }
+        }
+        return minVal;
+    }
+
+    public static double calcMax(List&lt;double&gt; dataList) {
+        double maxVal = dataList.get(0);
+        for (double el:dataList) {
+            if (el > maxVal) {
+                maxVal = el;
+            }
+        }
+        return maxVal;
+    }
+
+    public static List&lt;double&gt; normalizedData(List&lt;double&gt; dataList) {
+        double maxValue = calcMax(dataList);
+        List&lt;double&gt; normData = new ArrayList<>(dataList.size());
+        for (double el:dataList) {
+            normData.add(el/maxValue);
+        }
+        return normData;
+    }
+}
+</pre>
+
+<p>The primary difficulty in using other programming languages with NDIToolbox is in dealing with NumPy arrays. Although
+    numerous bridges between Python and other languages exist, for the most part NumPy arrays are not directly
+    supported. The most straightforward way to deal with the <code>data</code> arrays your plugin will receive and send
+    is to convert to and from standard Python <code>lists</code>, which are well supported.</p>
+
+<p>Going back to our scenario, there are several ways to connect Python and Java code. We've decided to go with <a
+        href="http://www.jython.org">Jython</a> in this case as it is an active and fairly well-supported project.
+    Jython also allows us to make more use of existing NDIToolbox plugin code: as a nearly-compatible Python
+    implementation running on the JVM, we can use large portions of the existing <code>.py</code> we've used elsewhere
+    in this document.</p>
+
+<p>There are two basic ways to use Jython in this scenario: embed Python code in an existing Java application, or load
+    Java code into a Python application. If your Java code is a full-blown application, you would probably want to embed
+    Jython in the application to have it interact with the plugin front-end. In this case however, our Java code is
+    simple enough that it's more convenient to call it from a Jython instance. To do this, build the project as usual to
+    get <code>ToolboxDemoLib.jar</code>. Following the <a
+            href="http://wiki.python.org/jython/InstallationInstructions#standalone-mode">Jython installation
+        instructions</a>, build a self-contained <code>jython.jar</code> and copy <code>ToolboxDemoLib.jar</code> to
+    this folder. The Jython interpreter will then be able to import your Java library with the following:</p>
+
+<pre class="pre-scrollable">
+import sys
+sys.path.append("ToolboxDemoLib.jar")
+from stats import BasicStats
+</pre>
+
+<p>As it stands, running the above code in Jython would make our Java code available to any subsequent code, but we
+    still need to connect Jython with Python. Again, there are several ways to accomplish this but one way is to recycle
+    the XML-RPC code we used earlier: if we create a <code>server.py</code> file to run in Jython, it can then respond
+    to <code>client.py</code> XML-RPC requests from Python. Since Jython is mostly compatible with Python this code will
+    look very similar to the code we used previously to demonstrate plugin communications with a server backend.</p>
+
+<pre class="pre-scrollable">
+"""server.py - example of hosting Java functions on a server via XML-RPC
+
+Chris R. Coughlin (TRI/Austin, Inc.)
+"""
+
+import sys
+sys.path.append("ToolboxDemoLib.jar")
+from stats import BasicStats
+from SimpleXMLRPCServer import SimpleXMLRPCServer
+from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
+
+class RequestHandler(SimpleXMLRPCRequestHandler):
+    rpc_paths = ('/basic_stats',)
+
+server = SimpleXMLRPCServer(("", 8000),
+                            requestHandler=RequestHandler)
+server.register_introspection_functions()
+
+# Not strictly necessary here since all the methods are static,
+# provided to demonstrate instantiation of Java classes
+calculator = BasicStats()
+
+def min(arr):
+    """Returns the minimum of an array as a double"""
+    converted_arr = [float(el) for el in arr]
+    return BasicStats.calcMin(converted_arr)
+server.register_function(min, 'min')
+
+def min2d(arr):
+    """Returns the minimum of a 2D array as a double"""
+    min_val = sys.float_info.max
+    for row in arr:
+        row_min = min(row)
+        if row_min < min_val:
+            min_val = row_min
+    return min_val
+server.register_function(min2d, 'min2d')
+
+def max(arr):
+    """Returns the maximum of an array as a double"""
+    converted_arr = [float(el) for el in arr]
+    return BasicStats.calcMax(converted_arr)
+server.register_function(max, 'max')
+
+def max2d(arr):
+    """Returns the maximum of a 2D array as a double"""
+    max_val = sys.float_info.min
+    for row in arr:
+        row_min = max(row)
+        if row_min > max_val:
+            max_val = row_min
+    return max_val
+server.register_function(max2d, 'max2d')
+
+def normalize(arr):
+    """Returns the normalized input array.  Elements are
+    converted to floating point if required."""
+    converted_arr = [float(el) for el in arr]
+    return list(calculator.normalizedData(converted_arr))
+server.register_function(normalize, 'normalize')
+
+def normalize2d(arr):
+    """Returns the normalized 2D input array.  Elements are
+    converted to floating point if required."""
+    normalized_data = []
+    for row in arr:
+        normalized_row = normalize(row)
+        normalized_data.append(normalized_row)
+    return normalized_data
+server.register_function(normalize2d, 'normalize2d')
+
+# Run the server's main loop
+server.serve_forever()
+</pre>
+
+<p>To run this code we simply run <code>jython.jar</code> as a standard Java JAR, and provide it with the name of the
+    script, e.g. <code>java -jar jython.jar server.py</code>. Note that Jython does a lot of the work for us in
+    conversion, e.g. automatically handling the conversion between Python's <code>lists</code> and our Java code's
+    <code>ArrayList</code>. We have had to make a few adjustments to our original server code since NumPy does not run
+    on Jython, most notably that we now have to convert to and from NumPy arrays on a row-by-row basis.</p>
+
+<p>Similarly, the plugin's frontend code will look familiar:</p>
+
+<pre class="pre-scrollable">
+"""jython_normalize_plugin.py - simple A7117 plugin that demonstrates
+XML-RPC communication with Java code on the server
+
+Chris R. Coughlin (TRI/Austin, Inc.)
+"""
+
+__author__ = 'Chris R. Coughlin'
+
+from models.abstractplugin import TRIPlugin
+import numpy as np
+import xmlrpclib
+
+class JythonNormalizePlugin(TRIPlugin):
+    """Normalizes the data"""
+
+    name = "Jython Normalize" # Name in the Plugin menu
+    description = "Demonstrates communication with a Java backend"
+    authors = "Chris R. Coughlin (TRI/Austin, Inc.)"
+    version = "1.0"
+    url = "www.tri-austin.com"
+    copyright = "Copyright (C) 2012 TRI/Austin, Inc.  All rights reserved."
+
+    def __init__(self):
+        super(JythonNormalizePlugin, self).__init__(self.name, self.description,
+                                              self.authors, self.url, self.copyright)
+        self.config = {'server_url':'http://127.0.0.1:8000/basic_stats'}
+        self.srvr = xmlrpclib.ServerProxy(self.config['server_url'])
+
+    def run(self):
+        """Executes the plugin - if data are not None they are normalized
+        against the largest single element in the array."""
+        if self._data is not None:
+            if self._data.ndim == 1:
+                self._data = np.array(self.srvr.normalize(self._data.tolist()))
+            elif self._data.ndim == 2:
+                self._data = np.array(self.srvr.normalize2d(self._data.tolist()))
+</pre>
+
+<p>The only major difference in this plugin compared to the previous XML-RPC example is that in this case the plugin
+    defaults to assuming the Jython XML-RPC server is running on the local machine. You can of course run the Jython
+    server on a different machine, and in fact this may be preferable if you would prefer to work in a known good
+    environment and/or don't want to require users to have Java installed on their machine.</p>
+
+<a name="dev_sample_cpp"><h3>Example Plugin 3: Extending With C++</h3></a>
+
+<p>As an example of how to write extensions in C++ for Python, let's suppose that the <a href="#dev_sample_java">Java
+    library</a> shown above was instead a C++ library, and we would like to use it from Python. Rather than going the
+    XML-RPC route, we'd like to compile a C++ extension that Python can call directly. Extending Python with C or C++
+    code is relatively straightforward on POSIX (OS X, Linux, FreeBSD, etc.) platforms, but can be tricky on Windows
+    machines. Quoting from the
+    <a href="http://docs.python.org/extending/windows.html#differences-between-unix-and-windows">official Python documentation on the process</a>:</p>
+
+<div class="well">
+    <em>"Windows Python is built in Microsoft Visual C++; using other compilers may or may not work."</em>
 </div>
 
+<p>In general, you should use the same compiler and version of compiler to build your extension as was used to build
+    Python itself. If you are using a different compiler, you may need to build Python from source in order for your
+    extension to function properly. In this example, we will demonstrate using <a
+            href="http://www.boost.org/doc/libs/1_50_0/libs/python/doc/">Boost.Python</a> to build a C++ extension for
+    Windows machines using Visual Studio 2008 and Python 2.7. If you expect your C++ extension to be used on other
+    operating systems, you will need to become familiar with the C/C++ compiler used on that OS (e.g. <a
+            href="http://gcc.gnu.org/">GCC</a> or <a href="http://llvm.org/">LLVM</a>). For an example of how to use <a
+            href="http://www.swig.org/">SWIG</a> to build a C++ extension on Linux machines with GCC, NDIToolbox's
+    developer has <a href="http://www.chriscoughlin.com/2011/08/swig-and-python/">provided an example on his website</a>
+    that isn't specific to NDIToolbox but may still prove useful.</p>
+
+<b>basicstats.h</b>
+<pre class="pre-scrollable">
+#pragma once
+#include &lt;vector&gt;
+
+class BasicStats
+{
+public:
+    BasicStats(void) {};
+    virtual ~BasicStats(void) {};
+    double calcMin(const std::vector&lt;double&gt;& dataList);
+    double calcMax(const std::vector&lt;double&gt;& dataList);
+    std::vector&lt;double&gt; normalizedData(const std::vector&lt;double&gt;& dataList);
+    std::vector&lt;std::vector&lt;double&gt;&gt; normalizedData(const std::vector&lt;std::vector&lt;double&gt;&gt;& dataList);
+};
+</pre>
+
+<b>basicstats.cpp</b>
+<pre class="pre-scrollable">
+#include "StdAfx.h"
+#include "BasicStats.h"
+
+double BasicStats::calcMin(const std::vector&lt;double&gt;& dataList) {
+    double minVal = dataList[0];
+    for (std::vector&lt;double&gt;::const_iterator iter=dataList.begin(); iter!=dataList.end(); ++iter) {
+        if (*iter &lt; minVal) {
+            minVal = *iter;
+        }
+    }
+    return minVal;
+}
+
+double BasicStats::calcMax(const std::vector&lt;double&gt;& dataList) {
+    double maxVal = dataList[0];
+    for (std::vector&lt;double&gt;::const_iterator iter=dataList.begin(); iter!=dataList.end(); ++iter) {
+        if (*iter &gt; maxVal) {
+            maxVal = *iter;
+        }
+    }
+    return maxVal;
+}
+
+std::vector&lt;double&gt; BasicStats::normalizedData(const std::vector&lt;double&gt; &dataList) {
+    double maxValue = calcMax(dataList);
+    std::vector&lt;double&gt; normData;
+    for (std::vector&lt;double&gt;::const_iterator iter=dataList.begin(); iter!=dataList.end(); ++iter) {
+        normData.push_back(*iter/maxValue);
+    }
+    return normData;
+}
+
+std::vector&lt;std::vector&lt;double&gt;&gt; BasicStats::normalizedData(const std::vector&lt;std::vector&lt;double&gt;&gt; &dataList) {
+    std::vector&lt;std::vector&lt;double&gt;&gt; normData;
+    for (std::vector&lt;std::vector&lt;double&gt;&gt;::const_iterator iter=dataList.begin(); iter!=dataList.end(); ++iter) {
+        std::vector&lt;double&gt; normalizedRow = normalizedData(*iter);
+        normData.push_back(normalizedRow);
+    }
+    return normData;
+}
+</pre>
+
+<p>One slight difference here from the previous Java code - we've included a method that handles 2D data. In the Java
+    example we handled this in the Python code-you can use either approach based on personal preferences, benchmarking,
+    etc.</p>
+
+<p>Although you can use Boost.Python from within the Visual Studio IDE, it's actually easier to compile the extension
+    using <a href="http://www.boost.org/doc/libs/1_50_0/tools/build/index.html">Boost.Build</a> from the command line,
+    so that's the approach we'll use here. <a
+            href="http://www.boost.org/doc/libs/1_50_0/libs/python/doc/tutorial/doc/html/python/hello.html">Quoting from
+        the Boost.Python documentation</a>:</p>
+
+<div class="well">
+    <em>"Besides bjam, there are of course other ways to get your module built. What's written here should not be taken as
+    'the one and only way'. There are of course other build tools apart from bjam."<br />
+    <br />
+    "Take note however that the preferred build tool for Boost.Python is bjam. There are so many ways to set up the build
+    incorrectly. Experience shows that 90% of the 'I can't build Boost.Python' problems come from people who had to use
+    a different tool."</em>
+</div>
+
+<p>Begin by <a href="http://www.boost.org/users/download/">downloading</a> the latest version of Boost, and extract it
+    to a folder of your choice. Following the <a
+            href="http://www.boost.org/doc/libs/1_50_0/more/getting_started/windows.html">Getting Started On Windows</a>
+    guide, start by building the Boost lib by opening a command prompt in the folder you've extracted the Boost source
+    to and issue the following commands:</p>
+
+<pre class="pre-scrollable">
+bootstrap
+.\b2
+</pre>
+
+<p>Strictly speaking this step isn't necessary since it builds all the components of Boost that require compilation
+    (i.e., not just Boost.Python), but it doesn't take very long and it's a good test to ensure that your compiler and
+    Boost download are set up properly.</p>
+
+<p>Looking at the <a href="http://www.boost.org/doc/libs/1_50_0/libs/python/doc/tutorial/doc/html/python/hello.html">Boost.Python
+    documentation</a>, the next step is in creating a config file that configures the Boost <a
+        href="http://www.boost.org/boost-build2/doc/html/bbv2/jam.html">bjam</a> tool's compilation for your setup. This
+    file is a simple text file and in our case we really only need it to a) configure our compiler and b) set
+    the version of Python we're using. In our <code>$HOME</code> folder (e.g.
+    <code>c:\users\chris</code> in Windows 7 or <code>/home/chris</code> under Linux), we'd create a file named <code>user-config.jam</code>
+    that looks like the following:</p>
+
+<b>user-config.jam - config file for building Python 2.7 extensions using Visual Studio 2008</b>
+<pre class="pre-scrollable">
+#  MSVC configuration
+using msvc : 9.0 ;
+
+#  Python configuration
+using python : 2.7 : C:/Python27 ;
+</pre>
+
+<p>Although the Boost.Python documentation recommends putting the bjam tool somewhere in your <code>$PATH</code> so it
+    can be found on the command-line, it's just as easy to create a batch file <code>bjam.bat</code> that points to the
+    bjam executable. A batch file is also a good choice because we need to set an environment variable <code>BOOST_BUILD_PATH</code>
+    prior to compilation; putting it in the batch file saves trying to remember to set it every time we want to
+    recompile. Set <code>BOOST_BUILD_PATH</code> to the folder that you've extracted Boost to; the <code>bjam</code>
+    tool is normally in the root of this folder. For example, if you have extracted the Boost source code to <code>C:\Users\CRC\src\cxx\boost_1_50_0</code>,
+    your <code>bjam.bat</code> file would look like this:</p>
+
+<b>bjam.bat</b>
+<pre class="pre-scrollable">
+@echo off
+set BOOST_BUILD_PATH=C:\Users\CRC\src\cxx\boost_1_50_0\
+C:\Users\CRC\src\cxx\boost_1_50_0\bjam
+</pre>
+
+<p>Save the <code>bjam.bat</code> file to the folder you're using for your toolbox source code (i.e., where your C++
+    extension files are located). Next, we create a Jamroot file (similar to a Makefile) that details how our project is
+    built. This file is also stored in the toolbox source code root folder; an example for this particular project
+    <code>basicstats</code> is shown below.</p>
+
+<pre class="pre-scrollable">
+# Copyright David Abrahams 2006. Distributed under the Boost
+# Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+import python ;
+
+if ! [ python.configured ]
+{
+    ECHO "notice: no Python configured in user-config.jam" ;
+    ECHO "notice: will use default configuration" ;
+    using python ;
+}
+
+# Specify the path to the Boost project.  If you move this project,
+# adjust this path to refer to the Boost root directory.
+use-project boost
+  : C:/Users/CRC/src/cxx/boost_1_50_0 ;
+
+# Set up the project-wide requirements that everything uses the
+# boost_python library from the project whose global ID is
+# /boost/python.
+project
+  : requirements &lt;library&gt;/boost/python//boost_python ;
+
+    # Declare the three extension modules.  You can specify multiple
+    # source files after the colon separated by spaces.
+    python-extension basicstats_ext : basicstats.cpp ;
+
+    # Put the extension and Boost.Python DLL in the current directory, so
+    # that running script by hand works.
+    install convenient_copy
+    : basicstats_ext
+    : &lt;install-dependencies&gt;on &lt;install-type&gt;SHARED_LIB &lt;install-type&gt;PYTHON_EXTENSION
+        &lt;location&gt;.
+            ;
+
+            # A little "rule" (function) to clean up the syntax of declaring tests
+            # of these extension modules.
+            local rule run-test ( test-name : sources + )
+            {
+            import testing ;
+            testing.make-test run-pyd : $(sources) : : $(test-name) ;
+            }
+
+            # Declare test targets
+            run-test basicstats : basicstats_ext basicstats.py ;
+</pre>
+
+<p>If you're just building a basic C++ extension, you can copy-paste this example as-is with a few modifications. In
+    particular, we're calling our module <code>basicstats</code> so you'll want to edit your Jamroot if you're using a
+    different name (e.g. replace "basicstats" in the above with your project name).</p>
+
+<p>That's it for defining the basic project; you can find another example of setting up a project from Boost.Python's <a
+        href="http://www.boost.org/doc/libs/1_50_0/libs/python/doc/tutorial/doc/html/python/hello.html">Hello,
+    World!</a> example. Next, our original C++ code needs to be modified slightly - as it stands right now it expects to
+    be dealing with conventional C++ <code>std::vector&lt;double&gt;</code> containers, but our code will need to handle
+    Python <code>lists</code> instead. The most straightforward way of dealing with this change is by changing the C++
+    code to use Boost.Python's <code>boost::python::list</code> container.  Here's the updated version.</p>
+
+<b>basicstats.h</b>
+<pre class="pre-scrollable">
+#pragma once
+#include &lt;vector&gt;
+#include &lt;boost/python.hpp&gt;
+#include &lt;boost/python/module.hpp&gt;
+#include &lt;boost/python/def.hpp&gt;
+
+class BasicStats
+{
+public:
+    BasicStats(void) {};
+    virtual ~BasicStats(void) {};
+    double calcMin(boost::python::list& dataList);
+    double calcMax(boost::python::list& dataList);
+    boost::python::list normalizedData(boost::python::list& dataList);
+    boost::python::list normalized2DData(boost::python::list& dataList);
+};
+</pre>
+
+<b>basicstats.cpp</b>
+<pre class="pre-scrollable">
+#include "BasicStats.h"
+
+double BasicStats::calcMin(boost::python::list& dataList) {
+	double minVal = boost::python::extract&lt;double&gt;(dataList[0]);
+    for (int iter=0; iter&lt;len(dataList); ++iter) {
+        double el_value = boost::python::extract&lt;double&gt;(dataList[iter]);
+        if (el_value < minVal) {
+            minVal = el_value;
+        }
+    }
+    return minVal;
+}
+
+double BasicStats::calcMax(boost::python::list& dataList) {
+    double maxVal = boost::python::extract&lt;double&gt;(dataList[0]);
+    for (int iter=0; iter&lt;len(dataList); ++iter) {
+        double el_value = boost::python::extract&lt;double&gt;(dataList[iter]);
+        if (el_value > maxVal) {
+            maxVal = el_value;
+        }
+    }
+    return maxVal;
+}
+
+boost::python::list BasicStats::normalizedData(boost::python::list& dataList) {
+    double maxValue = calcMax(dataList);
+    boost::python::list normData;
+    for (int iter=0; iter&lt;len(dataList); ++iter) {
+        double el_value = boost::python::extract&lt;double&gt;(dataList[iter]);
+        normData.append(el_value/maxValue);
+    }
+   return normData;
+}
+
+boost::python::list BasicStats::normalized2DData(boost::python::list& dataList) {
+    boost::python::list normData;
+    for (int iter=0; iter&lt;len(dataList); ++iter) {
+        boost::python::list normalizedRow = normalizedData(boost::python::list(dataList[iter]));
+		normData.append(normalizedRow);
+    }
+   return normData;
+}
+</pre>
+
+<p>One thing to note in this code is the <code>normalized2DData</code> method we're using to normalize 2D arrays, in
+    particular the creation of a <code>boost::python::list</code> to send to the 1D <code>normalizedData</code> method.
+    To handle Python's dynamic nature, Boost.Python treats everything as a generic Python object so our code needs to
+    create a Python <code>list</code> to pass to <code>normalizedData</code>.</p>
+
+<p>If you'd prefer not to convert your code to use lists (e.g. if you expect to continue using it in other
+    applications), you can of course write an <a href="http://en.wikipedia.org/wiki/Adapter_pattern">adapter class</a>
+    to convert to and from your code. Consult the Boost.Python documentation for details on converting between C++ and
+    Python.</p>
+
+<p>Now that the C++ data analysis library has been modified to work with Python, the only thing left to do is to define
+    our library's Python API. Add the following to <code>basicstats.cpp</code>:</p>
+
+<pre class="pre-scrollable">
+// Demo of exposed function
+char const* version()
+{
+   return "BasicStats v0.1.1";
+}
+
+BOOST_PYTHON_MODULE(basicstats_ext)
+{
+    using namespace boost::python;
+    def("version", version);
+    class_&lt;BasicStats&gt;("BasicStats")
+    .def("calcMin", &BasicStats::calcMin)
+    .def("calcMax", &BasicStats::calcMax)
+    .def("normalize", &BasicStats::normalizedData)
+    .def("normalize2d", &BasicStats::normalized2DData)
+    ;
+}
+</pre>
+
+<p>This addition creates the API that Python will see from our extension library: a class <code>BasicStats</code> with
+    methods <code>calcMin</code>, <code>calcMax</code>, <code>normalizedData</code>, and <code>normalized2DData</code>; and a function
+    <code>version</code> that we've added to illustrate how to expose standalone C++ functions in the API. This
+    completes the project so the only thing left to do is run <code>bjam</code> in our toolkit's source code folder to
+    compile our new Python module <code>basicstats_ext.pyd</code> (basically a renamed .DLL).  You should see output similar to the following if all goes well.</p>
+
+<pre class="pre-scrollable">
+C:\Users\CRC\src\cxx\toolbox_demo>bjam
+...patience...
+...patience...
+...found 1715 targets...
+...updating 7 targets...
+compile-c-c++ bin\msvc-9.0\debug\threading-multi\basicstats.obj
+basicstats.cpp
+msvc.link.dll bin\msvc-9.0\debug\threading-multi\basicstats_ext.pyd
+   Creating library bin\msvc-9.0\debug\threading-multi\basicstats_ext.lib and object bin\msvc-9.0\debug\threading-multi\basicstats_ext.exp
+msvc.manifest.dll bin\msvc-9.0\debug\threading-multi\basicstats_ext.pyd
+common.copy basicstats_ext.pyd
+bin\msvc-9.0\debug\threading-multi\basicstats_ext.pyd
+        1 file(s) copied.
+capture-output bin\basicstats.test\msvc-9.0\debug\threading-multi\basicstats
+        1 file(s) copied.
+**passed** bin\basicstats.test\msvc-9.0\debug\threading-multi\basicstats.test
+...updated 7 targets...
+</pre>
+
+<p>To see the new C++ module in action, you can create a simple Python script to call it:</p>
+
+<pre class="pre-scrollable">
+import basicstats_ext
+
+# Making calls to standalone functions
+print("Requesting version info...{0}".format(basicstats_ext.version()))
+
+# Create sample data to test-drive the calculations
+demo_data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+# Instantiating our C++ BasicStats class
+calculator = basicstats_ext.BasicStats()
+
+print("Min value={0}".format(calculator.calcMin(demo_data)))
+print("Max value={0}".format(calculator.calcMax(demo_data)))
+
+# Receiving a list
+print("Normalized data:\n")
+normalized_data = calculator.normalize(demo_data)
+print(normalized_data)
+</pre>
+
+<p>To create an NDIToolbox plugin from this new C++ extension, copy <code>basicstats_ext.pyd</code> and the
+    newly-created Boost.Python support DLL <code>boost_python-vc90-mt-gd-1_50.dll</code> (remembering that the names of
+    your extension files may be different) to the NDIToolbox plugins folder along with your plugin's Python front-end.
+    Here's a sample plugin that uses the BasicStats extension to normalize NumPy arrays.</p>
+
+<pre class="pre-scrollable">
+"""cpp_normalize_plugin.py - simple A7117 plugin that demonstrates
+using C++ to extend Python
+
+Chris R. Coughlin (TRI/Austin, Inc.)
+"""
+
+__author__ = 'Chris R. Coughlin'
+
+from models.abstractplugin import TRIPlugin
+import numpy as np
+import xmlrpclib
+import basicstats_ext
+
+class CPPNormalizePlugin(TRIPlugin):
+    """Normalizes the data"""
+
+    name = "C++-Based Normalize" # Name in the Plugin menu
+    description = "Demonstrates writing C++ code to extend NDIToolbox plugins"
+    authors = "Chris R. Coughlin (TRI/Austin, Inc.)"
+    version = "1.0"
+    url = "www.tri-austin.com"
+    copyright = "Copyright (C) 2012 TRI/Austin, Inc.  All rights reserved."
+
+    def __init__(self):
+        super(CPPNormalizePlugin, self).__init__(self.name, self.description,
+                                              self.authors, self.url, self.copyright)
+
+    def run(self):
+        """Executes the plugin - if data are not None they are normalized
+        against the largest single element in the array."""
+        if self._data is not None:
+            calculator = basicstats_ext.BasicStats()
+            raw_data = self._data.astype(np.float).tolist()
+            if self._data.ndim == 1:
+                self._data = np.array(calculator.normalize(raw_data))
+            elif self._data.ndim == 2:
+                self._data = np.array(calculator.normalize2d(raw_data))
+</pre>
+
+<p>If you plan on <a href="file:///home/ccoughlin/PycharmProjects/Bane/docs/plugins.html#dev_distribution">distributing
+    your plugin as an archive</a>, you'll need to create a sub-folder to place the DLL and .PYD file. Note that you may
+    then also have to adjust your paths to compensate. Remember also that since you are distributing compiled code you
+    may also need to consider your users' operating system, Python version, etc. and ship multiple versions of your
+    extension.  You may also wish to collect some basic information about the system your plugin is running on-
+    <a href="sys.platform">operating system</a> and <a href="sys.version_info">version of Python</a> in particular-and
+    use this information to tailor your plugin's imports.  NDIToolbox's <code>mainmodel.py</code> module also contains
+    some convenience functions that help to narrow down which version of Windows is being used:
+</p>
+
+<b>mainmodel.py functions to report Windows version</b>
+<pre class="pre-scrollable">
+    is_win7()
+    is_winvista()
+    is_winxp()
+    is_winxp64()
+    is_win2k()
+</pre>
+
+<p>The <a href="http://docs.python.org/library/platform.html">platform</a> module in the Python Standard Library can
+    provide additional details, e.g. <code>platform.python_compiler()</code> will identify the compiler used to build
+    the Python interpreter.  If you need to ship multiple compiled extensions, you can then use this information to
+determine which extension to import, for example:</p>
+
+<pre class="pre-scrollable">
+import platform
+platform_name = platform.system()
+if platform_name == "Windows":
+    import basicstats_win32_ext
+elif platform_name == "Linux":
+    import basicstats_linux_ext
+# etc.
+</pre>
+
+<p></p>
+</div>
 <script src="js/libs/jquery-1.7.2.min.js"></script>
 <script>window.jQuery || document.write('<script src="js/libs/jquery-1.7.2.min.js"><\/script>')</script>
 
