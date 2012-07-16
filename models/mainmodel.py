@@ -8,7 +8,6 @@ __author__ = 'Chris R. Coughlin'
 from controllers import pathfinder
 from models import abstractplugin
 from models import config
-import dicom
 import numpy as np
 import scipy.misc
 import h5py
@@ -208,10 +207,15 @@ class MainModel(object):
 
     def import_dicom(self, data_file):
         """Imports a DICOM/DICONDE pixel map"""
-        di_struct = dicom.read_file(data_file)
-        di_fname = os.path.join(pathfinder.data_path(),
-                                os.path.basename(data_file))
-        save_data(di_fname, di_struct.pixel_array)
+        """Imports a DICOM/DICONDE pixel map"""
+        try:
+            import dicom
+            di_struct = dicom.read_file(data_file)
+            di_fname = os.path.join(pathfinder.data_path(),
+                                    os.path.basename(data_file))
+            save_data(di_fname, di_struct.pixel_array)
+        except ImportError: # pydicom not installed
+            raise ImportError("pydicom module not installed.")
 
     def import_img(self, data_file, flatten=True):
         """Imports an image file, by default flattening
