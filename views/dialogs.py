@@ -363,7 +363,7 @@ class AboutDialog(wx.Dialog):
             if logo is not None:
                 wrap_width = logo.GetWidth()
                 if sys.platform == 'win32':
-                    wrap_width *= 1.5
+                    wrap_width *= 1.3
             else:
                 wrap_width = self.GetClientSizeTuple()[0]
             self.msg = wordwrap.wordwrap(textwrap.dedent(self.msg), wrap_width, dc)
