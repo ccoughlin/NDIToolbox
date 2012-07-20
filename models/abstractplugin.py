@@ -1,4 +1,4 @@
-"""abstractplugin.py - defines the abstract plugin for the A7117 project
+"""abstractplugin.py - defines the abstract plugin for NDIToolbox
 
 Chris R. Coughlin (TRI/Austin, Inc.)
 """
@@ -8,7 +8,7 @@ __author__ = 'Chris R. Coughlin'
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 class AbstractPlugin(object):
-    """Abstract base class definition for A7117 plugins.  Plugins must
+    """Abstract base class definition for NDIToolbox plugins.  Plugins must
     be a subclass of AbstractPlugin and must define the following members.
 
     data - getter and setter - NumPy array
@@ -63,11 +63,11 @@ class AbstractPlugin(object):
 
 
 class CompanyPlugin(AbstractPlugin):
-    """Basic template for A7117 plugins for an institution.  Subclasses
+    """Basic template for NDIToolbox plugins for an institution.  Subclasses
     should overload the placeholder plugin fields and the run() method."""
 
     name = "Generic Company Plugin"
-    description = "A7117 Plugin By Company Name"
+    description = "NDIToolbox Plugin By Company Name"
     authors = "Company Inc."
     version = "1.0"
     url = "www.company_url.com"
@@ -103,10 +103,10 @@ class CompanyPlugin(AbstractPlugin):
 
 
 class TRIPlugin(CompanyPlugin):
-    """Basic template for A7117 plugins for TRI/Austin personnel"""
+    """Basic template for NDIToolbox plugins for TRI/Austin personnel"""
 
     name = "TRI/Austin Plugin"
-    description = "Basic template for creating A7117 plugins for TRI/Austin personnel."
+    description = "Basic template for creating NDIToolbox plugins for TRI/Austin personnel."
     authors = "TRI/Austin, Inc."
     version = "1.0"
     url = "www.tri-austin.com"
@@ -119,10 +119,10 @@ class TRIPlugin(CompanyPlugin):
 
 
 class ComputationalToolsPlugin(CompanyPlugin):
-    """Basic template for A7117 plugins for Computational Tools personnel"""
+    """Basic template for NDIToolbox plugins for Computational Tools personnel"""
 
     name = "Computational Tools Plugin"
-    description = "Basic template for creating A7117 plugins for Computational Tools personnel."
+    description = "Basic template for creating NDIToolbox plugins for Computational Tools personnel."
     authors = "John C. Aldrin (Computational Tools, Inc.)"
     version = "1.0"
     url = "www.computationaltools.com"

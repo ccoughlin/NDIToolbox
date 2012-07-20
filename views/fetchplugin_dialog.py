@@ -1,5 +1,5 @@
 """fetchplugin_idalog.py - dialog to configure remote fetch and inspection
-of A7117 plugins
+of NDIToolbox plugins
 
 Chris R. Coughlin (TRI/Austin, Inc.)
 """
@@ -88,7 +88,7 @@ class FetchPluginDialog(wx.Dialog):
 
 class FetchRemotePluginDialog(wx.Dialog):
     """Dialog to configure remote fetch and inspection
-    of A7117 Plugins"""
+    of NDIToolbox Plugins"""
 
     def __init__(self, parent, plugin_type="Plugin"):
         self.plugin_type = plugin_type
@@ -116,7 +116,7 @@ class FetchRemotePluginDialog(wx.Dialog):
         self.url_tc = wx.TextCtrl(self, wx.ID_ANY, u'http://',
                                   wx.DefaultPosition,
                                   wx.DefaultSize)
-        self.url_tc.SetToolTipString("Example: http://www.tri-austin.com/a7117/my_plugin.zip")
+        self.url_tc.SetToolTipString("Example: http://www.tri-austin.com/nditoolbox/my_plugin.zip")
         self.main_panel_sizer.Add(self.url_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
                                   ui_defaults.widget_margin)
 

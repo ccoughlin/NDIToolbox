@@ -363,7 +363,7 @@ class AboutDialog(wx.Dialog):
             if logo is not None:
                 wrap_width = logo.GetWidth()
                 if sys.platform == 'win32':
-                    wrap_width *= 1.25
+                    wrap_width *= 1.5
             else:
                 wrap_width = self.GetClientSizeTuple()[0]
             self.msg = wordwrap.wordwrap(textwrap.dedent(self.msg), wrap_width, dc)
@@ -390,8 +390,8 @@ class AboutDialog(wx.Dialog):
 
 
 class ConfigurePluginDialog(wx.Dialog):
-    """wxPython dialog to allow user configuration of A7117
-    Plugins"""
+    """wxPython dialog to allow user configuration of NDIToolbox
+    plugins"""
 
     def __init__(self, parent, plugin_instance):
         self.parent = parent

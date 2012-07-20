@@ -14,7 +14,7 @@ def platform_config():
     # http://stackoverflow.com/questions/1551605/how-to-set-applications-taskbar-icon
         import ctypes
 
-        myappid = 'tri.a7117.bane.1' # arbitrary string
+        myappid = 'tri.nditoolbox.bane.1' # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""normalize_plugin.py - simple A7117 plugin that normalizes the current
+"""normalize_plugin.py - simple NDIToolbox plugin that normalizes the current
 data, used to demonstrate the plugin architecture
 
 Chris R. Coughlin (TRI/Austin, Inc.)
@@ -11,7 +11,7 @@ import numpy as np
 
 class NormalizePlugin(TRIPlugin):
     """Normalizes the current dataset, demonstrates
-    how to write plugins for the A7117 project"""
+    how to write plugins for the NDIToolbox application"""
 
     # At a minimum plugin developers should specify a plugin name and a
     # short description as these are displayed to the user.  The fields

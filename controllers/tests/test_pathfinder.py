@@ -11,7 +11,7 @@ class TestPathFinder(unittest.TestCase):
 
     def setUp(self):
         self.app_path = os.path.normcase(os.path.join(os.path.expanduser('~'), 'PycharmProjects', 'Bane'))
-        self.user_path = os.path.normcase(os.path.join(os.path.expanduser('~'), 'a7117'))
+        self.user_path = os.path.normcase(os.path.join(os.path.expanduser('~'), 'nditoolbox'))
 
     def test_app_path(self):
         """Verify pathfinder reports the correct application path"""
@@ -73,7 +73,7 @@ class TestPathFinder(unittest.TestCase):
 
     def test_config_path(self):
         """Verify correct path to configuration file"""
-        config_path = os.path.normcase(os.path.expanduser("~/a7117.cfg"))
+        config_path = os.path.normcase(os.path.expanduser("~/nditoolbox.cfg"))
         self.assertEqual(config_path, pathfinder.config_path())
 
     def test_docs_path(self):

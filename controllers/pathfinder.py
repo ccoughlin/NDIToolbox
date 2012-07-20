@@ -29,14 +29,14 @@ def app_path():
 @normalized
 def user_path():
     """Returns the path for storing user data.  If not already set,
-    returns user's home directory/a7117 and sets the default in the
+    returns user's home directory/nditoolbox and sets the default in the
     config file."""
     _config = config.Configure(config_path())
     upath_key = "User Path"
     if _config.has_app_option(upath_key):
         return _config.get_app_option(upath_key)
     else:
-        default_upath = os.path.normcase(os.path.join(os.path.expanduser('~'), 'a7117'))
+        default_upath = os.path.normcase(os.path.join(os.path.expanduser('~'), 'nditoolbox'))
         _config.set_app_option({upath_key: default_upath})
         return default_upath
 
@@ -103,7 +103,7 @@ def plugins_path():
 @normalized
 def config_path():
     """Returns the path to the configuration file"""
-    return os.path.expanduser("~/a7117.cfg")
+    return os.path.expanduser("~/nditoolbox.cfg")
 
 
 @normalized

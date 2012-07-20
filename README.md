@@ -30,7 +30,7 @@ NDIToolbox is a Python (<http://www.python.org>) application and should run on m
 
 Installation
 -------------
-In the future we might have a full-blown installation package available, but for now NDIToolbox is distributed as a simple Python application.  Once you have Python and the additional dependencies installed, download NDIToolbox and run the a7117.py file in the root folder.  On first startup NDIToolbox will create a new folder in your home folder for storing local files.
+In the future we might have a full-blown installation package available, but for now NDIToolbox is distributed as a simple Python application.  Once you have Python and the additional dependencies installed, download NDIToolbox and run the nditoolbox.py file in the root folder.  On first startup NDIToolbox will create a new folder in your home folder for storing local files.
 
 Acknowledgements
 ----------------------

@@ -1,4 +1,4 @@
-"""datapanel.py - creates the NDE Data wxPython panel for the A7117 UI
+"""datapanel.py - creates the NDE Data wxPython panel for the NDIToolbox UI
 
 Chris R. Coughlin (TRI/Austin, Inc.)
 """

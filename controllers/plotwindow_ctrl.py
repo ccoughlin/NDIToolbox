@@ -267,7 +267,7 @@ class BasicPlotWindowController(object):
         self.model.load_data()
 
     def get_plugins(self):
-        """Returns a list of the available A7117 plugins"""
+        """Returns a list of the available NDIToolbox plugins"""
         return self.model.get_plugins()
 
     def generate_plugin_dict(self):

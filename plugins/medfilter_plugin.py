@@ -1,5 +1,5 @@
 """medfilter_plugin.py - applies a median filter to the current data set,
-used to demonstrate incorporating configuration options in an A7117 plugin
+used to demonstrate incorporating configuration options in a NDIToolbox plugin
 
 Chris R. Coughlin (TRI/Austin, Inc.)
 """

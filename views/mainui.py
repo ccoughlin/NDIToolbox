@@ -18,7 +18,7 @@ class UI(wx.Frame):
         self.parent = None
         self.controller = ctrl.MainUIController(self)
         wx.Frame.__init__(self, id=wx.ID_ANY, name='', parent=self.parent,
-                          size=(300, 600), title='A7117 NDE')
+                          size=(300, 600), title='NDIToolbox')
         self.SetPosition(self.controller.get_default_position())
         self.MinSize = (300, 400)
         self._mgr = wx.aui.AuiManager()

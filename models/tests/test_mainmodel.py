@@ -254,7 +254,7 @@ class TestMainModel(unittest.TestCase):
 
     def test_run_plugin(self):
         """Verify the main model can run a loaded plugin"""
-        # The base A7117 source code comes with a normalize_plugin
+        # The base NDIToolbox source code comes with a normalize_plugin
         normalize_plugin_name = "NormalizePlugin"
         plugin_list = model.load_plugins()
         plugin_names = [plugin[0] for plugin in plugin_list]
