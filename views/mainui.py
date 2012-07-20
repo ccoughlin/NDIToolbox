@@ -90,10 +90,22 @@ class UI(wx.Frame):
                                       help="Opens the Getting Started Guide")
         self.help_mnu.AppendItem(quickstart_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_quickstart, id=quickstart_mnui.GetId())
-        plugins_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="NDIToolbox Plugins",
-                                       help="Opens introduction to NDIToolbox plugins in your web browser")
-        self.help_mnu.AppendItem(plugins_mnui)
+
+
+        self.plugins_mnu = wx.Menu()
+        plugins_mnui = wx.MenuItem(self.plugins_mnu, wx.ID_ANY, text="Using Plugins",
+                                   help="Opens introduction to using NDIToolbox plugins")
+        self.plugins_mnu.AppendItem(plugins_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_plugins, id=plugins_mnui.GetId())
+        plugins_dev_mnui = wx.MenuItem(self.plugins_mnu, wx.ID_ANY, text="Writing Plugins",
+                                       help="Opens introduction to writing NDIToolbox plugins")
+        self.plugins_mnu.AppendItem(plugins_dev_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_plugins_dev, id=plugins_dev_mnui.GetId())
+        plugins_samples_mnui = wx.MenuItem(self.plugins_mnu, wx.ID_ANY, text="Examples",
+                                           help="Opens examples of NDIToolbox plugins")
+        self.plugins_mnu.AppendItem(plugins_samples_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_plugins_samples, id=plugins_samples_mnui.GetId())
+        self.help_mnu.AppendMenu(wx.ID_ANY, "NDIToolbox Plugins", self.plugins_mnu)
         self.help_mnu.AppendSeparator()
         about_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="About This Program...",
                                  help="About This Program")

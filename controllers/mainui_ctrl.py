@@ -133,6 +133,14 @@ class MainUIController(object):
         """Handles request to open guide to plugins for end users"""
         self.open_url(os.path.join(pathfinder.docs_path(), 'plugins.html'))
 
+    def on_plugins_dev(self, evt):
+        """Handles request to open guide to plugins for developers"""
+        self.open_url(os.path.join(pathfinder.docs_path(), 'plugins_developers.html'))
+
+    def on_plugins_samples(self, evt):
+        """Handles request to open examples of NDIToolbox plugins"""
+        self.open_url(os.path.join(pathfinder.docs_path(), 'plugins_samples.html'))
+
     def on_about(self, evt):
         """Handles the About This Program event"""
         project_logo = os.path.join(pathfinder.icons_path(), 'a7117_256.png')
