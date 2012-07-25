@@ -686,10 +686,15 @@ class MegaPlotWindowController(BasicImgPlotWindowController):
 
     def on_click(self, evt):
         """Handles mouse click in the C Scan - update other plots"""
-        if evt.inaxes == self.view.cscan_axes:
-            xpos = int(evt.xdata)
-            ypos = int(evt.ydata)
-            self.update_plot(xpos, ypos)
+        if not self.view.navtools_cb.IsChecked():
+            if evt.inaxes == self.view.cscan_axes:
+                xpos = int(evt.xdata)
+                ypos = int(evt.ydata)
+                self.update_plot(xpos, ypos)
+
+    def on_check_navtools(self, evt):
+        """Handles toggle of enable/disable navigation toolbar checkbox"""
+        self.view.toggle_toolbar()
 
     def on_sliceidx_change(self, evt):
         """Responds to changes in the z position spin control"""

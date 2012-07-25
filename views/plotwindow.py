@@ -376,19 +376,22 @@ class MegaPlotWindow(PlotWindow):
         self.ctrl_panel.SetSizerAndFit(self.ctrl_sizer)
         self.main_panel_sizer.Add(self.ctrl_panel, ui_defaults.lbl_pct, ui_defaults.sizer_flags,
                                   ui_defaults.widget_margin)
-
         self.figure = Figure()
         self.canvas = FigureCanvas(self.main_panel, wx.ID_ANY, self.figure)
         self.ascan_axes = self.figure.add_subplot(221)
         self.vbscan_axes = self.figure.add_subplot(222)
         self.hbscan_axes = self.figure.add_subplot(223)
         self.cscan_axes = self.figure.add_subplot(224)
-        self.cscan_cursor = Cursor(self.cscan_axes, useblit=True, color="white", alpha=0.5)
+        self.cscan_cursor = Cursor(self.cscan_axes, useblit=True, color="#4F6581", alpha=0.5)
         self.figure.canvas.mpl_connect("button_press_event", self.controller.on_click)
         self.main_panel_sizer.Add(self.canvas, 1, ui_defaults.sizer_flags, 0)
+        self.navtools_cb = wx.CheckBox(self.main_panel, wx.ID_ANY, "Use Plot Navigation Tools")
+        self.navtools_cb.SetValue(True)
+        self.navtools_cb.SetToolTipString("Check to use pan/zoom tools")
+        self.Bind(wx.EVT_CHECKBOX, self.controller.on_check_navtools, self.navtools_cb)
+        self.main_panel_sizer.Add(self.navtools_cb, ui_defaults.lbl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
         self.add_toolbar()
         self.SetIcon(self.parent.GetIcon())
-
         self.main_panel.SetSizerAndFit(self.main_panel_sizer)
         self.sizer.Add(self.main_panel, 1, ui_defaults.sizer_flags, 0)
         self.SetSizerAndFit(self.sizer)
@@ -406,6 +409,18 @@ class MegaPlotWindow(PlotWindow):
             self.toolbar.SetSize(wx.Size(fw, th))
             self.main_panel_sizer.Add(self.toolbar, 0, wx.LEFT | wx.EXPAND, 0)
         self.toolbar.update()
+        self.toggle_toolbar()
+        self.toggle_toolbar()
+
+    def toggle_toolbar(self):
+        """Enables / disables the navigation toolbar and sets
+        cursors accordingly."""
+        navtools_enabled = self.navtools_cb.IsChecked()
+        if navtools_enabled:
+            self.canvas.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+        else:
+            self.canvas.SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
+        self.toolbar.Enable(navtools_enabled)
 
     def init_plot_menu(self):
         """Creates the Plot menu"""
