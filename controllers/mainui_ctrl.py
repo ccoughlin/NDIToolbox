@@ -41,19 +41,20 @@ class MainUIController(object):
     def verify_imports(self):
         """Ensures third-party dependencies are installed; shows
         error dialog and exits if a module is missing."""
-        dependencies = ['h5py', 'dicom', 'matplotlib', 'numpy', 'scipy']
-        for module in dependencies:
-            try:
-                imp.find_module(module)
-            except ImportError: # Module not installed / not found
-                msg = ' '.join(["Unable to find the '{0}' module.".format(module),
-                                "Please ensure the module is installed and",
-                                "restart NDIToolbox."])
-                err_dlg = wx.MessageDialog(self.view, message=msg,
-                                           caption="{0} Module Not Found".format(module), style=wx.ICON_ERROR)
-                err_dlg.ShowModal()
-                err_dlg.Destroy()
-                sys.exit(0)
+        if not hasattr(sys, 'frozen'):
+            dependencies = ['h5py', 'dicom', 'matplotlib', 'numpy', 'scipy']
+            for module in dependencies:
+                try:
+                    imp.find_module(module)
+                except ImportError: # Module not installed / not found
+                    msg = ' '.join(["Unable to find the '{0}' module.".format(module),
+                                    "Please ensure the module is installed and",
+                                    "restart NDIToolbox."])
+                    err_dlg = wx.MessageDialog(self.view, message=msg,
+                                               caption="{0} Module Not Found".format(module), style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                    err_dlg.Destroy()
+                    sys.exit(0)
 
     def get_icon_bmp(self):
         """Returns a PNG wx.Bitmap of the application's
