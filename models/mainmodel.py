@@ -13,6 +13,7 @@ import scipy.misc
 import h5py
 import imp
 import inspect
+import multiprocessing
 import os
 import shutil
 import sys
@@ -35,43 +36,75 @@ def save_data(data_fname, data):
     with h5py.File(output_filename, 'w') as fidout:
         fidout.create_dataset(os.path.basename(data_fname), data=data)
 
+def load_dynamic_modules(module_path, module_class):
+    """Dynamically imports the modules in module_path and searches
+    the modules for subclasses of module_class.  Returns a list of tuples
+    (plugin_name, plugin_class)."""
+    if not module_path in sys.path:
+        sys.path.append(module_path)
+    dynamic_modules = []
+    for root, dirs, files in os.walk(module_path):
+        for found_file in files:
+            file_name, file_extension = os.path.splitext(found_file)
+            if file_extension == os.extsep + "py":
+                try:
+                    module_hdl, path_name, description = imp.find_module(file_name)
+                    dyn_module = imp.load_module(file_name, module_hdl, path_name, description)
+                    dyn_module_classes = inspect.getmembers(dyn_module, inspect.isclass)
+                    for dyn_module_class in dyn_module_classes:
+                        if issubclass(dyn_module_class[1], module_class):
+                            # Load only those plugins defined in the current module
+                            # (i.e. don't instantiate any parent plugins)
+                            if dyn_module_class[1].__module__ == file_name:
+                                dynamic_modules.append(dyn_module_class)
+                finally:
+                    if module_hdl:
+                        module_hdl.close()
+    return dynamic_modules
 
 def load_plugins():
     """Searches the plugins folder and imports all valid plugins,
     returning a list of the plugins successfully imported as tuples:
     first element is the plugin name (e.g. MyPlugin), second element is
     the class of the plugin."""
-    plugins_folder = pathfinder.plugins_path()
-    plugins = []
-    if not plugins_folder in sys.path:
-        sys.path.append(plugins_folder)
-    for root, dirs, files in os.walk(pathfinder.plugins_path()):
-        for module_file in files:
-            module_name, module_extension = os.path.splitext(module_file)
-            if module_extension == os.extsep + "py":
-                try:
-                    module_hdl, path_name, description = imp.find_module(module_name)
-                    plugin_module = imp.load_module(module_name, module_hdl, path_name,
-                                                    description)
-                    plugin_classes = inspect.getmembers(plugin_module, inspect.isclass)
-                    for plugin_class in plugin_classes:
-                        if issubclass(plugin_class[1], abstractplugin.AbstractPlugin):
-                            # Load only those plugins defined in the current module
-                            # (i.e. don't instantiate any parent plugins)
-                            if plugin_class[1].__module__ == module_name:
-                                #plugin = plugin_class[1]()
-                                plugins.append(plugin_class)
-                finally:
-                    if module_hdl:
-                        module_hdl.close()
-    return plugins
+    return load_dynamic_modules(pathfinder.plugins_path(), abstractplugin.AbstractPlugin)
 
+def load_gates():
+    """Searches the plugins folder and imports all valid ultrasonic gate plugins,
+    returning a list of the plugins successfully imported as tuples:
+    first element is the plugin name (e.g. MyGate), second element is
+    the class of the plugin."""
+    return load_dynamic_modules(pathfinder.gates_path(), abstractplugin.AbstractPlugin)
+
+def plugin_wrapper(plugin_cls, plugin_data, plugin_queue, plugin_cfg=None, **kwargs):
+    """multiprocessing wrapper function, used to execute
+    plugin run() method in separate process.  plugin_cls is the Plugin class
+    to instantiate, plugin_data is the data to run the plugin on, and
+    plugin_queue is the Queue instance the function should return the
+    results in back to the caller.  If plugin_cfg is not None, it is
+    supplied to the Plugin instance as its config dict.
+    """
+    plugin_instance = plugin_cls(**kwargs)
+    plugin_instance.data = plugin_data
+    if plugin_cfg is not None:
+        plugin_instance.config = plugin_cfg
+    plugin_instance.run()
+    plugin_queue.put(plugin_instance.data)
+
+def run_plugin(plugin_cls, data=None, config=None, **kwargs):
+    """Runs the plugin plugin_cls"""
+    plugin_queue = multiprocessing.Queue()
+    plugin_process = multiprocessing.Process(target=plugin_wrapper,
+                                             args=(plugin_cls, data, plugin_queue, config),
+                                             kwargs=kwargs)
+    plugin_process.daemon = True
+    plugin_process.start()
+    return plugin_process, plugin_queue
 
 def get_config():
     """Returns a Configure instance pointing to the application's
     default configuration file."""
     return config.Configure(pathfinder.config_path())
-
 
 def get_windows_version():
     """Returns the major, minor version of the
@@ -151,7 +184,8 @@ class MainModel(object):
         thumbnail_folder = pathfinder.thumbnails_path()
         plugins_folder = pathfinder.plugins_path()
         podmodels_folder = pathfinder.podmodels_path()
-        for fldr in (user_folder, data_folder, thumbnail_folder, plugins_folder, podmodels_folder):
+        gates_folder = pathfinder.gates_path()
+        for fldr in (user_folder, data_folder, thumbnail_folder, plugins_folder, podmodels_folder, gates_folder):
             if not os.path.exists(fldr):
                 os.makedirs(fldr)
 
@@ -165,17 +199,27 @@ class MainModel(object):
         self.copy_system_plugins()
 
     def copy_system_plugins(self):
-        """Copies plugins that ship with the application
-        to the user's plugins folder."""
+        """Copies plugins that ship with the application to the user's plugins folder."""
         system_plugins_folder = os.path.join(pathfinder.app_path(), 'plugins')
-        for root, dirs, files in os.walk(system_plugins_folder):
-            for module_file in files:
-                module_name, module_extension = os.path.splitext(module_file)
-                if module_extension == os.extsep + "py":
-                    installed_plugin = os.path.join(pathfinder.plugins_path(), module_file)
-                    if not os.path.exists(installed_plugin):
-                        system_plugin = os.path.join(system_plugins_folder, module_file)
-                        shutil.copy(system_plugin, pathfinder.plugins_path())
+        self.copy_system_files(system_plugins_folder, pathfinder.plugins_path())
+
+    def copy_system_gates(self):
+        """Copies ultrasonic gate plugins that ship with the application to the user's gates folder."""
+        system_gates_folder = os.path.join(pathfinder.app_path(), 'gates')
+        self.copy_system_files(system_gates_folder, pathfinder.gates_path())
+
+    def copy_system_files(self, src_folder, dest_folder):
+        """Copies the Python (.py) files in src_folder to dest_folder.
+        Used to install local user-editable copies of plugins, POD Models,
+        and ultrasonic gates."""
+        files = os.listdir(src_folder)
+        for module_file in files:
+            module_name, module_extension = os.path.splitext(module_file)
+            if module_extension == os.extsep + "py":
+                installed_module = os.path.join(dest_folder, module_file)
+                if not os.path.exists(installed_module):
+                    src_module = os.path.join(src_folder, module_file)
+                    shutil.copy(src_module, dest_folder)
 
     def copy_data(self, data_file):
         """Adds the specified data file to the data folder"""
@@ -258,7 +302,7 @@ class MainModel(object):
         coordinates from the configuration file."""
         config = get_config()
         str_coords = config.get_app_option_list("Coordinates")
-        coords = (0, 0)
+        coords = [0, 0]
         if str_coords is not None:
             coords = [int(coord) for coord in config.get_app_option_list("Coordinates")]
         return coords

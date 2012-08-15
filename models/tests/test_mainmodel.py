@@ -7,11 +7,14 @@ __author__ = 'Chris R. Coughlin'
 
 import models.mainmodel as model
 import models.abstractplugin as abstractplugin
+import models.config as config
+import models.ultrasonicgate as ultrasonicgate
 import controllers.pathfinder as pathfinder
 import h5py
 import numpy as np
 import scipy.misc
 import imp
+import multiprocessing
 import os
 import random
 import shutil
@@ -78,33 +81,74 @@ class TestMainModel(unittest.TestCase):
     def check_user_path(self):
         """Verify user data folders were created"""
         data_folders = [pathfinder.user_path(), pathfinder.data_path(),
-                        pathfinder.thumbnails_path(),
+                        pathfinder.thumbnails_path(), pathfinder.gates_path(),
                         pathfinder.plugins_path(), pathfinder.podmodels_path()]
         self.model.check_user_path()
         for folder in data_folders:
             self.assertTrue(os.path.exists(folder))
+
+    def test_copy_system_files(self):
+        """Verify main model copies dynamic modules to the specified
+        folder."""
+        test_module_folder = os.path.dirname(__file__)
+        test_modules = []
+        temp_dest_folder = tempfile.mkdtemp()
+        module_files = os.listdir(test_module_folder)
+        for module_file in module_files:
+            module_name, module_extension = os.path.splitext(module_file)
+            if module_name.startswith("test_") and \
+               module_extension == os.extsep + "py":
+                test_modules.append(module_file)
+        self.model.copy_system_files(test_module_folder, temp_dest_folder)
+        for module_file in test_modules:
+            dest_module = os.path.join(temp_dest_folder, module_file)
+            self.assertTrue(os.path.exists(dest_module))
+        try:
+            shutil.rmtree(temp_dest_folder)
+        except WindowsError: # folder in use (Windows)
+            pass
 
     def test_copy_system_plugins(self):
         """Verify main model copies system plugins to the user's
         plugins folder."""
         self.copy_system_plugins()
 
+    def test_copy_system_gates(self):
+        """Verify main model copies system ultrasonic gate plugins to the user's
+        gates folder."""
+        self.copy_system_gates()
+
     def copy_system_plugins(self):
         """Verify system plugins are copied to the user's plugins folder"""
         # Sample of system plugins to install
         system_plugins = ['medfilter_plugin.py', 'normalize_plugin.py', '__init__.py']
-        # Try to remove them if already installed
-        for plugin in system_plugins:
-            installed_plugin = os.path.join(pathfinder.plugins_path(), plugin)
-            if os.path.exists(installed_plugin):
-                try:
-                    os.remove(installed_plugin)
-                except WindowsError: # file in use
-                    pass
+        self.remove_system_files(system_plugins, pathfinder.plugins_path())
         self.model.copy_system_plugins()
         for plugin in system_plugins:
             installed_plugin = os.path.join(pathfinder.plugins_path(), plugin)
             self.assertTrue(os.path.exists(installed_plugin))
+
+    def copy_system_gates(self):
+        """Verify system ultrasonic gate plugins are copied to user's
+        gates folder"""
+        gate_plugins = ['predefined_gates.py', 'additional_gates.py', '__init__.py']
+        self.remove_system_files(gate_plugins, pathfinder.gates_path())
+        self.model.copy_system_gates()
+        for gate in gate_plugins:
+            installed_gate = os.path.join(pathfinder.gates_path(), gate)
+            self.assertTrue(os.path.exists(installed_gate))
+
+    def remove_system_files(self, file_list, dest):
+        """Attempts to remove every file in file_list found in dest folder.
+        Used to verify copying system files to user's local data folder."""
+        for each_file in file_list:
+            dest_path = os.path.join(dest, each_file)
+            if os.path.exists(dest_path):
+                try:
+                    os.remove(dest_path)
+                except WindowsError: # file in use (Windows)
+                    pass
+
 
     def test_migrate_user_path(self):
         """Verify migration of the user's data folder"""
@@ -126,12 +170,10 @@ class TestMainModel(unittest.TestCase):
 
     def test_save_data(self):
         """Verify save_data function saves NumPy array to disk"""
-        #save_data(data_fname, data):
         sample_filename = "test_savedata.dat"
         sample_path = os.path.join(os.path.dirname(__file__), sample_filename)
         model.save_data(sample_path, self.sample_data)
         self.assertTrue(os.path.exists(sample_path + ".hdf5"))
-        #read_data = np.loadtxt(sample_path, delimiter=export_params['delim_char'])
         with h5py.File(sample_path + ".hdf5", "r") as fidin:
             froot, ext = os.path.splitext(os.path.basename(sample_filename))
             for key in fidin.keys():
@@ -245,6 +287,13 @@ class TestMainModel(unittest.TestCase):
         except WindowsError: # file in use
             pass
 
+    def test_load_dynamic_modules(self):
+        """Verify the main model's dynamic module loading"""
+        plugin_list = model.load_dynamic_modules(pathfinder.plugins_path(), abstractplugin.AbstractPlugin)
+        for plugin in plugin_list:
+            plugin_instance = plugin[1]
+            self.assertTrue(issubclass(plugin_instance, abstractplugin.AbstractPlugin))
+
     def test_load_plugins(self):
         """Verify the main model loads available plugins"""
         plugin_list = model.load_plugins()
@@ -252,22 +301,77 @@ class TestMainModel(unittest.TestCase):
             plugin_instance = plugin[1]
             self.assertTrue(issubclass(plugin_instance, abstractplugin.AbstractPlugin))
 
+    def test_load_gates(self):
+        """Verify the main model loads available gates"""
+        gate_list = model.load_gates()
+        for gate in gate_list:
+            gate_instance = gate[1]
+            self.assertTrue(issubclass(gate_instance, ultrasonicgate.UltrasonicGate))
+
+    # Define a mock plugin to inspect results of calling plugin classes
+    class MockPlugin(abstractplugin.TRIPlugin):
+        """Mock NDIToolbox plugin used to check plugin_wrapper"""
+
+        def __init__(self, **kwargs):
+            abstractplugin.TRIPlugin.__init__(self, **kwargs)
+            self.config = {'a':'b'}
+            self._data = {'kwargs':kwargs}
+
+        @property
+        def data(self):
+            return self._data
+
+        @data.setter
+        def data(self, new_data):
+            self._data['data'] = new_data
+
+        def run(self):
+            self._data['config'] = self.config
+
+    def test_plugin_wrapper(self):
+        """Verify the plugin_wrapper function properly configures and runs a plugin"""
+        plugin_queue = multiprocessing.Queue()
+        plugin_data = np.array(self.random_data())
+        plugin_cfg = {'a':'c'}
+        kwargs = {'name':'Mock Plugin', 'description':'Mock plugin used to test plugin_wrapper'}
+        model.plugin_wrapper(TestMainModel.MockPlugin, plugin_data, plugin_queue, plugin_cfg, **kwargs)
+        returned_data = plugin_queue.get()
+        self.assertTrue(isinstance(returned_data, dict))
+        self.assertDictEqual(returned_data['config'], plugin_cfg)
+        self.assertDictEqual(returned_data['kwargs'], kwargs)
+        self.assertListEqual(returned_data['data'].tolist(), plugin_data.tolist())
+
     def test_run_plugin(self):
         """Verify the main model can run a loaded plugin"""
-        # The base NDIToolbox source code comes with a normalize_plugin
+        plugin_data = np.array(self.random_data())
+        plugin_config = {'pi':3.141592654}
+        # Can't use MockPlugin - pickle won't find it
+        plugin_cls = self.get_normalize_plugin()
+        plugin_process, plugin_queue = model.run_plugin(plugin_cls,
+                                                        data=plugin_data, config=plugin_config)
+        self.assertTrue(isinstance(plugin_process, multiprocessing.Process))
+        returned_data = plugin_queue.get()
+        expected_data = plugin_data / np.max(plugin_data)
+        self.assertListEqual(expected_data.tolist(), returned_data.tolist())
+
+    def get_normalize_plugin(self):
+        """Returns NDIToolbox's NormalizePlugin plugin"""
         normalize_plugin_name = "NormalizePlugin"
         plugin_list = model.load_plugins()
         plugin_names = [plugin[0] for plugin in plugin_list]
         plugin_classes = [plugin[1] for plugin in plugin_list]
         # Ensure that the normalize plugin was found
         self.assertTrue(normalize_plugin_name in plugin_names)
-        raw_data = np.array(self.random_data())
-        expected_data = raw_data / np.max(raw_data)
-        normalize_plugin = plugin_classes[plugin_names.index(normalize_plugin_name)]()
-        normalize_plugin.data = raw_data
-        normalize_plugin.run()
-        generated_data = normalize_plugin.data
-        self.assertListEqual(expected_data.tolist(), generated_data.tolist())
+        return plugin_classes[plugin_names.index(normalize_plugin_name)]
+
+    def test_get_config(self):
+        """Verify returning the application's configuration"""
+        expected_configuration = config.Configure(pathfinder.config_path()).config
+        expected_configuration.read(pathfinder.config_path())
+        returned_configuration = model.get_config().config
+        returned_configuration.read(pathfinder.config_path())
+        for section in expected_configuration.sections():
+            self.assertListEqual(expected_configuration.items(section), returned_configuration.items(section))
 
     def test_copy_data(self):
         """Verify copying of sample data file to data folder"""
@@ -293,6 +397,47 @@ class TestMainModel(unittest.TestCase):
         self.assertTrue(len(os.listdir(pathfinder.thumbnails_path())) > 0)
         self.model.remove_thumbs()
         self.assertListEqual(os.listdir(pathfinder.thumbnails_path()), [])
+
+    def test_get_preview_state(self):
+        """Verify returning the current setting for displaying plot thumbnails"""
+        cfg = config.Configure(pathfinder.config_path())
+        preview_state = cfg.get_app_option_boolean("Enable Preview")
+        self.assertEqual(preview_state, self.model.get_preview_state())
+
+    def test_set_preview_state(self):
+        """Verify setting the current setting for displaying plot thumbnails"""
+        cfg = config.Configure(pathfinder.config_path())
+        original_preview_state = cfg.get_app_option_boolean("Enable Preview")
+        new_preview_state = not original_preview_state
+        self.assertEqual(original_preview_state, self.model.get_preview_state())
+        self.model.set_preview_state(new_preview_state)
+        self.assertEqual(new_preview_state, self.model.get_preview_state())
+        self.model.set_preview_state(original_preview_state)
+
+    def test_get_coords(self):
+        """Verify returning the UL corner of the main app window set in config"""
+        cfg = config.Configure(pathfinder.config_path())
+        str_coords = cfg.get_app_option_list("Coordinates")
+        expected_coords = (0, 0)
+        if str_coords is not None:
+            expected_coords = [int(coord) for coord in cfg.get_app_option_list("Coordinates")]
+        self.assertListEqual(expected_coords, self.model.get_coords())
+
+    def test_set_coords(self):
+        """Verify setting the UL corner of the main app window in config"""
+        cfg = config.Configure(pathfinder.config_path())
+        str_coords = cfg.get_app_option_list("Coordinates")
+        original_coords = (0, 0)
+        if str_coords is not None:
+            original_coords = [int(coord) for coord in cfg.get_app_option_list("Coordinates")]
+        self.assertListEqual(original_coords, self.model.get_coords())
+        new_coords_int = [3, 5]
+        self.model.set_coords(new_coords_int)
+        self.assertListEqual(new_coords_int, self.model.get_coords())
+        new_coords_str = ["9", "-1"]
+        self.model.set_coords(new_coords_str)
+        self.assertListEqual([int(coord) for coord in new_coords_str], self.model.get_coords())
+        self.model.set_coords(original_coords)
 
     def test_get_windows_version(self):
         """Verify get_windows_version function returns correct version

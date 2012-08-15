@@ -6,12 +6,21 @@ from matplotlib import cm
 
 __author__ = 'Chris R. Coughlin'
 
+from controllers import pathfinder
 import mainmodel
+import ultrasonicgate
 import numpy as np
 import scipy.signal
+import os
+import sys
 
 class TwoDManipMixin(object):
     """Mixin class to provide data manipulation routines for one or two dimensional data sets"""
+
+    def load_user_gate_functions(self):
+        """Retrieves the user-created ultrasonic gate functions and returns a list
+        of tuples (gate_function_name, gate_function_class_instance)."""
+        return mainmodel.load_dynamic_modules(pathfinder.gates_path(), ultrasonicgate.UltrasonicGate)
 
     def _define_gate_functions(self):
         """Define a set of gate functions that can be applied to the data
@@ -19,47 +28,33 @@ class TwoDManipMixin(object):
         vals are a tuple of the gate function label and a wxPython
         id to assign to the menu item
         """
-        self.gates = dict(boxcar=('Boxcar', 10000), triang=('Triangular', 10001),
-                          blackman=('Blackman', 10002),
-                          hamming=('Hamming', 10003), hanning=('Hann (Hanning)', 10004),
-                          bartlett=('Bartlett', 10005),
-                          parzen=('Parzen', 10006), bohman=('Bohman', 10007),
-                          blackmanharris=('Blackman-Harris', 10008),
-                          nuttall=('Nuttall', 10009), barthann=('Barthann', 10010))
+        self.gates = self.load_user_gate_functions()
+        self.gates.sort()
 
     def apply_window(self, window_type, original_data, start_idx, end_idx):
         """Returns the specified type of window for the range
         start_idx:end_idx, zero outside.  For squelching data outside
         the given range."""
-        left = np.zeros(start_idx)
-        windows = ['boxcar', 'triang', 'blackman', 'hamming', 'hanning', 'bartlett',
-                   'parzen', 'bohman', 'blackmanharris', 'nuttall', 'barthann']
-        if window_type not in windows:
-            middle = np.ones(end_idx - start_idx)
-        else:
-            middle = scipy.signal.get_window(window_type, end_idx - start_idx)
-        right = np.zeros(original_data.shape[0] - end_idx)
-        winder = np.concatenate((left, middle, right))
-        data = np.multiply(original_data, winder)
-        return data
+        gate_names = [_gate[0] for _gate in self.gates]
+        gates = [_gate[1] for _gate in self.gates]
+        gate_cls = gates[gate_names.index(window_type)]
+        gate = gate_cls(start_pos=start_idx, end_pos=end_idx)
+        gate.data = original_data
+        gate.run()
+        return gate.data
 
-    def apply_gate(self, data, gate_id, start_pos, end_pos):
+    def apply_gate(self, data, gate, start_pos, end_pos):
         """Applies a window function ('gate' in ultrasonics parlance)
         to the current data set"""
         if data is not None:
-            gate_fn = None
-            for gate_idx, params in self.gates.items():
-                if params[1] == gate_id:
-                    gate_fn = self.gates[gate_idx]
-            if gate_fn is not None:
-                if data.ndim == 1:
-                    data = self.apply_window(gate_fn, data, start_pos, end_pos)
-                elif data.ndim == 2:
-                    # Find appropriate indices for specified range
-                    x_data = np.sort(data[0])
-                    start_idx = np.searchsorted(x_data, start_pos)
-                    end_idx = np.searchsorted(x_data, end_pos)
-                    data[1] = self.apply_window(gate_fn, data[1], start_idx, end_idx)
+            if data.ndim == 1:
+                data = self.apply_window(gate, data, start_pos, end_pos)
+            elif data.ndim == 2:
+                # Find appropriate indices for specified range
+                x_data = np.sort(data[0])
+                start_idx = np.searchsorted(x_data, start_pos)
+                end_idx = np.searchsorted(x_data, end_pos)
+                data[1] = self.apply_window(gate, data[1], start_idx, end_idx)
         return data
 
     def rectify_full(self, data):
@@ -76,8 +71,6 @@ class ThreeDManipMixin(object):
         """Sets the 3D self.data to a single 2D slice."""
         if data is not None:
             if data.ndim == 3:
-                min_slice_idx = 0
-                max_slice_idx = data.shape[2]-1
                 data = data[:, :, slice_idx]
         return data
 
@@ -151,18 +144,15 @@ class BasicPlotWindowModel(object):
         return mainmodel.load_plugins()
 
     def get_plugin(self, plugin_name):
-        """Given the name of a plugin, returns the plugin's class and an instance of the plugin,
-        or (None, None) if the plugin isn't listed in the available plugins."""
+        """Given the name of a plugin, returns the plugin's class
+        or None if the plugin isn't listed in the available plugins."""
         plugin_class = None
-        plugin_instance = None
         available_plugins = self.get_plugins()
         plugin_names = [plugin[0] for plugin in available_plugins]
         plugin_classes = [plugin[1] for plugin in available_plugins]
         if plugin_name in plugin_names:
             plugin_class = plugin_classes[plugin_names.index(plugin_name)]
-            plugin_instance = plugin_class()
-            plugin_instance.data = self.data
-        return plugin_class, plugin_instance
+        return plugin_class
 
 
 class PlotWindowModel(BasicPlotWindowModel, TwoDManipMixin):
@@ -171,6 +161,21 @@ class PlotWindowModel(BasicPlotWindowModel, TwoDManipMixin):
     def __init__(self, controller, data_file):
         super(PlotWindowModel, self).__init__(controller, data_file)
         self._define_gate_functions()
+
+    def get_gates(self):
+        """Returns a list of available plugins"""
+        return mainmodel.load_gates()
+
+    def get_gate(self, gate_name):
+        """Given the name of a plugin, returns the plugin's class
+        or None if the plugin isn't listed in the available plugins."""
+        gate_cls = None
+        available_gates = self.get_gates()
+        gate_names = [gate[0] for gate in available_gates]
+        gate_classes = [gate[1] for gate in available_gates]
+        if gate_name in gate_names:
+            gate_cls = gate_classes[gate_names.index(gate_name)]
+        return gate_cls
 
     def apply_gate(self, gate_id, start_pos, end_pos):
         """Applies the specified gate ID to the current data set in the region
@@ -222,4 +227,3 @@ class MegaPlotWindowModel(BasicPlotWindowModel, TwoDManipMixin, ThreeDManipMixin
     def __init__(self, controller, data_file):
         super(MegaPlotWindowModel, self).__init__(controller, data_file)
         self._define_gate_functions()
-

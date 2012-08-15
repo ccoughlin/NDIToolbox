@@ -16,9 +16,9 @@ class MedianFilterPlugin(TRIPlugin):
     name = "Median Filter"
     description = "Applies a median filter to the current data set."
 
-    def __init__(self):
-        super(MedianFilterPlugin, self).__init__(self.name, self.description,
-                                                 self.authors, self.url, self.copyright)
+    def __init__(self, **kwargs):
+        TRIPlugin.__init__(self, name=self.name, description=self.description, authors=self.authors,
+                           version=self.version, url=self.url, copyright=self.copyright, **kwargs)
         # If a config dict is defined in a Plugin, the UI will present the user
         # with a dialog box allowing run-time configuration (populated with the
         # default values set here).  Although vals can be of any pickle-able type,

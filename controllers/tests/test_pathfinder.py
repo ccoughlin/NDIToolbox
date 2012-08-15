@@ -71,6 +71,11 @@ class TestPathFinder(unittest.TestCase):
         model_path = os.path.join(self.user_path, "podmodels")
         self.assertEqual(model_path, pathfinder.podmodels_path())
 
+    def test_gates_path(self):
+        """Verify correct path to ultrasonic gates"""
+        gates_path = os.path.join(self.user_path, "gates")
+        self.assertEqual(gates_path, pathfinder.gates_path())
+
     def test_config_path(self):
         """Verify correct path to configuration file"""
         config_path = os.path.normcase(os.path.expanduser("~/nditoolbox.cfg"))

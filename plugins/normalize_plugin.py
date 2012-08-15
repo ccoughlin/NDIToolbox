@@ -27,13 +27,13 @@ class NormalizePlugin(TRIPlugin):
     url = "www.tri-austin.com"
     copyright = "Copyright (C) 2012 TRI/Austin, Inc.  All rights reserved."
 
-    def __init__(self):
-        super(NormalizePlugin, self).__init__(self.name, self.description,
-                                              self.authors, self.url, self.copyright)
+    def __init__(self, **kwargs):
+        TRIPlugin.__init__(self, name=self.name, description=self.description, authors=self.authors,
+                           version=self.version, url=self.url, copyright=self.copyright, **kwargs)
 
     def run(self):
         """Executes the plugin - if data are not None they are normalized
         against the largest single element in the array."""
         if self._data is not None:
             max_el = np.max(self._data)
-            self._data = self._data / max_el
+            self._data /= max_el

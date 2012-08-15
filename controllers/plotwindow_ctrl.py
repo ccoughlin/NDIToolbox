@@ -15,7 +15,6 @@ from matplotlib import cm
 import wx
 import wx.lib.dialogs
 from functools import wraps
-import multiprocessing
 import os.path
 import Queue
 
@@ -43,23 +42,6 @@ def replace_plot(fn):
                     ax.hold()
 
     return wrapped
-
-
-def plugin_wrapper(plugin_cls, plugin_data, plugin_queue, plugin_cfg=None):
-    """multiprocessing wrapper function, used to execute
-    plugin run() method in separate process.  plugin_cls is the Plugin class
-    to instantiate, plugin_data is the data to run the plugin on, and
-    plugin_queue is the Queue instance the function should return the
-    results in back to the caller.  If plugin_cfg is not None, it is
-    supplied to the Plugin instance as its config dict.
-    """
-    plugin_instance = plugin_cls()
-    plugin_instance.data = plugin_data
-    if plugin_cfg is not None:
-        plugin_instance.config = plugin_cfg
-    plugin_instance.run()
-    plugin_queue.put(plugin_instance.data)
-
 
 class BasicPlotWindowController(object):
     """Base class for PlotWindows"""
@@ -134,49 +116,53 @@ class BasicPlotWindowController(object):
                 err_dlg.Destroy()
         dlg.Destroy()
 
-    def on_run_plugin(self, evt):
+    def on_run_toolkit(self, evt):
         """Handles request to run a plugin"""
-        self.run_plugin(evt.GetId())
+        self.run_toolkit(evt.GetId())
 
     @replace_plot
-    def run_plugin(self, requested_plugin_id):
-        """Runs plugin with specified ID on current data set,
+    def run_toolkit(self, requested_toolkit_id):
+        """Runs toolkit with specified ID on current data set,
         replaces current data and refreshes plot"""
-        for plugin_id, plugin in self.available_plugins.items():
-            if requested_plugin_id == plugin_id:
-                cfg = None
-                plugin_class, check_plugin_config_instance = self.model.get_plugin(plugin[0])
-                if hasattr(check_plugin_config_instance, "config"):
-                    cfg = self.configure_plugin_dlg(check_plugin_config_instance)
-                    if cfg is None:
-                        return
-                plugin_queue = multiprocessing.Queue()
-                plugin_process = multiprocessing.Process(target=plugin_wrapper,
-                                                         args=(plugin_class, self.data, plugin_queue, cfg))
-                plugin_process.daemon = True
-                plugin_process.start()
-                keepGoing = True
-                # TODO: move progress dialog to dialogs module
+        for toolkit_id, toolkit in self.available_plugins.items():
+            if requested_toolkit_id == toolkit_id:
+                plugin_class = self.model.get_plugin(toolkit[0])
+                self.run_plugin(plugin_class)
+
+    @replace_plot
+    def run_plugin(self, plugin_cls, **kwargs):
+        """Runs plugin of specified class plugin_cls on current data set,
+        replaces current data and refreshes plot"""
+        cfg = None
+        # Instantiate the plugin to see if it has a self.config dict
+        # that should be configured by the user prior to execution
+        plugin_instance = plugin_cls()
+        if hasattr(plugin_instance, "config"):
+            cfg = self.configure_plugin_dlg(plugin_instance)
+            if cfg is None:
+                return
+        plugin_process, plugin_queue = mainmodel.run_plugin(plugin_cls, self.data, cfg, **kwargs)
+        keepGoing = True
+        try:
+            progress_dlg = wx.ProgressDialog("Running Plugin",
+                                             "Please wait, executing plugin...",
+                                             parent=self.view,
+                                             style=wx.PD_CAN_ABORT)
+            while keepGoing:
+                wx.MilliSleep(100)
+                (keepGoing, skip) = progress_dlg.UpdatePulse()
                 try:
-                    progress_dlg = wx.ProgressDialog("Running Plugin",
-                                                     "Please wait, executing plugin...",
-                                                     parent=self.view,
-                                                     style=wx.PD_CAN_ABORT)
-                    while keepGoing:
-                        wx.MilliSleep(100)
-                        (keepGoing, skip) = progress_dlg.UpdatePulse()
-                        try:
-                            returned_data = plugin_queue.get(False)
-                        except Queue.Empty:
-                            continue
-                        if returned_data is not None:
-                            self.model.data = returned_data
-                            break
-                        if not keepGoing:
-                            plugin_process.terminate()
-                        wx.getApp().Yield()
-                finally:
-                    progress_dlg.Destroy()
+                    returned_data = plugin_queue.get(False)
+                except Queue.Empty:
+                    continue
+                if returned_data is not None:
+                    self.model.data = returned_data
+                    break
+                if not keepGoing:
+                    plugin_process.terminate()
+                wx.getApp().Yield()
+        finally:
+            progress_dlg.Destroy()
 
     def on_close(self, evt):
         """Handles request to close plot window"""
@@ -298,6 +284,8 @@ class PlotWindowController(BasicPlotWindowController):
         self.view = view
         self.axes_grid = True
         self.model = model.PlotWindowModel(self, data_file)
+        self.gates = {}
+        self.get_gates()
         self.init_plot_defaults()
 
     def plot(self, data):
@@ -333,27 +321,41 @@ class PlotWindowController(BasicPlotWindowController):
         """Applies full rectification to the current data set"""
         self.model.rectify_full()
 
+    def generate_gate_id(self, gate_name):
+        """Generates an ID number for the specified gate name.
+        Used to identify gates in wxPython menu events."""
+        id = 1011 + len(self.gates)
+        return id
+
     def get_gates(self):
         """Returns a dict listing available window functions"""
-        return self.model.gates
+        for gate_name in self.model.gates:
+            self.gates[self.generate_gate_id(gate_name)] = gate_name
 
     def on_apply_gate(self, evt):
         """Handles request to apply window function ('gate' in UT)
         to data"""
-        self.apply_gate(evt.GetId())
+        self.run_gate(evt.GetId())
 
     @replace_plot
-    def apply_gate(self, gate_id):
-        """Applies a window function ('gate' in ultrasonics parlance)
-        to the current data set"""
+    def run_gate(self, gate_id):
+        """Runs toolkit with specified ID on current data set,
+        replaces current data and refreshes plot"""
         if self.model.data is not None:
             rng_dlg = dialogs.FloatRangeDialog("Please specify the gate region.")
             if rng_dlg.ShowModal() == wx.ID_OK:
                 try:
                     start_pos, end_pos = rng_dlg.GetValue()
-                    self.model.apply_gate(gate_id, start_pos, end_pos)
+                    gate_name, gate_cls = self.gates.get(gate_id)
+                    self.run_plugin(gate_cls, start_pos=start_pos, end_pos=end_pos)
                 except ValueError as err: # negative dimensions
                     err_msg = "{0}".format(err)
+                    err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                               caption="Unable To Apply Gate", style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                    err_dlg.Destroy()
+                except IndexError: # specified nonexistent gate id
+                    err_msg = "Unable to locate specified gate function."
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                caption="Unable To Apply Gate", style=wx.ICON_ERROR)
                     err_dlg.ShowModal()
@@ -555,7 +557,7 @@ class ImgPlotWindowController(BasicImgPlotWindowController):
         self.model.transpose_data()
 
 
-class MegaPlotWindowController(BasicImgPlotWindowController):
+class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowController):
     """Controller for MegaPlotWindows"""
 
     def __init__(self, view, data_file):
@@ -564,6 +566,9 @@ class MegaPlotWindowController(BasicImgPlotWindowController):
         self.axes_grid = True
         self.model = model.MegaPlotWindowModel(self, data_file)
         self.colorbar = None
+        self.gate_coords = [None, None]
+        self.gates = {}
+        self.get_gates()
         self.init_plot_defaults()
 
     def plot(self, data):
@@ -686,11 +691,27 @@ class MegaPlotWindowController(BasicImgPlotWindowController):
 
     def on_click(self, evt):
         """Handles mouse click in the C Scan - update other plots"""
-        if not self.view.navtools_cb.IsChecked():
+        if not self.view.navtools_enabled():
             if evt.inaxes == self.view.cscan_axes:
                 xpos = int(evt.xdata)
                 ypos = int(evt.ydata)
                 self.update_plot(xpos, ypos)
+            if evt.inaxes == self.view.ascan_axes:
+                xpos = int(evt.xdata)
+                if self.gate_coords[0] is None:
+                    self.gate_coords[0] = xpos
+                    self.view.ascan_axes.axvline(x=xpos, color='r', linestyle='--')
+                elif self.gate_coords[1] is None:
+                    self.gate_coords[1] = xpos
+                    self.view.ascan_axes.axvline(x=xpos, color='r', linestyle='--')
+                    self.gate_coords.sort()
+                else:
+                    self.gate_coords[0] = None
+                    self.gate_coords[1] = None
+                    while len(self.view.ascan_axes.lines) > 1:
+                        self.view.ascan_axes.lines.pop(-1)
+                self.view.canvas.draw()
+
 
     def on_check_navtools(self, evt):
         """Handles toggle of enable/disable navigation toolbar checkbox"""
@@ -720,6 +741,9 @@ class MegaPlotWindowController(BasicImgPlotWindowController):
             self.slice_idx = slice_idx
             if self.view.slice_cb.IsChecked():
                 self.plot_cscan(self.scnr.cscan_data(self.slice_idx), self.slice_idx)
+        if self.gate_coords != [None, None]:
+            self.view.ascan_axes.axvline(x=self.gate_coords[0], color='r', linestyle='--')
+            self.view.ascan_axes.axvline(x=self.gate_coords[1], color='r', linestyle='--')
         self.refresh_plot()
 
     def on_select_cmap(self, evt):
@@ -753,35 +777,6 @@ class MegaPlotWindowController(BasicImgPlotWindowController):
         xpos = self.view.xpos_sc.GetValue()
         ypos = self.view.ypos_sc.GetValue()
         self.plot_ascan(self.model.rectify_full(self.scnr.ascan_data(xpos, ypos)), xpos, ypos)
-
-    def get_gates(self):
-        """Returns a dict listing available window functions"""
-        return self.model.gates
-
-    @replace_plot
-    def on_apply_gate(self, evt):
-        """Handles request to apply window function ('gate' in UT)
-        to A-scan"""
-        self.apply_gate(evt.GetId())
-
-    def apply_gate(self, gate_id):
-        if self.model.data is not None:
-            rng_dlg = dialogs.FloatRangeDialog("Please specify the gate region.")
-            if rng_dlg.ShowModal() == wx.ID_OK:
-                try:
-                    start_pos, end_pos = rng_dlg.GetValue()
-                    xpos = self.view.xpos_sc.GetValue()
-                    ypos = self.view.ypos_sc.GetValue()
-                    ascan_data = self.scnr.ascan_data(xpos, ypos)
-                    self.plot_ascan(self.model.apply_gate(ascan_data, gate_id, start_pos, end_pos), xpos, ypos)
-                except ValueError as err: # negative dimensions
-                    err_msg = "{0}".format(err)
-                    err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                               caption="Unable To Apply Gate", style=wx.ICON_ERROR)
-                    err_dlg.ShowModal()
-                    err_dlg.Destroy()
-                finally:
-                    rng_dlg.Destroy()
 
     def on_define_cscan(self, evt):
         """Handles request to define the data used

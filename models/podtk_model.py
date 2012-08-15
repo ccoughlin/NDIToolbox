@@ -25,28 +25,7 @@ class PODWindowModel(object):
         returning a list of the models successfully imported as tuples:
         first element is the model name (e.g. AHat_v_A), second element is
         the class of the model."""
-        models_folder = pathfinder.podmodels_path()
-        pod_models = []
-        if not models_folder in sys.path:
-            sys.path.append(models_folder)
-        for root, dirs, files in os.walk(pathfinder.podmodels_path()):
-            for model_file in files:
-                model_name, model_extension = os.path.splitext(model_file)
-                module_hdl = None
-                if model_extension == os.extsep + "py":
-                    try:
-                        module_hdl, path_name, description = imp.find_module(model_name)
-                        podmodel_module = imp.load_module(model_name, module_hdl, path_name,
-                                                          description)
-                        podmodel_classes = inspect.getmembers(podmodel_module, inspect.isclass)
-                        for podmodel_class in podmodel_classes:
-                            if issubclass(podmodel_class[1], PODModel):
-                                if podmodel_class[1].__module__ == model_name:
-                                    pod_models.append(podmodel_class)
-                    finally:
-                        if module_hdl is not None:
-                            module_hdl.close()
-        return pod_models
+        return mainmodel.load_dynamic_modules(pathfinder.podmodels_path(), PODModel)
 
     @classmethod
     def load_data(cls, file_name):

@@ -110,3 +110,8 @@ def config_path():
 def podmodels_path():
     """Returns the path to POD Toolkit models"""
     return os.path.join(user_path(), "podmodels")
+
+@normalized
+def gates_path():
+    """Returns the path to ultrasonic gates"""
+    return os.path.join(user_path(), "gates")

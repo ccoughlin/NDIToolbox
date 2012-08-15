@@ -5,9 +5,11 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 
 __author__ = 'Chris R. Coughlin'
 
+from controllers import pathfinder
 import models.plotwindow_model as model
 import models.mainmodel as mainmodel
 import models.abstractplugin as abstractplugin
+import models.ultrasonicgate as ultrasonicgate
 import numpy as np
 import scipy.signal
 import random
@@ -56,10 +58,8 @@ class TestBasicPlotWindowModel(unittest.TestCase):
         for plugin in retrieved_plugin_list:
             plugin_name = plugin[0]
             plugin_instance = plugin[1]
-            plg_cls, plg_instance = self.basic_model.get_plugin(plugin_name)
+            plg_cls = self.basic_model.get_plugin(plugin_name)
             self.assertEqual(type(plugin_instance), type(plg_cls))
-            self.assertTrue(isinstance(plg_instance, plg_cls))
-
 
 class TestPlotWindowModel(unittest.TestCase):
     """Tests the PlotWindowModel class"""
@@ -73,22 +73,22 @@ class TestPlotWindowModel(unittest.TestCase):
         """Returns a list of random data"""
         return [random.uniform(-100, 100) for i in range(25)]
 
-    def test_define_gate_functions(self):
-        """Verify _define_gate_functions sets up a dict of available window functions"""
-        self.assertTrue(isinstance(self.model.gates, dict))
-        available_gate_functions = ("boxcar", "triang", "blackman", "hamming",
-                                    "hanning", "bartlett", "parzen", "bohman",
-                                    "blackmanharris", "nuttall", "barthann")
-        for gate_fn in available_gate_functions:
-            self.assertTrue(gate_fn in self.model.gates)
+    def test_load_user_gate_functions(self):
+        """Verify load_user_gate_functions returns the user's custom gate functions"""
+        expected_gates = mainmodel.load_dynamic_modules(pathfinder.gates_path(), ultrasonicgate.UltrasonicGate)
+        retrieved_gates = self.model.load_user_gate_functions()
+        self.assertEqual(len(expected_gates), len(retrieved_gates))
+        for idx in range(len(expected_gates)):
+            self.assertEqual(expected_gates[idx][0], retrieved_gates[idx][0])
+            self.assertTrue(issubclass(retrieved_gates[idx][1], ultrasonicgate.UltrasonicGate))
 
     def test_apply_window(self):
         """Verify apply_window function applies a given gate function and returns an ndarray"""
         #original_data = np.ones(55)
         original_data = np.array(self.random_data())
         for gate in self.model.gates:
-            gate_fn = gate[0]
-            windowed_data = self.model.apply_window(gate_fn, original_data, 3, 21)
+            gate_name = gate[0]
+            windowed_data = self.model.apply_window(gate_name, original_data, 3, 21)
             self.assertTrue(isinstance(windowed_data, np.ndarray))
             self.assertEqual(original_data.size, windowed_data.size)
 
@@ -97,14 +97,15 @@ class TestPlotWindowModel(unittest.TestCase):
         original_data = np.array(self.random_data())
         self.model.original_data = original_data
         for gate in self.model.gates:
+            gate_name = gate[0]
             self.model.revert_data()
-            gate_fn = self.model.gates.get(gate)[0]
-            gate_id = self.model.gates.get(gate)[1]
             start_idx = 2
             end_idx = 4
-            expected_data = model.TwoDManipMixin().apply_window(gate_fn, self.model.data,
+            winder_cls = model.TwoDManipMixin()
+            winder_cls._define_gate_functions()
+            expected_data = winder_cls.apply_window(gate_name, self.model.data,
                                                     start_idx, end_idx)
-            self.model.apply_gate(gate_id, start_idx, end_idx)
+            self.model.apply_gate(gate_name, start_idx, end_idx)
             self.assertListEqual(original_data.tolist(), self.model.original_data.tolist())
             self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
 

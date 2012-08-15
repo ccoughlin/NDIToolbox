@@ -153,11 +153,10 @@ class PlotWindow(wx.Frame):
         self.ops_mnu.AppendMenu(wx.ID_ANY, 'Rectify', self.rect_mnu)
 
         self.gate_mnu = wx.Menu() # Gates operations
-        for gate_idx, params in self.controller.get_gates().items():
-            gate_lbl = params[0]
-            gate_id = params[1]
-            gate_desc = "Applies a {0} gate function to the data".format(gate_lbl)
-            gate_mnui = wx.MenuItem(self.gate_mnu, id=gate_id, text=gate_lbl, help=gate_desc)
+        for gate in self.controller.gates:
+            gate_name = self.controller.gates[gate][0]
+            gate_desc = "Applies a {0} gate function to the data".format(gate_name)
+            gate_mnui = wx.MenuItem(self.gate_mnu, id=gate, text=gate_name, help=gate_desc)
             self.gate_mnu.AppendItem(gate_mnui)
             self.Bind(wx.EVT_MENU, self.controller.on_apply_gate, id=gate_mnui.GetId())
         self.ops_mnu.AppendMenu(wx.ID_ANY, 'Gates', self.gate_mnu)
@@ -184,7 +183,7 @@ class PlotWindow(wx.Frame):
             plugin_description = plugin[1].description
             script_mnui = wx.MenuItem(self.tools_mnu, id=plugin_id, text=plugin_name,
                                       help=plugin_description)
-            self.Bind(wx.EVT_MENU, self.controller.on_run_plugin, id=script_mnui.GetId())
+            self.Bind(wx.EVT_MENU, self.controller.on_run_toolkit, id=script_mnui.GetId())
             self.plugins_mnu.AppendItem(script_mnui)
         self.plugins_mnu.AppendSeparator()
         install_plugin_mnui = wx.MenuItem(self.plugins_mnu, wx.ID_ANY, text="Install Plugin...",
@@ -415,12 +414,11 @@ class MegaPlotWindow(PlotWindow):
     def toggle_toolbar(self):
         """Enables / disables the navigation toolbar and sets
         cursors accordingly."""
-        navtools_enabled = self.navtools_cb.IsChecked()
-        if navtools_enabled:
+        if self.navtools_enabled():
             self.canvas.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
         else:
             self.canvas.SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
-        self.toolbar.Enable(navtools_enabled)
+        self.toolbar.Enable(self.navtools_enabled())
 
     def init_plot_menu(self):
         """Creates the Plot menu"""
@@ -464,13 +462,17 @@ class MegaPlotWindow(PlotWindow):
         self.Bind(wx.EVT_MENU, self.controller.on_rectify, id=self.fullrect_mnui.GetId())
         self.rect_mnu.AppendItem(self.fullrect_mnui)
         self.ops_mnu.AppendMenu(wx.ID_ANY, 'Rectify', self.rect_mnu)
+        # Aug-15 [crc] - disabled gates until a suitable approach to handling
+        # 3D data is implemented
+        #self.gate_mnu = wx.Menu() # Gates operations
+        #for gate in self.controller.gates:
+        #    gate_name = self.controller.gates[gate][0]
+        #    gate_desc = "Applies a {0} gate function to the data".format(gate_name)
+        #    gate_mnui = wx.MenuItem(self.gate_mnu, id=gate, text=gate_name, help=gate_desc)
+        #    self.gate_mnu.AppendItem(gate_mnui)
+        #    self.Bind(wx.EVT_MENU, self.controller.on_apply_gate, id=gate_mnui.GetId())
+        #self.ops_mnu.AppendMenu(wx.ID_ANY, 'Gates', self.gate_mnu)
 
-        self.gate_mnu = wx.Menu() # Gates operations
-        for gate_idx, params in self.controller.get_gates().items():
-            gate_lbl = params[0]
-            gate_id = params[1]
-            gate_desc = "Applies a {0} gate function to the data".format(gate_lbl)
-            gate_mnui = wx.MenuItem(self.gate_mnu, id=gate_id, text=gate_lbl, help=gate_desc)
-            self.gate_mnu.AppendItem(gate_mnui)
-            self.Bind(wx.EVT_MENU, self.controller.on_apply_gate, id=gate_mnui.GetId())
-        self.ops_mnu.AppendMenu(wx.ID_ANY, 'Gates', self.gate_mnu)
+    def navtools_enabled(self):
+        """Returns True if plot navigation bar is enabled"""
+        return self.navtools_cb.IsChecked()

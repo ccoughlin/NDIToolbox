@@ -73,20 +73,13 @@ class CompanyPlugin(AbstractPlugin):
     url = "www.company_url.com"
     copyright = "Copyright (C) 2012 Company Name.  All rights reserved."
 
-    def __init__(self, name=None, description=None, authors=None, version=None,
-                 url=None, copyright=None):
-        if name is not None:
-            self.name = name
-        if description is not None:
-            self.description = description
-        if authors is not None:
-            self.authors = authors
-        if version is not None:
-            self.version = version
-        if url is not None:
-            self.url = url
-        if copyright is not None:
-            self.copyright = copyright
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name', self.name)
+        self.description = kwargs.get('description', self.description)
+        self.authors = kwargs.get('authors', self.authors)
+        self.version = kwargs.get('version', self.version)
+        self.url = kwargs.get('url', self.url)
+        self.copyright = kwargs.get('copyright', self.copyright)
         self._data = None
 
     @property
@@ -112,10 +105,8 @@ class TRIPlugin(CompanyPlugin):
     url = "www.tri-austin.com"
     copyright = "Copyright (C) 2012 TRI/Austin, Inc.  All rights reserved."
 
-    def __init__(self, name=None, description=None, authors=None, version=None,
-                 url=None, copyright=None):
-        super(TRIPlugin, self).__init__(name, description, authors, version,
-                                        url, copyright)
+    def __init__(self, **kwargs):
+        CompanyPlugin.__init__(self, **kwargs)
 
 
 class ComputationalToolsPlugin(CompanyPlugin):
@@ -128,7 +119,5 @@ class ComputationalToolsPlugin(CompanyPlugin):
     url = "www.computationaltools.com"
     copyright = "Copyright (C) 2012 Computational Tools.  All rights reserved."
 
-    def __init__(self, name=None, description=None, authors=None, version=None,
-                 url=None, copyright=None):
-        super(ComputationalToolsPlugin, self).__init__(name, description, authors, version,
-                                                       url, copyright)
+    def __init__(self,**kwargs):
+        CompanyPlugin.__init__(self, **kwargs)

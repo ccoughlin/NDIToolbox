@@ -14,7 +14,7 @@ class WorkerThread(threading.Thread):
     def __init__(self, exception_queue, return_queue=None, group=None, target=None, name=None,
                  args=(), kwargs={}, verbose=None):
         """Standard Thread API with the addition of Queues for passing Exceptions
-        and return valuess."""
+        and return values."""
         threading.Thread.__init__(self, group=group, target=target, name=name, verbose=verbose)
         self.daemon = True
         self.target = target
