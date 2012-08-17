@@ -141,7 +141,7 @@ class BasicPlotWindowController(object):
             cfg = self.configure_plugin_dlg(plugin_instance)
             if cfg is None:
                 return
-        plugin_process, plugin_queue = mainmodel.run_plugin(plugin_cls, self.data, cfg, **kwargs)
+        plugin_process, plugin_queue, exception_queue = mainmodel.run_plugin(plugin_cls, self.data, cfg, **kwargs)
         keepGoing = True
         try:
             progress_dlg = wx.ProgressDialog("Running Plugin",
@@ -151,6 +151,17 @@ class BasicPlotWindowController(object):
             while keepGoing:
                 wx.MilliSleep(100)
                 (keepGoing, skip) = progress_dlg.UpdatePulse()
+                try:
+                    exc_type, exc = exception_queue.get(block=False)
+                    err_msg = "An error occurred while running the plugin:\n{0}".format(exc)
+                    err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                               caption="Unable To Run Plugin",
+                                               style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                    err_dlg.Destroy()
+                    break
+                except Queue.Empty:
+                    pass
                 try:
                     returned_data = plugin_queue.get(False)
                 except Queue.Empty:

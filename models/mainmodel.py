@@ -76,7 +76,7 @@ def load_gates():
     the class of the plugin."""
     return load_dynamic_modules(pathfinder.gates_path(), abstractplugin.AbstractPlugin)
 
-def plugin_wrapper(plugin_cls, plugin_data, plugin_queue, plugin_cfg=None, **kwargs):
+def plugin_wrapper(exception_queue, plugin_cls, plugin_data, plugin_queue, plugin_cfg=None, **kwargs):
     """multiprocessing wrapper function, used to execute
     plugin run() method in separate process.  plugin_cls is the Plugin class
     to instantiate, plugin_data is the data to run the plugin on, and
@@ -84,22 +84,31 @@ def plugin_wrapper(plugin_cls, plugin_data, plugin_queue, plugin_cfg=None, **kwa
     results in back to the caller.  If plugin_cfg is not None, it is
     supplied to the Plugin instance as its config dict.
     """
+
     plugin_instance = plugin_cls(**kwargs)
     plugin_instance.data = plugin_data
     if plugin_cfg is not None:
         plugin_instance.config = plugin_cfg
-    plugin_instance.run()
-    plugin_queue.put(plugin_instance.data)
+    try:
+        # Instruct NumPy to raise all warnings (division by zero, etc.)
+        # to Exceptions to pass to exception queue
+        np.seterr(all='raise')
+        plugin_instance.run()
+        plugin_queue.put(plugin_instance.data)
+    except Exception:
+        # Pass a message to the parent process with the Exception information
+        exception_queue.put(sys.exc_info()[:2])
 
 def run_plugin(plugin_cls, data=None, config=None, **kwargs):
     """Runs the plugin plugin_cls"""
     plugin_queue = multiprocessing.Queue()
+    plugin_exception_queue = multiprocessing.Queue()
     plugin_process = multiprocessing.Process(target=plugin_wrapper,
-                                             args=(plugin_cls, data, plugin_queue, config),
+                                             args=(plugin_exception_queue, plugin_cls, data, plugin_queue, config),
                                              kwargs=kwargs)
     plugin_process.daemon = True
     plugin_process.start()
-    return plugin_process, plugin_queue
+    return plugin_process, plugin_queue, plugin_exception_queue
 
 def get_config():
     """Returns a Configure instance pointing to the application's

@@ -52,6 +52,32 @@ def deleted_user_path():
         return deleted_folders
     return None
 
+# Define a mock plugin to inspect results of calling plugin classes
+class MockPlugin(abstractplugin.TRIPlugin):
+    """Mock NDIToolbox plugin used to check plugin_wrapper"""
+
+    def __init__(self, **kwargs):
+        abstractplugin.TRIPlugin.__init__(self, **kwargs)
+        self.config = {'a':'b'}
+        self._data = {'kwargs':kwargs}
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, new_data):
+        self._data['data'] = new_data
+
+    def run(self):
+        self._data['config'] = self.config
+
+# A MockPlugin that raises an Exception on execution
+class ExceptionPlugin(MockPlugin):
+    """Raises an Exception on run() - used to verify
+    exception Queue messaging"""
+    def run(self):
+        raise Exception("Wuh-oh.")
 
 class TestMainModel(unittest.TestCase):
     """Tests the main model"""
@@ -308,51 +334,56 @@ class TestMainModel(unittest.TestCase):
             gate_instance = gate[1]
             self.assertTrue(issubclass(gate_instance, ultrasonicgate.UltrasonicGate))
 
-    # Define a mock plugin to inspect results of calling plugin classes
-    class MockPlugin(abstractplugin.TRIPlugin):
-        """Mock NDIToolbox plugin used to check plugin_wrapper"""
 
-        def __init__(self, **kwargs):
-            abstractplugin.TRIPlugin.__init__(self, **kwargs)
-            self.config = {'a':'b'}
-            self._data = {'kwargs':kwargs}
-
-        @property
-        def data(self):
-            return self._data
-
-        @data.setter
-        def data(self, new_data):
-            self._data['data'] = new_data
-
-        def run(self):
-            self._data['config'] = self.config
 
     def test_plugin_wrapper(self):
         """Verify the plugin_wrapper function properly configures and runs a plugin"""
         plugin_queue = multiprocessing.Queue()
+        plugin_exception_queue = multiprocessing.Queue()
         plugin_data = np.array(self.random_data())
         plugin_cfg = {'a':'c'}
         kwargs = {'name':'Mock Plugin', 'description':'Mock plugin used to test plugin_wrapper'}
-        model.plugin_wrapper(TestMainModel.MockPlugin, plugin_data, plugin_queue, plugin_cfg, **kwargs)
+        model.plugin_wrapper(plugin_exception_queue, MockPlugin, plugin_data, plugin_queue, plugin_cfg,
+                             **kwargs)
         returned_data = plugin_queue.get()
         self.assertTrue(isinstance(returned_data, dict))
         self.assertDictEqual(returned_data['config'], plugin_cfg)
         self.assertDictEqual(returned_data['kwargs'], kwargs)
         self.assertListEqual(returned_data['data'].tolist(), plugin_data.tolist())
 
+    def test_plugin_wrapper_exceptions(self):
+        """Verify the plugin_wrapper function properly returns Exception info"""
+        plugin_queue = multiprocessing.Queue()
+        plugin_exception_queue = multiprocessing.Queue()
+        plugin_data = np.array(self.random_data())
+        model.plugin_wrapper(exception_queue=plugin_exception_queue,
+                             plugin_cls=ExceptionPlugin,
+                             plugin_data=plugin_data,
+                             plugin_queue=plugin_queue)
+        exc_type, exc = plugin_exception_queue.get(block=True)
+        self.assertTrue(isinstance(exc, Exception))
+
     def test_run_plugin(self):
         """Verify the main model can run a loaded plugin"""
         plugin_data = np.array(self.random_data())
         plugin_config = {'pi':3.141592654}
-        # Can't use MockPlugin - pickle won't find it
         plugin_cls = self.get_normalize_plugin()
-        plugin_process, plugin_queue = model.run_plugin(plugin_cls,
+        plugin_process, plugin_queue, exception_queue = model.run_plugin(plugin_cls,
                                                         data=plugin_data, config=plugin_config)
         self.assertTrue(isinstance(plugin_process, multiprocessing.Process))
         returned_data = plugin_queue.get()
         expected_data = plugin_data / np.max(plugin_data)
         self.assertListEqual(expected_data.tolist(), returned_data.tolist())
+
+    def test_run_plugin_exceptions(self):
+        """Verify run_plugin returns exception messages in Queue"""
+        plugin_data = np.zeros(5) # Use division by zero exception in NormalizePlugin
+        plugin_config = {'pi':3.141592654}
+        plugin_cls = self.get_normalize_plugin()
+        plugin_process, plugin_queue, exception_queue = model.run_plugin(plugin_cls,
+                                                                     data=plugin_data, config=plugin_config)
+        exc_type, exc = exception_queue.get(block=True)
+        self.assertTrue(isinstance(exc, Exception))
 
     def get_normalize_plugin(self):
         """Returns NDIToolbox's NormalizePlugin plugin"""
@@ -486,7 +517,7 @@ class TestMainModel(unittest.TestCase):
         is_winxp64 = False
         if sys.platform == 'win32':
             major, minor = self.get_win_ver()
-            is_winxp = major == 5 and minor == 2
+            is_winxp64 = major == 5 and minor == 2
         self.assertEqual(is_winxp64, model.is_winxp64())
 
     def test_iswin2k(self):
@@ -502,5 +533,6 @@ class TestMainModel(unittest.TestCase):
             os.remove(self.sample_data_file + ".hdf5")
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     random.seed()
     unittest.main()
