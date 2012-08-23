@@ -204,10 +204,13 @@ class MainUIController(object):
     def on_display_log(self, evt):
         """Handles request to display application log"""
         log_path = pathfinder.log_path()
-        with open(log_path, "r") as fidin:
-            log_contents = fidin.readlines()
-            if len(log_contents) is 0:
-                log_contents = ['Log is currently empty.']
+        default_log_contents = ['Log is currently empty.']
+        log_contents = []
+        if os.path.exists(log_path):
+            with open(log_path, "r") as fidin:
+                log_contents = fidin.readlines()
+        if len(log_contents) is 0:
+            log_contents = default_log_contents
         text_display_dlg = dlg.TextDisplayDialog(parent=self.view, text=log_contents,
                                                      title='NDIToolbox Log - {0}'.format(log_path),
                                                      wrap=False,

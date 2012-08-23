@@ -95,6 +95,19 @@ class TestConfigure(unittest.TestCase):
         self.assertIsNone(self.config.get_app_option_list('Potato'))
         self.assertIsNone(self.config.get('Plugins', "Colander"))
 
+    def test_no_cfg_file(self):
+        """Verify Configure handles non-existent config file"""
+        no_such_file = os.path.join(os.path.dirname(__file__), "_config.cfg")
+        self.assertFalse(os.path.exists(no_such_file))
+        cfg = config.Configure(no_such_file)
+        self.assertIsNone(cfg.get_app_option('path'))
+        cfg.set_app_option({'path': pathfinder.app_path()})
+        # App option should now be set in newly-created file
+        self.assertTrue(os.path.exists(no_such_file))
+        self.assertEqual(cfg.get_app_option('path'), pathfinder.app_path())
+        if os.path.exists(no_such_file):
+            os.remove(no_such_file)
+
     def tearDown(self):
         if os.path.exists(self.config_path):
             os.remove(self.config_path)
