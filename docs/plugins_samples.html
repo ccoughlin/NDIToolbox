@@ -17,6 +17,7 @@
             padding-top: 60px;
             padding-bottom: 40px;
         }
+
         .sidebar-nav {
             padding: 9px 0;
         }
@@ -60,17 +61,20 @@
             <li><a href="#dev_sample_server">Communications With A Server</a></li>
             <li><a href="#dev_sample_java">Java Backend</a></li>
             <li><a href="#dev_sample_cpp">Extending With C++</a></li>
-       </ul>
-    </div><!--/.well -->
-</div><!--/span-->
-<div class="span9">
-    <div class="hero-unit">
-            <h1>Sample Plugins</h1>
-
-            <p>Examples of NDIToolbox plugins</p>
+        </ul>
     </div>
-<p>Now that you've read the <a href="plugins_developers.html">basics on developing plugins</a> for NDIToolbox, it's time to see some basic examples.</p>
-    <a name="dev_sample_server"><h3>Example Plugin 1: Server-Based</h3></a>
+    <!--/.well -->
+</div>
+<!--/span-->
+<div class="span9">
+<div class="hero-unit">
+    <h1>Sample Plugins</h1>
+
+    <p>Examples of NDIToolbox plugins</p>
+</div>
+<p>Now that you've read the <a href="plugins_developers.html">basics on developing plugins</a> for NDIToolbox, it's time
+    to see some basic examples.</p>
+<a name="dev_sample_server"><h3>Example Plugin 1: Server-Based</h3></a>
 
 <p>We've already seen example code for local plugins, now let's look at one way to keep code on the server. Consider a
     plugin designed to <a href="http://en.wikipedia.org/wiki/Edge_detection">detect edges</a> in a 2D image plot. SciPy
@@ -501,7 +505,8 @@ class JythonNormalizePlugin(TRIPlugin):
     XML-RPC route, we'd like to compile a C++ extension that Python can call directly. Extending Python with C or C++
     code is relatively straightforward on POSIX (OS X, Linux, FreeBSD, etc.) platforms, but can be tricky on Windows
     machines. Quoting from the
-    <a href="http://docs.python.org/extending/windows.html#differences-between-unix-and-windows">official Python documentation on the process</a>:</p>
+    <a href="http://docs.python.org/extending/windows.html#differences-between-unix-and-windows">official Python
+        documentation on the process</a>:</p>
 
 <div class="well">
     <em>"Windows Python is built in Microsoft Visual C++; using other compilers may or may not work."</em>
@@ -590,12 +595,15 @@ std::vector&lt;std::vector&lt;double&gt;&gt; BasicStats::normalizedData(const st
         the Boost.Python documentation</a>:</p>
 
 <div class="well">
-    <em>"Besides bjam, there are of course other ways to get your module built. What's written here should not be taken as
-    'the one and only way'. There are of course other build tools apart from bjam."<br />
-    <br />
-    "Take note however that the preferred build tool for Boost.Python is bjam. There are so many ways to set up the build
-    incorrectly. Experience shows that 90% of the 'I can't build Boost.Python' problems come from people who had to use
-    a different tool."</em>
+    <em>"Besides bjam, there are of course other ways to get your module built. What's written here should not be taken
+        as
+        'the one and only way'. There are of course other build tools apart from bjam."<br/>
+        <br/>
+        "Take note however that the preferred build tool for Boost.Python is bjam. There are so many ways to set up the
+        build
+        incorrectly. Experience shows that 90% of the 'I can't build Boost.Python' problems come from people who had to
+        use
+        a different tool."</em>
 </div>
 
 <p>Begin by <a href="http://www.boost.org/users/download/">downloading</a> the latest version of Boost, and extract it
@@ -708,7 +716,7 @@ project
     World!</a> example. Next, our original C++ code needs to be modified slightly - as it stands right now it expects to
     be dealing with conventional C++ <code>std::vector&lt;double&gt;</code> containers, but our code will need to handle
     Python <code>lists</code> instead. The most straightforward way of dealing with this change is by changing the C++
-    code to use Boost.Python's <code>boost::python::list</code> container.  Here's the updated version.</p>
+    code to use Boost.Python's <code>boost::python::list</code> container. Here's the updated version.</p>
 
 <b>basicstats.h</b>
 <pre class="pre-scrollable">
@@ -810,10 +818,12 @@ BOOST_PYTHON_MODULE(basicstats_ext)
 </pre>
 
 <p>This addition creates the API that Python will see from our extension library: a class <code>BasicStats</code> with
-    methods <code>calcMin</code>, <code>calcMax</code>, <code>normalizedData</code>, and <code>normalized2DData</code>; and a function
+    methods <code>calcMin</code>, <code>calcMax</code>, <code>normalizedData</code>, and <code>normalized2DData</code>;
+    and a function
     <code>version</code> that we've added to illustrate how to expose standalone C++ functions in the API. This
     completes the project so the only thing left to do is run <code>bjam</code> in our toolkit's source code folder to
-    compile our new Python module <code>basicstats_ext.pyd</code> (basically a renamed .DLL).  You should see output similar to the following if all goes well.</p>
+    compile our new Python module <code>basicstats_ext.pyd</code> (basically a renamed .DLL). You should see output
+    similar to the following if all goes well.</p>
 
 <pre class="pre-scrollable">
 C:\Users\CRC\src\cxx\toolbox_demo>bjam
@@ -907,9 +917,9 @@ class CPPNormalizePlugin(TRIPlugin):
     your plugin as an archive</a>, you'll need to create a sub-folder to place the DLL and .PYD file. Note that you may
     then also have to adjust your paths to compensate. Remember also that since you are distributing compiled code you
     may also need to consider your users' operating system, Python version, etc. and ship multiple versions of your
-    extension.  You may also wish to collect some basic information about the system your plugin is running on-
+    extension. You may also wish to collect some basic information about the system your plugin is running on-
     <a href="sys.platform">operating system</a> and <a href="sys.version_info">version of Python</a> in particular-and
-    use this information to tailor your plugin's imports.  NDIToolbox's <code>mainmodel.py</code> module also contains
+    use this information to tailor your plugin's imports. NDIToolbox's <code>mainmodel.py</code> module also contains
     some convenience functions that help to narrow down which version of Windows is being used:
 </p>
 
@@ -924,8 +934,8 @@ class CPPNormalizePlugin(TRIPlugin):
 
 <p>The <a href="http://docs.python.org/library/platform.html">platform</a> module in the Python Standard Library can
     provide additional details, e.g. <code>platform.python_compiler()</code> will identify the compiler used to build
-    the Python interpreter.  If you need to ship multiple compiled extensions, you can then use this information to
-determine which extension to import, for example:</p>
+    the Python interpreter. If you need to ship multiple compiled extensions, you can then use this information to
+    determine which extension to import, for example:</p>
 
 <pre class="pre-scrollable">
 import platform

@@ -59,10 +59,6 @@ class UI(wx.Frame):
                                       help="Opens the local storage folder")
         self.file_mnu.AppendItem(browsedata_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_browse_userpath, id=browsedata_mnui.GetId())
-        userpath_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Choose Data Folder...",
-                                    help="Specify the local storage folder")
-        self.file_mnu.AppendItem(userpath_mnui)
-        self.Bind(wx.EVT_MENU, self.controller.on_choose_userpath, id=userpath_mnui.GetId())
         self.file_mnu.AppendSeparator()
         quit_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="E&xit\tCTRL+X",
                                 help="Exit The Program")
@@ -77,6 +73,16 @@ class UI(wx.Frame):
                                  help="Runs the Probability Of Detection Toolkit")
         self.tool_mnu.AppendItem(podtk_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_run_podtk, id=podtk_mnui.GetId())
+        self.prefs_mnu = wx.Menu() # Preferences Menu
+        userpath_mnui = wx.MenuItem(self.prefs_mnu, wx.ID_ANY, text="Choose Data Folder...",
+                                    help="Specify the local storage folder")
+        self.prefs_mnu.AppendItem(userpath_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_choose_userpath, id=userpath_mnui.GetId())
+        log_mnui = wx.MenuItem(self.prefs_mnu, wx.ID_ANY, text="Choose Logging Level...",
+                                    help="Specify the severity of events recorded in the application log")
+        self.prefs_mnu.AppendItem(log_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_choose_loglevel, id=log_mnui.GetId())
+        self.tool_mnu.AppendMenu(wx.ID_ANY, 'Preferences', self.prefs_mnu)
         self.menubar.Append(self.tool_mnu, "&Tools")
 
     def init_help_menu(self):
@@ -90,7 +96,6 @@ class UI(wx.Frame):
                                       help="Opens the Getting Started Guide")
         self.help_mnu.AppendItem(quickstart_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_quickstart, id=quickstart_mnui.GetId())
-
 
         self.plugins_mnu = wx.Menu()
         plugins_mnui = wx.MenuItem(self.plugins_mnu, wx.ID_ANY, text="Using Plugins",
@@ -123,6 +128,15 @@ class UI(wx.Frame):
                                        help="About the Axialis icons used in this project")
         self.help_mnu.AppendItem(about_icons_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_about_icons, id=about_icons_mnui.GetId())
+        self.help_mnu.AppendSeparator()
+        displaylog_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="Display Application Log...",
+                                      help="Displays the NDIToolbox application log")
+        self.Bind(wx.EVT_MENU, self.controller.on_display_log, id=displaylog_mnui.GetId())
+        self.help_mnu.AppendItem(displaylog_mnui)
+        clearlog_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="Clear Application Log",
+                                    help="Deletes the NDIToolbox application log")
+        self.Bind(wx.EVT_MENU, self.controller.on_clear_log, id=clearlog_mnui.GetId())
+        self.help_mnu.AppendItem(clearlog_mnui)
         self.menubar.Append(self.help_mnu, "&Help")
 
     def init_ui(self):

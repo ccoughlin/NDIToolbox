@@ -14,6 +14,7 @@ import h5py
 import numpy as np
 import scipy.misc
 import imp
+import logging
 import multiprocessing
 import os
 import random
@@ -31,6 +32,7 @@ def skipIfModuleNotInstalled(*modules):
         return lambda func: func
     except ImportError:
         return unittest.skip("Required module(s) not installed.")
+
 
 def deleted_user_path():
     """Utility function to delete empty folders in the user data folders,
@@ -58,8 +60,8 @@ class MockPlugin(abstractplugin.TRIPlugin):
 
     def __init__(self, **kwargs):
         abstractplugin.TRIPlugin.__init__(self, **kwargs)
-        self.config = {'a':'b'}
-        self._data = {'kwargs':kwargs}
+        self.config = {'a': 'b'}
+        self._data = {'kwargs': kwargs}
 
     @property
     def data(self):
@@ -76,8 +78,10 @@ class MockPlugin(abstractplugin.TRIPlugin):
 class ExceptionPlugin(MockPlugin):
     """Raises an Exception on run() - used to verify
     exception Queue messaging"""
+
     def run(self):
         raise Exception("Wuh-oh.")
+
 
 class TestMainModel(unittest.TestCase):
     """Tests the main model"""
@@ -87,11 +91,12 @@ class TestMainModel(unittest.TestCase):
         self.sample_data_basename = "sample.dat"
         self.sample_data_file = os.path.join(os.path.dirname(__file__),
                                              self.sample_data_basename)
-        #np.savetxt(self.sample_data_file, self.sample_data)
         with h5py.File(self.sample_data_file, 'w') as fidout:
             fidout.create_dataset(self.sample_data_basename, data=self.sample_data)
         self.mock_controller = ""
         self.model = model.MainModel(self.mock_controller)
+        cfg = config.Configure(pathfinder.config_path())
+        self.original_loglevel = cfg.get_app_option("log level")
 
     def random_data(self):
         """Returns a list of random data"""
@@ -122,7 +127,7 @@ class TestMainModel(unittest.TestCase):
         module_files = os.listdir(test_module_folder)
         for module_file in module_files:
             module_name, module_extension = os.path.splitext(module_file)
-            if module_name.startswith("test_") and \
+            if module_name.startswith("test_") and\
                module_extension == os.extsep + "py":
                 test_modules.append(module_file)
         self.model.copy_system_files(test_module_folder, temp_dest_folder)
@@ -261,6 +266,7 @@ class TestMainModel(unittest.TestCase):
         # save, then ensure the resulting arrays
         # are identical
         import dicom
+
         diconde_folder = os.path.join(os.path.dirname(__file__), 'support_files')
         for root, dirs, files in os.walk(diconde_folder):
             for fname in files:
@@ -335,14 +341,13 @@ class TestMainModel(unittest.TestCase):
             self.assertTrue(issubclass(gate_instance, ultrasonicgate.UltrasonicGate))
 
 
-
     def test_plugin_wrapper(self):
         """Verify the plugin_wrapper function properly configures and runs a plugin"""
         plugin_queue = multiprocessing.Queue()
         plugin_exception_queue = multiprocessing.Queue()
         plugin_data = np.array(self.random_data())
-        plugin_cfg = {'a':'c'}
-        kwargs = {'name':'Mock Plugin', 'description':'Mock plugin used to test plugin_wrapper'}
+        plugin_cfg = {'a': 'c'}
+        kwargs = {'name': 'Mock Plugin', 'description': 'Mock plugin used to test plugin_wrapper'}
         model.plugin_wrapper(plugin_exception_queue, MockPlugin, plugin_data, plugin_queue, plugin_cfg,
                              **kwargs)
         returned_data = plugin_queue.get()
@@ -366,10 +371,10 @@ class TestMainModel(unittest.TestCase):
     def test_run_plugin(self):
         """Verify the main model can run a loaded plugin"""
         plugin_data = np.array(self.random_data())
-        plugin_config = {'pi':3.141592654}
+        plugin_config = {'pi': 3.141592654}
         plugin_cls = self.get_normalize_plugin()
         plugin_process, plugin_queue, exception_queue = model.run_plugin(plugin_cls,
-                                                        data=plugin_data, config=plugin_config)
+                                                                         data=plugin_data, config=plugin_config)
         self.assertTrue(isinstance(plugin_process, multiprocessing.Process))
         returned_data = plugin_queue.get()
         expected_data = plugin_data / np.max(plugin_data)
@@ -378,10 +383,10 @@ class TestMainModel(unittest.TestCase):
     def test_run_plugin_exceptions(self):
         """Verify run_plugin returns exception messages in Queue"""
         plugin_data = np.zeros(5) # Use division by zero exception in NormalizePlugin
-        plugin_config = {'pi':3.141592654}
+        plugin_config = {'pi': 3.141592654}
         plugin_cls = self.get_normalize_plugin()
         plugin_process, plugin_queue, exception_queue = model.run_plugin(plugin_cls,
-                                                                     data=plugin_data, config=plugin_config)
+                                                                         data=plugin_data, config=plugin_config)
         exc_type, exc = exception_queue.get(block=True)
         self.assertTrue(isinstance(exc, Exception))
 
@@ -470,6 +475,61 @@ class TestMainModel(unittest.TestCase):
         self.assertListEqual([int(coord) for coord in new_coords_str], self.model.get_coords())
         self.model.set_coords(original_coords)
 
+    def test_get_loglevel(self):
+        """Verify returning the log level from config"""
+        cfg = config.Configure(pathfinder.config_path())
+        log_level = cfg.get_app_option("log level")
+        available_log_levels = {'debug': logging.DEBUG,
+                                'info': logging.INFO,
+                                'warning': logging.WARNING,
+                                'error': logging.ERROR,
+                                'critical': logging.CRITICAL}
+        log_level = available_log_levels.get(log_level, logging.WARNING)
+        self.assertEqual(log_level, model.get_loglevel())
+
+    def test_set_loglevel(self):
+        """Verify setting the log level in config"""
+        cfg = config.Configure(pathfinder.config_path())
+        log_levels = ['debug', 'info', 'warning', 'error', 'critical', None, 'abc']
+        acceptable_log_levels = {'debug': logging.DEBUG,
+                                 'info': logging.INFO,
+                                 'warning': logging.WARNING,
+                                 'error': logging.ERROR,
+                                 'critical': logging.CRITICAL}
+        for level in log_levels:
+            model.set_loglevel(level)
+            if level in acceptable_log_levels:
+                self.assertEqual(acceptable_log_levels[level], model.get_loglevel())
+
+    def test_get_loglevels(self):
+        """Verify returning a list of available log levels"""
+        available_log_levels = {'debug': logging.DEBUG,
+                                'info': logging.INFO,
+                                'warning': logging.WARNING,
+                                'error': logging.ERROR,
+                                'critical': logging.CRITICAL}
+        self.assertDictEqual(available_log_levels, model.available_log_levels)
+
+    def test_get_logger(self):
+        """Verify returning a logger instance"""
+        logger = model.get_logger(__name__)
+        self.assertTrue(isinstance(logger, logging.Logger))
+        expected_logger = logging.getLogger(name='.'.join(['nditoolbox', __name__]))
+        self.assertEqual(expected_logger.name, logger.name)
+        acceptable_log_levels = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]
+        for level in acceptable_log_levels:
+            self.assertEqual(expected_logger.isEnabledFor(level), logger.isEnabledFor(level))
+
+    def test_clear_log(self):
+        """Verify deleting the log file"""
+        log_file = pathfinder.log_path()
+        if os.path.exists(log_file):
+            try:
+                model.clear_log()
+                self.assertFalse(os.path.exists(log_file))
+            except WindowsError: # file in use (Windows)
+                pass
+
     def test_get_windows_version(self):
         """Verify get_windows_version function returns correct version
         information."""
@@ -531,6 +591,7 @@ class TestMainModel(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(self.sample_data_file + ".hdf5"):
             os.remove(self.sample_data_file + ".hdf5")
+        model.set_loglevel(self.original_loglevel)
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()

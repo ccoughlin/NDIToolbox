@@ -7,11 +7,14 @@ __author__ = 'Chris R. Coughlin'
 
 from models.podtk_model import PODWindowModel
 from models import workerthread
+from models.mainmodel import get_logger
 from controllers import pathfinder
 from views import dialogs
 from views import fetchpodmodel_dialog
 import wx
 import Queue
+
+module_logger = get_logger(__name__)
 
 class PODWindowController(object):
     """Controller for the PODWindow UI"""
@@ -19,6 +22,7 @@ class PODWindowController(object):
     def __init__(self, view):
         self.view = view
         self.model = PODWindowModel(self)
+        module_logger.info("Successfully initialized PODWindowController.")
 
     def get_models(self):
         """Retrieves the list of PODModels
@@ -41,6 +45,7 @@ class PODWindowController(object):
                 self.view.modeltree.clear()
                 self.get_models()
             except Exception as err:
+                module_logger.error("Unable to install POD Model: {0}".format(err))
                 err_msg = "{0}".format(err)
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                            caption="Unable To Install POD Model",
@@ -63,6 +68,7 @@ class PODWindowController(object):
                     self.view.modeltree.clear()
                     self.get_models()
                 except Exception as err:
+                    module_logger.error("Unable to install POD Model: {0}".format(err))
                     err_msg = "{0}".format(err)
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                caption="Unable To Install POD Model",
@@ -147,6 +153,7 @@ class PODWindowController(object):
                     data = self.model.load_data(input_data['filename'])
                     self.populate_spreadsheet(self.view.input_grid, data)
                 except IOError as err:
+                    module_logger.error("Unable to read input data: {0}".format(err))
                     err_dlg = wx.MessageDialog(self.view, caption="Failed To Read File",
                                                message=str(err), style=wx.OK | wx.ICON_ERROR)
                     err_dlg.ShowModal()
@@ -191,6 +198,7 @@ class PODWindowController(object):
                     else:
                         msg = "An error occurred attempting to read the file:\n\n{0}".format(
                             str(err))
+                    module_logger.error("Unable to read file: {0}".format(err))
                     err_dlg = wx.MessageDialog(self.view, caption="Failed To Read File",
                                                message=msg, style=wx.OK | wx.ICON_ERROR)
                     err_dlg.ShowModal()
@@ -237,6 +245,7 @@ class PODWindowController(object):
             if model is not None:
                 model.save_configuration()
         except ValueError: # No model selected
+            module_logger.error("Unable to save POD Model, no model selected.")
             err_dlg = wx.MessageDialog(self.view, caption="No Model Selected",
                                        message="Please select a POD Model.",
                                        style=wx.OK | wx.ICON_ERROR)
@@ -250,6 +259,7 @@ class PODWindowController(object):
             if model is not None:
                 self.run_model(model)
         except ValueError: # No model selected
+            module_logger.error("Unable to run POD Model, no model selected.")
             err_dlg = wx.MessageDialog(self.view, caption="No Model Selected",
                                        message="Please select a POD Model.",
                                        style=wx.OK | wx.ICON_ERROR)
@@ -270,6 +280,7 @@ class PODWindowController(object):
             if not model_thd.is_alive():
                 try:
                     exc_type, exc = exception_queue.get(block=False)
+                    module_logger.error("Unable to run POD Model: {0}".format(exc))
                     err_msg = "An error occurred while running the POD Model:\n{0}".format(exc)
                     err_dlg = wx.MessageDialog(self.view.parent, message=err_msg,
                                                caption="Error In POD Model Execution",
@@ -286,6 +297,7 @@ class PODWindowController(object):
                             self.populate_spreadsheet(self.view.output_grid, model_instance.data)
                             self.view.spreadsheet_nb.ChangeSelection(self.view.output_sheet_page)
                         except MemoryError: # File too large to load
+                            module_logger.error("Unable to preview data, file too large to fit in memory.")
                             err_msg = "The file is too large to load."
                             err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                        caption="Unable To Preview Data",

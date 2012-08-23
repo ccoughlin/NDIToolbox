@@ -8,6 +8,7 @@ __author__ = 'Chris R. Coughlin'
 import ui_defaults
 from controllers.plotwindow_ctrl import PlotWindowController, ImgPlotWindowController, MegaPlotWindowController
 from models import workerthread
+from models.mainmodel import get_logger
 import wx
 from matplotlib.figure import Figure
 from matplotlib.widgets import Cursor
@@ -16,6 +17,8 @@ from matplotlib.backends.backend_wxagg import NavigationToolbar2Wx
 import os.path
 import Queue
 
+module_logger = get_logger(__name__)
+
 class PlotWindow(wx.Frame):
     """Basic wxPython UI element for displaying matplotlib plots"""
 
@@ -23,6 +26,7 @@ class PlotWindow(wx.Frame):
         self.parent = parent
         self.data_file = data_file
         self.controller = PlotWindowController(self, data_file)
+        module_logger.info("Successfully initialized PlotWindow.")
         self.load_data()
 
     def has_data(self):
@@ -40,6 +44,7 @@ class PlotWindow(wx.Frame):
             if not data_thd.is_alive():
                 try:
                     exc_type, exc = exception_queue.get(block=False)
+                    module_logger.error("Unable to load data: {0}".format(exc))
                     err_msg = "An error occurred while loading data:\n{0}".format(exc)
                     if len(err_msg) > 150:
                         # Truncate lengthy error messages
@@ -207,6 +212,7 @@ class ImgPlotWindow(PlotWindow):
         self.parent = parent
         self.data_file = data_file
         self.controller = ImgPlotWindowController(self, data_file)
+        module_logger.info("Successfully initialized ImgPlotWindow.")
         self.load_data()
 
     def load_data(self):
@@ -220,6 +226,7 @@ class ImgPlotWindow(PlotWindow):
             if not data_thd.is_alive():
                 try:
                     exc_type, exc = exception_queue.get(block=False)
+                    module_logger.error("Unable to load data: {0}".format(exc))
                     err_msg = "An error occurred while loading data:\n{0}".format(exc)
                     if len(err_msg) > 150:
                         # Truncate lengthy error messages
@@ -329,6 +336,7 @@ class MegaPlotWindow(PlotWindow):
         self.parent = parent
         self.data_file = data_file
         self.controller = MegaPlotWindowController(self, data_file)
+        module_logger.info("Successfully initialized MegaPlotWindow.")
         self.load_data()
 
     @property
@@ -388,7 +396,8 @@ class MegaPlotWindow(PlotWindow):
         self.navtools_cb.SetValue(True)
         self.navtools_cb.SetToolTipString("Check to use pan/zoom tools")
         self.Bind(wx.EVT_CHECKBOX, self.controller.on_check_navtools, self.navtools_cb)
-        self.main_panel_sizer.Add(self.navtools_cb, ui_defaults.lbl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
+        self.main_panel_sizer.Add(self.navtools_cb, ui_defaults.lbl_pct, ui_defaults.sizer_flags,
+                                  ui_defaults.widget_margin)
         self.add_toolbar()
         self.SetIcon(self.parent.GetIcon())
         self.main_panel.SetSizerAndFit(self.main_panel_sizer)

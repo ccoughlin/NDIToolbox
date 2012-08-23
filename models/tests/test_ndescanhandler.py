@@ -9,6 +9,7 @@ from models import ndescanhandler
 import numpy as np
 import random
 import unittest
+
 class TestNDEScanHandler(unittest.TestCase):
     """Tests the NDEScanHandler class"""
 

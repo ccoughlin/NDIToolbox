@@ -4,15 +4,17 @@ __author__ = 'Chris R. Coughlin'
 
 import views.ui_defaults as ui_defaults
 from controllers import pathfinder
+from models.mainmodel import get_logger
 import wx
 from wx.lib.masked.numctrl import NumCtrl
 from wx.lib import statbmp, wordwrap
 from wx import ProgressDialog
 import os
-import os.path
 import sys
 import textwrap
 import webbrowser
+
+module_logger = get_logger(__name__)
 
 class ImportTextDialog(wx.Dialog):
     """Specify import parameters for loading ASCII-delimited text files."""
@@ -20,6 +22,7 @@ class ImportTextDialog(wx.Dialog):
     def __init__(self, parent, id=-1, title="Import Text File", pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=wx.DEFAULT_DIALOG_STYLE, name=wx.DialogNameStr):
         super(ImportTextDialog, self).__init__(parent, id, title, pos, size, style, name)
+        module_logger.info("Succesfully initialized ImportTextDialog.")
         self.generate()
 
     def generate(self):
@@ -159,6 +162,7 @@ class ExportTextDialog(wx.Dialog):
                                "Scientific Notation (e.g. 1.00E2)": "%e"}
         self.eol_choices = {"Linefeed (\\n)": "\n",
                             "Carriage Return + Linefeed (\\r\\n)": "\r\n"}
+        module_logger.info("Successfully initialized ExportTextDialog.")
         self.generate()
 
     def generate(self):
@@ -256,10 +260,11 @@ class IntegerRangeDialog(wx.Dialog):
         vbox.Add(hbox3, 0, wx.ALIGN_RIGHT, 0)
         self.SetSizer(vbox)
         self.SetInitialSize()
+        module_logger.info("Successfully initialized IntegerRangeDialog.")
 
     def GetValue(self):
         """Returns the tuple (start,finish) if the dialog was accepted."""
-        return (self.start_ctrl.GetValue(), self.finish_ctrl.GetValue())
+        return self.start_ctrl.GetValue(), self.finish_ctrl.GetValue()
 
 
 class FloatRangeDialog(wx.Dialog):
@@ -303,6 +308,7 @@ class FloatRangeDialog(wx.Dialog):
         vbox.Add(hbox3, 0, wx.ALIGN_RIGHT, 0)
         self.SetSizer(vbox)
         self.SetInitialSize()
+        module_logger.info("Successfully initialized FloatRangeDialog.")
 
     def GetValue(self):
         """Returns the tuple (start,finish) if the dialog was accepted."""
@@ -322,12 +328,14 @@ class progressDialog(object):
                                    maximum=100#,
         )
         self.pdlg.Pulse()
+        module_logger.info("Successfully initialized progressDialog.")
 
     def update(self):
         self.pdlg.UpdatePulse()
 
     def close(self):
         self.pdlg.Update(100)
+        module_logger.info("Closing progressDialog.")
         self.pdlg.Destroy()
 
 
@@ -400,6 +408,7 @@ class ConfigurePluginDialog(wx.Dialog):
         super(ConfigurePluginDialog, self).__init__(parent, wx.ID_ANY, title,
                                                     wx.DefaultPosition, wx.DefaultSize,
                                                     wx.DEFAULT_DIALOG_STYLE)
+        module_logger.info("Successfully initialized ConfigurePluginDialog.")
         self.generate()
 
     def generate(self):
@@ -417,8 +426,7 @@ class ConfigurePluginDialog(wx.Dialog):
         desc_panel_sizer.Add(description_lbl, ui_defaults.lbl_pct,
                              ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
         desc_panel.SetSizer(desc_panel_sizer)
-        self.sizer.Add(desc_panel, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
-                       0)
+        self.sizer.Add(desc_panel, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags, 0)
         self.config_panel = wx.ScrolledWindow(self, wx.ID_ANY)
         self.config_panel_sizer = wx.FlexGridSizer(cols=2)
         self.config_panel_sizer.AddGrowableCol(1)
@@ -531,6 +539,7 @@ class TextDisplayDialog(wx.Dialog):
         """Handles request to close the window"""
         self.Destroy()
 
+
 class LinearSliceDialog(wx.Dialog):
     """Dialog to select a linear slice in one of the axes of an array"""
 
@@ -541,6 +550,7 @@ class LinearSliceDialog(wx.Dialog):
         if self.parent is not None:
             self.SetIcon(self.parent.GetIcon())
         self.init_ui()
+        module_logger.info("Successfully initialized LinearSliceDialog.")
 
     def init_ui(self):
         """Initializes and lays out the UI"""
@@ -559,13 +569,15 @@ class LinearSliceDialog(wx.Dialog):
 
     def _generate_axis_ctrls(self):
         """Creates and adds the SpinCtrls for each axis to the dialog"""
+
         def generate_axis_sc(axis_idx):
             """Helper function to return a SpinCtrl with minimum and maximum
             values set according to the dimensions of the data's axis"""
-            return wx.SpinCtrl(self.main_panel, wx.ID_ANY, min=-1, max=self.data.shape[axis_idx]-1)
-        self.axes = {"X Axis":generate_axis_sc(0),
-                     "Y Axis":generate_axis_sc(1),
-                     "Z Axis":generate_axis_sc(2)}
+            return wx.SpinCtrl(self.main_panel, wx.ID_ANY, min=-1, max=self.data.shape[axis_idx] - 1)
+
+        self.axes = {"X Axis": generate_axis_sc(0),
+                     "Y Axis": generate_axis_sc(1),
+                     "Z Axis": generate_axis_sc(2)}
         for axis_name, axis_sc in sorted(self.axes.items()):
             axis_sizer = wx.BoxSizer(wx.HORIZONTAL)
             axis_lbl = wx.StaticText(self.main_panel, wx.ID_ANY, axis_name)
@@ -594,6 +606,7 @@ class LinearSliceDialog(wx.Dialog):
         x_idx = self.axes["X Axis"].GetValue()
         y_idx = self.axes["Y Axis"].GetValue()
         z_idx = self.axes["Z Axis"].GetValue()
+        module_logger.info("Requested slice with indices {0}, {1}, {2}.".format(x_idx, y_idx, z_idx))
         if x_idx == -1:
             x_idx = slice(None)
         if y_idx == -1:
@@ -607,9 +620,10 @@ class LinearSliceDialog(wx.Dialog):
         by displaying basic how-to info"""
         with open(os.path.join(pathfinder.textfiles_path(), "slice3d_dlg.txt"), "rb") as fidin:
             help_dlg = TextDisplayDialog(text=fidin.readlines(), parent=self, title="Slicing 3D Data",
-                                         style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
+                                         style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
             help_dlg.ShowModal()
             help_dlg.Destroy()
+
 
 class PlanarSliceDialog(wx.Dialog):
     """Dialog to select a plane in X, Y, or Z in 3D data"""
@@ -621,6 +635,7 @@ class PlanarSliceDialog(wx.Dialog):
         if self.parent is not None:
             self.SetIcon(self.parent.GetIcon())
         self.init_ui()
+        module_logger.info("Successfully initialized PlanarSliceDialog.")
 
     @property
     def planes(self):
@@ -658,7 +673,7 @@ class PlanarSliceDialog(wx.Dialog):
         self.plane_choice = wx.Choice(orientation_panel, wx.ID_ANY, choices=self.planes)
 
         orientation_panel_sizer.Add(self.plane_choice, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-                             ui_defaults.widget_margin)
+                                    ui_defaults.widget_margin)
         orientation_panel.SetSizerAndFit(orientation_panel_sizer)
         ctrl_panel_sizer.Add(orientation_panel, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
 
@@ -668,7 +683,7 @@ class PlanarSliceDialog(wx.Dialog):
         idx_panel_sizer.Add(idx_lbl, ui_defaults.ctrl_pct, ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
         self.idx_sc = wx.SpinCtrl(idx_panel, wx.ID_ANY)
         idx_panel_sizer.Add(self.idx_sc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
-                             ui_defaults.widget_margin)
+                            ui_defaults.widget_margin)
         idx_panel.SetSizerAndFit(idx_panel_sizer)
         self.Bind(wx.EVT_CHOICE, self.on_orientation_change, self.plane_choice)
         self.plane_choice.SetSelection(0)
@@ -702,7 +717,7 @@ class PlanarSliceDialog(wx.Dialog):
             data_shape = self.data.shape
             selected_plane_idx = self.plane_choice.GetSelection()
             if selected_plane_idx == 0: # Z index
-                max_idx = data_shape[2]- 1
+                max_idx = data_shape[2] - 1
             elif selected_plane_idx == 1: # Y index
                 max_idx = data_shape[0] - 1
             elif selected_plane_idx == 2: # X index
@@ -714,6 +729,7 @@ class PlanarSliceDialog(wx.Dialog):
         orientation and index choices"""
         idx = self.idx_sc.GetValue()
         selected_plane_idx = self.plane_choice.GetSelection()
+        module_logger.info("Requested slice with index {0} in plane index {1}.".format(idx, selected_plane_idx))
         if selected_plane_idx == 0: # Z index
             return self.data[:, :, idx]
         elif selected_plane_idx == 1: # Y index

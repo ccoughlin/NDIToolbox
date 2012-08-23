@@ -8,7 +8,6 @@ __author__ = 'Chris R. Coughlin'
 import unittest
 from models import ultrasonicgate
 import numpy as np
-import scipy.signal
 import random
 
 class TestUltrasonicGate(unittest.TestCase):
@@ -44,12 +43,12 @@ class TestUltrasonicGate(unittest.TestCase):
 
     def test_get_window(self):
         """Verify the base UltrasonicGate class returns a no-op window"""
-        expected_gate = np.ones(self.stop_pos-self.start_pos)
+        expected_gate = np.ones(self.stop_pos - self.start_pos)
         expected_gate_list = expected_gate.tolist()
         returned_gate_list = self.sample_gate.get_window().tolist()
         for idx in range(len(expected_gate_list)):
             self.assertAlmostEqual(expected_gate_list[idx], returned_gate_list[idx],
-                                   delta=.01*expected_gate_list[idx])
+                                   delta=.01 * expected_gate_list[idx])
 
 if __name__ == "__main__":
     unittest.main()

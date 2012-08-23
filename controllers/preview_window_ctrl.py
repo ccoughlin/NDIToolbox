@@ -4,7 +4,10 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 """
 
 from models.preview_window_model import PreviewWindowModel
+from models.mainmodel import get_logger
 import wx
+
+module_logger = get_logger(__name__)
 
 __author__ = 'Chris R. Coughlin'
 
@@ -14,6 +17,7 @@ class PreviewWindowController(object):
     def __init__(self, view, data_file):
         self.view = view
         self.model = PreviewWindowModel(self, data_file)
+        module_logger.info("Successfully initialized PreviewWindowController.")
 
     @property
     def data(self):
@@ -59,6 +63,7 @@ class PreviewWindowController(object):
                         self.view.spreadsheet.SetCellValue(rownum, 0, str(el))
                         rownum += 1
             except MemoryError: # File too large to load
+                module_logger.error("Unable to preview data, file too large to fit in memory.")
                 err_msg = "The file is too large to load."
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                            caption="Unable To Preview Data", style=wx.ICON_ERROR)

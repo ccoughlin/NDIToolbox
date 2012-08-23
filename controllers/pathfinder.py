@@ -7,6 +7,7 @@ import sys
 
 def normalized(path_fn):
     """Decorator to normalize (os.path.normcase) paths"""
+
     def normalize():
         return os.path.normcase(path_fn())
 
@@ -40,10 +41,12 @@ def user_path():
         _config.set_app_option({upath_key: default_upath})
         return default_upath
 
+
 @normalized
 def docs_path():
     """Returns the path to the HTML documentation."""
     return os.path.join(app_path(), 'docs')
+
 
 @normalized
 def resource_path():
@@ -77,10 +80,12 @@ def bitmap_path():
     """Returns the path to application bitmaps"""
     return os.path.join(resource_path(), 'bitmaps')
 
+
 @normalized
 def textfiles_path():
     """Returns the path to application textfiles"""
     return os.path.join(resource_path(), 'textfiles')
+
 
 @normalized
 def data_path():
@@ -107,9 +112,24 @@ def config_path():
 
 
 @normalized
+def log_path():
+    """Returns the path to the log file.  If not already set,
+    sets to user's home directory/nditoolbox.log and sets the default in the config file."""
+    _config = config.Configure(config_path())
+    logpath_key = "Log File"
+    if _config.has_app_option(logpath_key):
+        return _config.get_app_option(logpath_key)
+    else:
+        default_logpath = os.path.normcase(os.path.join(os.path.expanduser('~'), 'nditoolbox.log'))
+        _config.set_app_option({logpath_key: default_logpath})
+        return default_logpath
+
+
+@normalized
 def podmodels_path():
     """Returns the path to POD Toolkit models"""
     return os.path.join(user_path(), "podmodels")
+
 
 @normalized
 def gates_path():

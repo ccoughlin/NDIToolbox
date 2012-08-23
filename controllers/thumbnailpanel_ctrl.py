@@ -7,14 +7,18 @@ __author__ = 'Chris R. Coughlin'
 
 from controllers import pathfinder
 from models import thumbnailpanel_model as model
+from models.mainmodel import get_logger
 import wx
 import os.path
+
+module_logger = get_logger(__name__)
 
 class ThumbnailPanelController(object):
     """Controller class for the ThumbnailPanel"""
 
     def __init__(self, view):
         self.view = view
+        module_logger.info("Successfully initialized ThumbnailPanelController.")
 
     def empty_bitmap(self, width, height):
         """Creates and returns an empty wxBitmap of the given width and height"""

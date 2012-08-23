@@ -23,6 +23,4 @@ class PreviewWindowModel(object):
         """Sets the 3D self.data to a single 2D slice."""
         if self.data is not None:
             if self.data.ndim == 3:
-                min_slice_idx = 0
-                max_slice_idx = self.data.shape[2]-1
                 self.data = self.data[:, :, slice_idx]

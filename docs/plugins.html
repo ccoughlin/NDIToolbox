@@ -17,6 +17,7 @@
             padding-top: 60px;
             padding-bottom: 40px;
         }
+
         .sidebar-nav {
             padding: 9px 0;
         }
@@ -53,115 +54,120 @@
     </div>
 </div>
 <div class="span9">
-<div class="hero-unit">
-    <h1>Plugins</h1>
+    <div class="hero-unit">
+        <h1>Plugins</h1>
 
-    <p>Making NDIToolbox do more</p>
-</div>
-<p>NDIToolbox supports the execution of <em>plugins</em>, additional bits of code that can be loaded to extend its functionality.  Here we'll discuss what a plugin is and how to use one.</p>
+        <p>Making NDIToolbox do more</p>
+    </div>
+    <p>NDIToolbox supports the execution of <em>plugins</em>, additional bits of code that can be loaded to extend its
+        functionality. Here we'll discuss what a plugin is and how to use one.</p>
 
-<h2>What Is A Plugin?</h2>
+    <h2>What Is A Plugin?</h2>
 
-<p>In a nutshell, a plugin is an extra bit of software that's designed to work with NDIToolbox and extend its
-    functionality. For the most part, plugins in NDIToolbox tend to be small programs - they usually do one thing
-    and one thing only, and they usually do not have a separate user interface. The idea is to have a simple program
-    that receives NDE data and configuration info; performs some sort of function on the data; then returns the
-    results. NDIToolbox worries about the details of how to read data and present it to the user.</p>
+    <p>In a nutshell, a plugin is an extra bit of software that's designed to work with NDIToolbox and extend its
+        functionality. For the most part, plugins in NDIToolbox tend to be small programs - they usually do one thing
+        and one thing only, and they usually do not have a separate user interface. The idea is to have a simple program
+        that receives NDE data and configuration info; performs some sort of function on the data; then returns the
+        results. NDIToolbox worries about the details of how to read data and present it to the user.</p>
 
-<p>If you're an end user, you can add plugins to your NDIToolbox installation to make the program work for your
-    needs. If you're more of a developer, you can <a href="plugins_developers.html">create your own plugins</a> and share them with others.</p>
+    <p>If you're an end user, you can add plugins to your NDIToolbox installation to make the program work for your
+        needs. If you're more of a developer, you can <a href="plugins_developers.html">create your own plugins</a> and
+        share them with others.</p>
 
-<a name="user"><h2>Plugins For The End User</h2></a>
+    <a name="user"><h2>Plugins For The End User</h2></a>
 
-<a name="user_install"><h3>Installation</h3></a>
+    <a name="user_install"><h3>Installation</h3></a>
 
-<p>All NDIToolbox plugins must be installed under your plugins folder, which is a subfolder of your NDIToolbox local
-    files folder. Remember from the <a href="quickstart.html">Quick Start</a> guide that this folder will be under
-    your <code>$HOME</code> folder (e.g. <code>c:\users\chris</code> in Windows 7 or <code>/home/chris</code> under
-    Linux).</p>
+    <p>All NDIToolbox plugins must be installed under your plugins folder, which is a subfolder of your NDIToolbox local
+        files folder. Remember from the <a href="quickstart.html">Quick Start</a> guide that this folder will be under
+        your <code>$HOME</code> folder (e.g. <code>c:\users\chris</code> in Windows 7 or <code>/home/chris</code> under
+        Linux).</p>
 
-<p class="centeredImage"><a href="images/folder_layout.png" rel="lightbox"><img src="images/folder_layout.png"
-                                                                                width="377" height="219"/></a></p>
+    <p class="centeredImage"><a href="images/folder_layout.png" rel="lightbox"><img src="images/folder_layout.png"
+                                                                                    width="377" height="219"/></a></p>
 
-<p>Although you can copy a plugin directly to this folder manually, we recommend using NDIToolbox to install your
-    plugins since NDIToolbox will ensure that the plugin is properly structured. From any Plot window, select
-    <strong>Plugins</strong> from the <strong>Tools</strong> menu. If you already have a copy of the plugin as a ZIP
-    archive, choose <strong>Install Plugin...</strong>
-    and select the ZIP to install. The <strong>Install Plugin</strong> window will pop up, from which you can get more
-    information
-    about the plugin by pressing the <strong>About Plugin...</strong> button.</p>
+    <p>Although you can copy a plugin directly to this folder manually, we recommend using NDIToolbox to install your
+        plugins since NDIToolbox will ensure that the plugin is properly structured. From any Plot window, select
+        <strong>Plugins</strong> from the <strong>Tools</strong> menu. If you already have a copy of the plugin as a ZIP
+        archive, choose <strong>Install Plugin...</strong>
+        and select the ZIP to install. The <strong>Install Plugin</strong> window will pop up, from which you can get
+        more
+        information
+        about the plugin by pressing the <strong>About Plugin...</strong> button.</p>
 
-<p class="centeredImage"><a href="images/install_plugin.png" rel="lightbox" title="Install Plugin Window"><img
-        src="images/install_plugin.png" width="272" height="349"/> </a></p>
+    <p class="centeredImage"><a href="images/install_plugin.png" rel="lightbox" title="Install Plugin Window"><img
+            src="images/install_plugin.png" width="272" height="349"/> </a></p>
 
-<p>If the ZIP archive has been password-protected, make sure the <strong>Protected</strong> check box is checked and
-    provide the
-    password you were given by the plugin's author. When ready to install, click <strong>OK</strong> to proceed.
-    NDIToolbox will
-    unpack the ZIP archive and install the plugin in your local files folder. If the plugin doesn't seem to be a
-    proper NDIToolbox plugin, NDIToolbox will abort installation and notify you of the situation.</p>
+    <p>If the ZIP archive has been password-protected, make sure the <strong>Protected</strong> check box is checked and
+        provide the
+        password you were given by the plugin's author. When ready to install, click <strong>OK</strong> to proceed.
+        NDIToolbox will
+        unpack the ZIP archive and install the plugin in your local files folder. If the plugin doesn't seem to be a
+        proper NDIToolbox plugin, NDIToolbox will abort installation and notify you of the situation.</p>
 
-<p>NDIToolbox can also automatically download and install plugins, for example if you're installing a commercial
-    plugin. The installation procedure is nearly the same as for installing a plugin you've already got locally, but
-    from the <strong>Tools</strong> menu select <strong>Download Plugin...</strong> and fill in the <strong>Install
-        Plugin</strong> window that appears. Among other
-    things, you'll need the full URL to the plugin; if the server hosting the plugin download requires a login you
-    can specify a username and password in this window as well. As is the case with installing a local plugin, if
-    the plugin archive is password-protected you should enter the password in this window.</p>
+    <p>NDIToolbox can also automatically download and install plugins, for example if you're installing a commercial
+        plugin. The installation procedure is nearly the same as for installing a plugin you've already got locally, but
+        from the <strong>Tools</strong> menu select <strong>Download Plugin...</strong> and fill in the <strong>Install
+            Plugin</strong> window that appears. Among other
+        things, you'll need the full URL to the plugin; if the server hosting the plugin download requires a login you
+        can specify a username and password in this window as well. As is the case with installing a local plugin, if
+        the plugin archive is password-protected you should enter the password in this window.</p>
 
-<p class="centeredImage"><a href="images/download_plugin.png" rel="lightbox" title="Download Plugin Window"><img
-        src="images/download_plugin.png" width="213" height="68"/></a></p>
+    <p class="centeredImage"><a href="images/download_plugin.png" rel="lightbox" title="Download Plugin Window"><img
+            src="images/download_plugin.png" width="213" height="68"/></a></p>
 
-<a name="user_running"><h3>Running A Plugin</h3></a>
+    <a name="user_running"><h3>Running A Plugin</h3></a>
 
-<p>Once a plugin has been successfully installed, you can run it simply by selecting it from the list of plugins.
-    Under the <strong>Tools</strong> menu, select the <strong>Plugins</strong> submenu, then click the name of the
-    plugin you wish to execute.</p>
+    <p>Once a plugin has been successfully installed, you can run it simply by selecting it from the list of plugins.
+        Under the <strong>Tools</strong> menu, select the <strong>Plugins</strong> submenu, then click the name of the
+        plugin you wish to execute.</p>
 
-<p>If a plugin requires extra information from you before executing, it will open a new window asking for the input.
-    For example, NDIToolbox includes a <a href="http://en.wikipedia.org/wiki/Median_filter">median filter</a> plugin
-    that when run asks you to specify the rank (also known as the window length or kernel size) of the filter as shown
-    below. In
-    this example, the user is instructing the median filter plugin to run a filter of rank 3 on the data.</p>
+    <p>If a plugin requires extra information from you before executing, it will open a new window asking for the input.
+        For example, NDIToolbox includes a <a href="http://en.wikipedia.org/wiki/Median_filter">median filter</a> plugin
+        that when run asks you to specify the rank (also known as the window length or kernel size) of the filter as
+        shown
+        below. In
+        this example, the user is instructing the median filter plugin to run a filter of rank 3 on the data.</p>
 
-<p class="centeredImage"><a href="images/medfilter_config.png" rel="lightbox"
-                            title="Median Filter Configuration Window"><img src="images/medfilter_config.png"
-                                                                            width="205" height="287"/></a></p>
+    <p class="centeredImage"><a href="images/medfilter_config.png" rel="lightbox"
+                                title="Median Filter Configuration Window"><img src="images/medfilter_config.png"
+                                                                                width="205" height="287"/></a></p>
 
-<p>When a plugin is run, NDIToolbox passes it a copy of the current data set displayed in the plot window. The
-    plugin performs its function on this data and returns it to NDIToolbox, which then updates the plot window with
-    the results. Going back to the median filter plugin, here's an example of the results of applying this plugin
-    against an ultrasonic C-scan. The image on the left is the original C-scan image plot; on the right is the
-    resulting C-scan after a median filter of rank 5 has been applied.</p>
+    <p>When a plugin is run, NDIToolbox passes it a copy of the current data set displayed in the plot window. The
+        plugin performs its function on this data and returns it to NDIToolbox, which then updates the plot window with
+        the results. Going back to the median filter plugin, here's an example of the results of applying this plugin
+        against an ultrasonic C-scan. The image on the left is the original C-scan image plot; on the right is the
+        resulting C-scan after a median filter of rank 5 has been applied.</p>
 
-<p class="centeredImage"><a href="images/cscan_prefiltration.png" rel="lightbox[prepostfilter]"
-                            title="Original C-scan"><img src="images/cscan_prefiltration.png" width="207"
-                                                         height="211"/></a><a href="images/cscan_postfiltration.png"
-                                                                              rel="lightbox[prepostfilter]"
-                                                                              title="C-scan (Median Filter Rank 5)"><img
-        src="images/cscan_postfiltration.png" width="206" height="210"/></a></p>
+    <p class="centeredImage"><a href="images/cscan_prefiltration.png" rel="lightbox[prepostfilter]"
+                                title="Original C-scan"><img src="images/cscan_prefiltration.png" width="207"
+                                                             height="211"/></a><a href="images/cscan_postfiltration.png"
+                                                                                  rel="lightbox[prepostfilter]"
+                                                                                  title="C-scan (Median Filter Rank 5)"><img
+            src="images/cscan_postfiltration.png" width="206" height="210"/></a></p>
 
-<p>Since NDIToolbox keeps a copy of the original data, you can always reverse any changes a plugin makes to your
-    data by selecting <strong>Revert To Original</strong> from the plot window's <strong>Operations</strong> menu. The
-    original data will be reloaded
-    and the changes made by the plugin will be discarded.</p>
+    <p>Since NDIToolbox keeps a copy of the original data, you can always reverse any changes a plugin makes to your
+        data by selecting <strong>Revert To Original</strong> from the plot window's <strong>Operations</strong> menu.
+        The
+        original data will be reloaded
+        and the changes made by the plugin will be discarded.</p>
 
-<h4>Tips For Running Plugins</h4>
-<ul>
-    <li><b>Work with the smallest data set you can.</b> Since a plugin's time to complete is tied to the size of the
-        data you run it against (the bigger the data the longer the plugin takes to run), you can speed things along
-        by running plugins against data subsets where possible.
-    </li>
-    <li><b>Plugins and data dimensions.</b> Not all plugins are capable of handling data with 3 or more dimensions.
-        If you get strange results or errors when running a plugin against 3D data, it may be that the plugin wasn't
-        written to deal with this type of data.
-    </li>
-    <li><b>Plugins and the "MegaPlot."</b> Unless written specifically for this purpose, most plugins will not
-        perform as expected when run against data in the MegaPlot. To work with this data presentation, the plugin
-        would need to know not only how to deal with 3D data, but also how to retrieve data from the A, C, and B
-        scans.
-    </li>
-</ul>
+    <h4>Tips For Running Plugins</h4>
+    <ul>
+        <li><b>Work with the smallest data set you can.</b> Since a plugin's time to complete is tied to the size of the
+            data you run it against (the bigger the data the longer the plugin takes to run), you can speed things along
+            by running plugins against data subsets where possible.
+        </li>
+        <li><b>Plugins and data dimensions.</b> Not all plugins are capable of handling data with 3 or more dimensions.
+            If you get strange results or errors when running a plugin against 3D data, it may be that the plugin wasn't
+            written to deal with this type of data.
+        </li>
+        <li><b>Plugins and the "MegaPlot."</b> Unless written specifically for this purpose, most plugins will not
+            perform as expected when run against data in the MegaPlot. To work with this data presentation, the plugin
+            would need to know not only how to deal with 3D data, but also how to retrieve data from the A, C, and B
+            scans.
+        </li>
+    </ul>
 
 </div>
 </div>

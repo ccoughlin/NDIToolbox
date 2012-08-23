@@ -5,7 +5,10 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 
 __author__ = 'Chris R. Coughlin'
 
+from models.mainmodel import get_logger
 import zipfile
+
+module_logger = get_logger(__name__)
 
 class UnZipper(object):
     """Handles unzipping ZIP archive files"""
@@ -16,7 +19,9 @@ class UnZipper(object):
         if zipfile.is_zipfile(zip_file):
             self.zip = zipfile.ZipFile(self.file)
             self.zip.setpassword(self.password)
+            module_logger.info("Successfully initialized UnZipper.")
         else:
+            module_logger.error("Specified file is not a valid ZIP file.")
             raise TypeError("Specified file is not a valid ZIP archive.")
 
     def list_contents(self):

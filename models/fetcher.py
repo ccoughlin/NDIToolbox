@@ -5,7 +5,10 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 
 __author__ = 'Chris R. Coughlin'
 
+from models.mainmodel import get_logger
 import urllib2
+
+module_logger = get_logger(__name__)
 
 class Fetcher(object):
     """Retrieves remote files via HTTP/HTTPS"""
@@ -14,6 +17,7 @@ class Fetcher(object):
         self.url = url
         self.username = username
         self.password = password
+        module_logger.info("Successfully initiated Fetcher.")
 
     def fetch_handle(self):
         """Returns the file-like object handle to the remote
@@ -30,9 +34,11 @@ class Fetcher(object):
                 return urllib2.urlopen(self.url)
             except urllib2.HTTPError as e:
                 # Couldn't complete request
+                module_logger.error("Server couldn't complete request: {0}".format(e))
                 raise IOError("The server couldn't complete the request.")
             except urllib2.URLError as e:
                 # Couldn't connect to server
+                module_logger.error("Unable to contact server: {0}".format(e))
                 raise IOError("Unable to contact server.")
 
     def fetch(self):
@@ -45,7 +51,9 @@ class Fetcher(object):
                 return remote_file_handle.read()
             except urllib2.HTTPError as e:
                 # Couldn't complete request
+                module_logger.error("Server couldn't complete request: {0}".format(e))
                 raise IOError("The server couldn't complete the request.")
             except urllib2.URLError as e:
                 # Couldn't connect to server
+                module_logger.error("Unable to contact server: {0}".format(e))
                 raise IOError("Unable to contact server.")

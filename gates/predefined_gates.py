@@ -20,6 +20,7 @@ class Boxcar(UltrasonicGate):
         are multiplied with this function"""
         return scipy.signal.get_window("boxcar", self.num_points)
 
+
 class Triangular(UltrasonicGate):
     """Wrapper for the triang window function"""
 
@@ -28,6 +29,7 @@ class Triangular(UltrasonicGate):
 
     def get_window(self):
         return scipy.signal.get_window("triang", self.num_points)
+
 
 class Blackman(UltrasonicGate):
     """Wrapper for the blackman window function"""
@@ -38,6 +40,7 @@ class Blackman(UltrasonicGate):
     def get_window(self):
         return scipy.signal.get_window("blackman", self.num_points)
 
+
 class Hamming(UltrasonicGate):
     """Wrapper for the hamming window function"""
 
@@ -46,6 +49,7 @@ class Hamming(UltrasonicGate):
 
     def get_window(self):
         return scipy.signal.get_window("hamming", self.num_points)
+
 
 class Hanning(UltrasonicGate):
     """Wrapper for the hanning window function"""
@@ -56,6 +60,7 @@ class Hanning(UltrasonicGate):
     def get_window(self):
         return scipy.signal.get_window("hann", self.num_points)
 
+
 class Bartlett(UltrasonicGate):
     """Wrapper for the bartlett window function"""
 
@@ -64,6 +69,7 @@ class Bartlett(UltrasonicGate):
 
     def get_window(self):
         return scipy.signal.get_window("bartlett", self.num_points)
+
 
 class Parzen(UltrasonicGate):
     """Wrapper for the parzen window function"""
@@ -74,6 +80,7 @@ class Parzen(UltrasonicGate):
     def get_window(self):
         return scipy.signal.get_window("parzen", self.num_points)
 
+
 class Bohman(UltrasonicGate):
     """Wrapper for the bohman window function"""
 
@@ -82,6 +89,7 @@ class Bohman(UltrasonicGate):
 
     def get_window(self):
         return scipy.signal.get_window("bohman", self.num_points)
+
 
 class BlackmanHarris(UltrasonicGate):
     """Wrapper for the blackmanharris window function"""
@@ -92,6 +100,7 @@ class BlackmanHarris(UltrasonicGate):
     def get_window(self):
         return scipy.signal.get_window("blackmanharris", self.num_points)
 
+
 class Nuttall(UltrasonicGate):
     """Wrapper for the nuttall window function"""
 
@@ -100,6 +109,7 @@ class Nuttall(UltrasonicGate):
 
     def get_window(self):
         return scipy.signal.get_window("nuttall", self.num_points)
+
 
 class BartlettHann(UltrasonicGate):
     """Wrapper for the barthann window function"""
@@ -110,6 +120,7 @@ class BartlettHann(UltrasonicGate):
     def get_window(self):
         return scipy.signal.get_window("barthann", self.num_points)
 
+
 class Kaiser(UltrasonicGate):
     """Wrapper for the kaiser window function"""
 
@@ -119,7 +130,7 @@ class Kaiser(UltrasonicGate):
 
     def __init__(self, **kwargs):
         UltrasonicGate.__init__(self, **kwargs)
-        self.config = {'beta':Kaiser.default_beta}
+        self.config = {'beta': Kaiser.default_beta}
 
     @property
     def beta(self):
@@ -133,6 +144,7 @@ class Kaiser(UltrasonicGate):
     def get_window(self):
         return scipy.signal.get_window(('kaiser', self.beta), self.num_points)
 
+
 class Gaussian(UltrasonicGate):
     """Wrapper for the gaussian window function"""
 
@@ -142,7 +154,7 @@ class Gaussian(UltrasonicGate):
 
     def __init__(self, **kwargs):
         UltrasonicGate.__init__(self, **kwargs)
-        self.config = {'std':Gaussian.default_std}
+        self.config = {'std': Gaussian.default_std}
 
     @property
     def std(self):
@@ -156,6 +168,7 @@ class Gaussian(UltrasonicGate):
     def get_window(self):
         return scipy.signal.get_window(('gaussian', self.std), self.num_points)
 
+
 class GeneralGaussian(UltrasonicGate):
     """Wrapper for the general_gaussian window function"""
 
@@ -166,8 +179,8 @@ class GeneralGaussian(UltrasonicGate):
 
     def __init__(self, **kwargs):
         UltrasonicGate.__init__(self, **kwargs)
-        self.config = {'power':GeneralGaussian.default_power,
-                       'width':GeneralGaussian.default_width}
+        self.config = {'power': GeneralGaussian.default_power,
+                       'width': GeneralGaussian.default_width}
 
     @property
     def power(self):
@@ -187,6 +200,7 @@ class GeneralGaussian(UltrasonicGate):
         except ValueError: # couldn't convert width to float
             return GeneralGaussian.default_width
 
+
 class Slepian(UltrasonicGate):
     """Wrapper for the slepian window function"""
 
@@ -196,7 +210,7 @@ class Slepian(UltrasonicGate):
 
     def __init__(self, **kwargs):
         UltrasonicGate.__init__(self, **kwargs)
-        self.config = {'width':'auto'}
+        self.config = {'width': 'auto'}
 
     @property
     def width(self):
@@ -212,7 +226,7 @@ class Slepian(UltrasonicGate):
         determine proper settings for their application.
         """
         # Define a default 'safe' value for scipy.signal.slepian
-        width_value = (Slepian.width_product_limit / self.num_points)*.95
+        width_value = (Slepian.width_product_limit / self.num_points) * .95
         width_setting = self.config.get('width', 'auto')
         if width_setting.lower() != 'auto':
             try:

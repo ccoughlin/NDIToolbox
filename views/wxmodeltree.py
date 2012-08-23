@@ -6,6 +6,9 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 import wx
+from models.mainmodel import get_logger
+
+module_logger = get_logger(__name__)
 
 class ModelTree(wx.TreeCtrl):
     '''PODModel customized version of wxPython's TreeCtrl, adds
@@ -18,6 +21,7 @@ class ModelTree(wx.TreeCtrl):
         self.inputdata_lbl = "Input Data"
         self.parameters_lbl = "Parameters"
         self.settings_lbl = "Settings"
+        module_logger.info("Successfully initialized ModelTree.")
 
     def clear(self):
         """Removes all PODModels"""
@@ -27,6 +31,7 @@ class ModelTree(wx.TreeCtrl):
         '''Adds the model PODModel to the tree'''
         PODModel_name = PODModel_tuple[0]
         PODModel = PODModel_tuple[1]()
+        module_logger.info("Adding POD Model {0} {1} to tree.".format(PODModel_name, PODModel))
         PODModel.configure()
         newmodel_branch = self.AppendItem(self.root, PODModel_name, data=wx.TreeItemData(PODModel))
         newinputdata_branch = self.AppendItem(newmodel_branch, self.inputdata_lbl)
@@ -61,6 +66,7 @@ class ModelTree(wx.TreeCtrl):
         '''Updates the currently-selected POD Model based on the current configuration.
         Walks the tree.'''
         model_item = self.selected_model_item()
+        module_logger.info("Updating POD Model item '{0}'.".format(model_item))
         if model_item is not None:
             model = self.GetPyData(model_item)
             inputdata = {}

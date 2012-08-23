@@ -119,5 +119,5 @@ class ComputationalToolsPlugin(CompanyPlugin):
     url = "www.computationaltools.com"
     copyright = "Copyright (C) 2012 Computational Tools.  All rights reserved."
 
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         CompanyPlugin.__init__(self, **kwargs)

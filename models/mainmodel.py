@@ -13,10 +13,59 @@ import scipy.misc
 import h5py
 import imp
 import inspect
+import logging
+import logging.handlers
 import multiprocessing
 import os
 import shutil
 import sys
+
+def get_config():
+    """Returns a Configure instance pointing to the application's
+    default configuration file."""
+    return config.Configure(pathfinder.config_path())
+
+# Define the available log severity levels
+available_log_levels = {'debug': logging.DEBUG,
+                        'info': logging.INFO,
+                        'warning': logging.WARNING,
+                        'error': logging.ERROR,
+                        'critical': logging.CRITICAL}
+
+def get_loglevel():
+    """Returns the current logging severity level set in config
+    (defaults to logging.WARNING if not specified)"""
+    config = get_config()
+    log_level = config.get_app_option("log level")
+    return available_log_levels.get(log_level, logging.WARNING)
+
+def set_loglevel(level):
+    """Sets the application's logging severity level in configuration
+    (defaults to logging.WARNING)"""
+    config = get_config()
+    acceptable_log_levels = available_log_levels.keys()
+    if level is not None and level in acceptable_log_levels:
+        config.set_app_option({'log level': level})
+
+def get_logger(module_name):
+    """Returns a Logger instance for the specified module_name"""
+    logger = logging.getLogger('.'.join(['nditoolbox', module_name]))
+    logger.setLevel(get_loglevel())
+    # Default to starting a new log every 7 days, keeping a copy of the last 7 days' events
+    log_handler = logging.handlers.TimedRotatingFileHandler(pathfinder.log_path(), when='D', interval=7, backupCount=1)
+    log_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    log_handler.setFormatter(log_format)
+    logger.addHandler(log_handler)
+    return logger
+
+def clear_log():
+    """Deletes the current log file.  Backup log files (if any) are untouched.
+    On Windows, raises WindowsError if file is in use."""
+    log_file = pathfinder.log_path()
+    if os.path.exists(log_file):
+        os.remove(log_file)
+
+module_logger = get_logger(__name__)
 
 def get_data(data_fname):
     with h5py.File(data_fname, 'r') as fidin:
@@ -36,11 +85,13 @@ def save_data(data_fname, data):
     with h5py.File(output_filename, 'w') as fidout:
         fidout.create_dataset(os.path.basename(data_fname), data=data)
 
+
 def load_dynamic_modules(module_path, module_class):
     """Dynamically imports the modules in module_path and searches
     the modules for subclasses of module_class.  Returns a list of tuples
     (plugin_name, plugin_class)."""
     if not module_path in sys.path:
+        module_logger.info("Adding {0} to sys.path".format(module_path))
         sys.path.append(module_path)
     dynamic_modules = []
     for root, dirs, files in os.walk(module_path):
@@ -56,11 +107,19 @@ def load_dynamic_modules(module_path, module_class):
                             # Load only those plugins defined in the current module
                             # (i.e. don't instantiate any parent plugins)
                             if dyn_module_class[1].__module__ == file_name:
+                                module_logger.info("Module {0} successfully imported.".format(dyn_module_class))
                                 dynamic_modules.append(dyn_module_class)
+                except ImportError as err: # imp.load_module failed to load module
+                    module_logger.error("load_module failed: {0}".format(err))
+                    raise err
+                except Exception as err: # unknown error
+                    module_logger.error("Unable to load module: {0}".format(err))
+                    raise err
                 finally:
                     if module_hdl:
                         module_hdl.close()
     return dynamic_modules
+
 
 def load_plugins():
     """Searches the plugins folder and imports all valid plugins,
@@ -69,12 +128,14 @@ def load_plugins():
     the class of the plugin."""
     return load_dynamic_modules(pathfinder.plugins_path(), abstractplugin.AbstractPlugin)
 
+
 def load_gates():
     """Searches the plugins folder and imports all valid ultrasonic gate plugins,
     returning a list of the plugins successfully imported as tuples:
     first element is the plugin name (e.g. MyGate), second element is
     the class of the plugin."""
     return load_dynamic_modules(pathfinder.gates_path(), abstractplugin.AbstractPlugin)
+
 
 def plugin_wrapper(exception_queue, plugin_cls, plugin_data, plugin_queue, plugin_cfg=None, **kwargs):
     """multiprocessing wrapper function, used to execute
@@ -95,9 +156,11 @@ def plugin_wrapper(exception_queue, plugin_cls, plugin_data, plugin_queue, plugi
         np.seterr(all='raise')
         plugin_instance.run()
         plugin_queue.put(plugin_instance.data)
-    except Exception:
+    except Exception as err:
         # Pass a message to the parent process with the Exception information
+        module_logger.error("Error running plugin: {0}".format(err))
         exception_queue.put(sys.exc_info()[:2])
+
 
 def run_plugin(plugin_cls, data=None, config=None, **kwargs):
     """Runs the plugin plugin_cls"""
@@ -109,11 +172,6 @@ def run_plugin(plugin_cls, data=None, config=None, **kwargs):
     plugin_process.daemon = True
     plugin_process.start()
     return plugin_process, plugin_queue, plugin_exception_queue
-
-def get_config():
-    """Returns a Configure instance pointing to the application's
-    default configuration file."""
-    return config.Configure(pathfinder.config_path())
 
 def get_windows_version():
     """Returns the major, minor version of the
@@ -177,7 +235,6 @@ def is_win2k():
         if major == 5 and minor == 0:
             retval = True
     return retval
-
 
 class MainModel(object):
     """Model for the main user interface"""
@@ -263,11 +320,13 @@ class MainModel(object):
         """Imports a DICOM/DICONDE pixel map"""
         try:
             import dicom
+
             di_struct = dicom.read_file(data_file)
             di_fname = os.path.join(pathfinder.data_path(),
                                     os.path.basename(data_file))
             save_data(di_fname, di_struct.pixel_array)
-        except ImportError: # pydicom not installed
+        except ImportError as err: # pydicom not installed
+            module_logger.error("pydicom not found: {0}".format(err))
             raise ImportError("pydicom module not installed.")
 
     def import_img(self, data_file, flatten=True):

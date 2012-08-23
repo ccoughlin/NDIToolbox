@@ -9,10 +9,7 @@ from controllers import pathfinder
 from models import abstractplugin
 from models import mainmodel
 from configobj import ConfigObj
-import imp
-import inspect
 import os.path
-import sys
 
 class PODWindowModel(object):
     """Model for the PODWindow UI"""

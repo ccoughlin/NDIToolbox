@@ -20,6 +20,8 @@ import Queue
 import sys
 import webbrowser
 
+module_logger = mainmodel.get_logger(__name__)
+
 class MainUIController(object):
     """Controller for the main user interface"""
 
@@ -34,6 +36,7 @@ class MainUIController(object):
     def verify_userpath(self):
         """Ensures the user's data folder is available"""
         if not os.path.exists(pathfinder.user_path()):
+            module_logger.info("Created user data folder")
             self.set_userpath()
         self.model.check_user_path()
         self.model.copy_system_plugins()
@@ -42,11 +45,13 @@ class MainUIController(object):
         """Ensures third-party dependencies are installed; shows
         error dialog and exits if a module is missing."""
         if not hasattr(sys, 'frozen'):
+            module_logger.info("Not frozen, checking module dependencies.")
             dependencies = ['h5py', 'dicom', 'matplotlib', 'numpy', 'scipy']
             for module in dependencies:
                 try:
                     imp.find_module(module)
                 except ImportError: # Module not installed / not found
+                    module_logger.error("Module {0} was not found, aborting.".format(module))
                     msg = ' '.join(["Unable to find the '{0}' module.".format(module),
                                     "Please ensure the module is installed and",
                                     "restart NDIToolbox."])
@@ -55,6 +60,8 @@ class MainUIController(object):
                     err_dlg.ShowModal()
                     err_dlg.Destroy()
                     sys.exit(0)
+        else:
+            module_logger.info("Frozen, skipping module dependency checks.")
 
     def get_icon_bmp(self):
         """Returns a PNG wx.Bitmap of the application's
@@ -164,7 +171,7 @@ class MainUIController(object):
             license = fidin.readlines()
             license_dlg = dlg.TextDisplayDialog(parent=self.view, text=''.join(license),
                                                 title="License Information",
-                                                style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
+                                                style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
             license_dlg.Show()
 
     def on_about_tri(self, evt):
@@ -193,6 +200,37 @@ class MainUIController(object):
                                                  logobmp_fname=axialis_logo)
         about_axialisicons_dlg.ShowModal()
         about_axialisicons_dlg.Destroy()
+
+    def on_display_log(self, evt):
+        """Handles request to display application log"""
+        log_path = pathfinder.log_path()
+        with open(log_path, "r") as fidin:
+            log_contents = fidin.readlines()
+            if len(log_contents) is 0:
+                log_contents = ['Log is currently empty.']
+        text_display_dlg = dlg.TextDisplayDialog(parent=self.view, text=log_contents,
+                                                     title='NDIToolbox Log - {0}'.format(log_path),
+                                                     wrap=False,
+                                                     style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+        text_display_dlg.Show()
+
+    def on_clear_log(self, evt):
+        """Handles request to delete the application log."""
+        log_path = pathfinder.log_path()
+        if os.path.exists(log_path):
+            confirm_deletion_dlg = wx.MessageDialog(parent=self.view.parent,
+                                                    caption="Delete Log?",
+                                                    message="Are you sure you want to delete the log?",
+                                                    style=wx.OK | wx.CANCEL)
+            if confirm_deletion_dlg.ShowModal() == wx.ID_OK:
+                try:
+                    mainmodel.clear_log()
+                except WindowsError: # File in use (Windows)
+                    err_msg = "Unable to delete log-Windows reports the file is in use."
+                    err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                               caption="Unable To Delete Log", style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                    err_dlg.Destroy()
 
     def on_data_select(self, evt):
         """Handles a change in data file selection by providing a preview plot
@@ -237,12 +275,14 @@ class MainUIController(object):
         try:
             open_file.open_file(pathfinder.user_path())
         except IOError: # file not found
-            err_msg = "Unable to find folder '{0}'.\nPlease ensure the folder exists.".format(browse_fldr)
+            module_logger.error("User folder {0} not found.".format(pathfinder.user_path()))
+            err_msg = "Unable to find folder '{0}'.\nPlease ensure the folder exists.".format(pathfinder.user_path())
             err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                        caption="Unable To Open Folder", style=wx.ICON_ERROR)
             err_dlg.ShowModal()
             err_dlg.Destroy()
         except OSError as err: # other OS error
+            module_logger.error("Unidentified OS error {0}".format(err))
             err_msg = "Unable to browse to data folder, error reported was:\n{0}".format(err)
             err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                        caption="Unable To Open Folder", style=wx.ICON_ERROR)
@@ -266,6 +306,22 @@ class MainUIController(object):
         finally:
             path_dlg.Destroy()
 
+    def on_choose_loglevel(self, evt):
+        """Handles request to set the log level severity"""
+        available_log_levels = mainmodel.available_log_levels
+        log_level_strs = available_log_levels.keys()
+        current_log_level = mainmodel.get_loglevel()
+        for log_str, log_lvl in available_log_levels.iteritems():
+            if log_lvl == current_log_level:
+                current_log_level_str = log_str
+        choose_logging_level_dlg = wx.SingleChoiceDialog(parent=self.view, caption="Choose Logging Level",
+                                                         message="Please choose an event severity level to log.",
+                                                         choices=log_level_strs)
+        choose_logging_level_dlg.SetSelection(log_level_strs.index(current_log_level_str))
+        if choose_logging_level_dlg.ShowModal() == wx.ID_OK:
+            mainmodel.set_loglevel(choose_logging_level_dlg.GetStringSelection())
+        choose_logging_level_dlg.Destroy()
+
     def on_import_text(self, evt):
         """Handles request to add ASCII data to data folder"""
         file_dlg = wx.FileDialog(parent=self.view, message="Please specify a data file",
@@ -286,6 +342,7 @@ class MainUIController(object):
                         if not imp_text_thd.is_alive():
                             try:
                                 exc_type, exc = exception_queue.get(block=False)
+                                module_logger.error("Error importing text file: {0}".format(exc))
                                 err_msg = "An error occurred during import:\n{0}".format(exc)
                                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                            caption="Unable To Import File", style=wx.ICON_ERROR)
@@ -319,6 +376,7 @@ class MainUIController(object):
                     if not export_text_thd.is_alive():
                         try:
                             exc_type, exc = exception_queue.get(block=False)
+                            module_logger.error("Error exporting to text file: {0}".format(exc))
                             err_msg = "An error occurred during export:\n{0}".format(exc)
                             err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                        caption="Unable To Export File", style=wx.ICON_ERROR)
@@ -347,6 +405,7 @@ class MainUIController(object):
                     if not imp_dicom_thd.is_alive():
                         try:
                             exc_type, exc = exception_queue.get(block=False)
+                            module_logger.error("Error importing DICOM file: {0}".format(exc))
                             err_msg = "An error occurred during import:\n{0}".format(exc)
                             err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                        caption="Unable To Import File", style=wx.ICON_ERROR)
@@ -369,10 +428,16 @@ class MainUIController(object):
         """Handles request to add image data to data folder"""
         try:
             from PIL import Image
+
+            module_logger.info("from PIL import Image successful.")
         except ImportError:
+            module_logger.error("from PIL import Image failed, trying second format.")
             try:
                 import Image
+
+                module_logger.info("import Image successful.")
             except ImportError: # PIL not installed
+                module_logger.error("import Image failed to import PIL.")
                 err_dlg = wx.MessageDialog(self.view,
                                            message="Please install the Python Imaging Library (PIL).",
                                            caption="PIL Module Required", style=wx.ICON_ERROR)
@@ -397,6 +462,7 @@ class MainUIController(object):
                                            style=wx.YES_NO | wx.YES_DEFAULT)
             if flatten_dlg.ShowModal() == wx.ID_NO:
                 flatten_img = False
+                module_logger.info("User declined to flatten image palette.")
             try:
                 wx.BeginBusyCursor()
                 exception_queue = Queue.Queue()
@@ -404,11 +470,13 @@ class MainUIController(object):
                                                         target=self.model.import_img,
                                                         args=(file_dlg.GetPath(), flatten_img))
                 imp_img_thd.start()
+                module_logger.info("Loading image.")
                 while True:
                     imp_img_thd.join(0.125)
                     if not imp_img_thd.is_alive():
                         try:
                             exc_type, exc = exception_queue.get(block=False)
+                            module_logger.error("Error occurred importing image: {0}".format(exc))
                             err_msg = "An error occurred during import:\n{0}".format(exc)
                             err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                        caption="Unable To Import File", style=wx.ICON_ERROR)
@@ -471,6 +539,7 @@ class MainUIController(object):
                 if plt_window.has_data:
                     plt_window.Show()
             except IndexError: # data not 3D
+                module_logger.error("User attempted to use MegaPlot on data that is not three-dimensional.")
                 err_dlg = wx.MessageDialog(self.view,
                                            message="Data must have three dimensions.",
                                            caption="Unable To Plot Data", style=wx.ICON_ERROR)

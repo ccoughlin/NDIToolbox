@@ -18,6 +18,8 @@ from functools import wraps
 import os.path
 import Queue
 
+module_logger = mainmodel.get_logger(__name__)
+
 def replace_plot(fn):
     """Decorator function - runs the specified function and updates the plot.
     Designed to work with PlotWindowController instances.
@@ -43,6 +45,7 @@ def replace_plot(fn):
 
     return wrapped
 
+
 class BasicPlotWindowController(object):
     """Base class for PlotWindows"""
 
@@ -51,6 +54,7 @@ class BasicPlotWindowController(object):
         self.axes_grid = True
         self.model = model.BasicPlotWindowModel(self, data_file)
         self.init_plot_defaults()
+        module_logger.info("Successfully initialized BasicPlotWindowController.")
 
     @property
     def available_plugins(self):
@@ -92,6 +96,7 @@ class BasicPlotWindowController(object):
                     dlg.install_plugin()
                     self.view.init_plugins_menu()
                 except Exception as err:
+                    module_logger.error("Unable to install plugin: {0}".format(err))
                     err_msg = "{0}".format(err)
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                caption="Unable To Install Plugin",
@@ -109,6 +114,7 @@ class BasicPlotWindowController(object):
                 dlg.install_plugin()
                 self.view.init_plugins_menu()
             except Exception as err:
+                module_logger.error("Unable to install plugin: {0}".format(err))
                 err_msg = "{0}".format(err)
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                            caption="Unable To Install Plugin", style=wx.ICON_ERROR)
@@ -127,6 +133,7 @@ class BasicPlotWindowController(object):
         for toolkit_id, toolkit in self.available_plugins.items():
             if requested_toolkit_id == toolkit_id:
                 plugin_class = self.model.get_plugin(toolkit[0])
+                module_logger.info("Attempt to run plugin {0}".format(plugin_class))
                 self.run_plugin(plugin_class)
 
     @replace_plot
@@ -153,6 +160,7 @@ class BasicPlotWindowController(object):
                 (keepGoing, skip) = progress_dlg.UpdatePulse()
                 try:
                     exc_type, exc = exception_queue.get(block=False)
+                    module_logger.error("Error occurred running plugin: {0}".format(exc))
                     err_msg = "An error occurred while running the plugin:\n{0}".format(exc)
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                caption="Unable To Run Plugin",
@@ -298,6 +306,7 @@ class PlotWindowController(BasicPlotWindowController):
         self.gates = {}
         self.get_gates()
         self.init_plot_defaults()
+        module_logger.info("PlotWindowController successfully initialized.")
 
     def plot(self, data):
         """Plots the dataset"""
@@ -321,6 +330,7 @@ class PlotWindowController(BasicPlotWindowController):
                 self.set_titles(plot=titles['plot'], x=titles['x'], y=titles['y'])
                 self.view.axes.grid(self.axes_grid)
             except OverflowError as err: # Data too large to plot
+                module_logger.error("Data too large to plot: {0}".format(OverflowError))
                 err_msg = "{0}".format(err)
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                            caption="Unable To Plot Data", style=wx.ICON_ERROR)
@@ -360,12 +370,16 @@ class PlotWindowController(BasicPlotWindowController):
                     gate_name, gate_cls = self.gates.get(gate_id)
                     self.run_plugin(gate_cls, start_pos=start_pos, end_pos=end_pos)
                 except ValueError as err: # negative dimensions
+                    module_logger.error("Unable to apply gate, user provided negative dimensions: {0}, {1}".format(
+                        start_pos, end_pos
+                    ))
                     err_msg = "{0}".format(err)
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                caption="Unable To Apply Gate", style=wx.ICON_ERROR)
                     err_dlg.ShowModal()
                     err_dlg.Destroy()
                 except IndexError: # specified nonexistent gate id
+                    module_logger.error("Unable to apply gate, couldn't find specified gate function.")
                     err_msg = "Unable to locate specified gate function."
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                caption="Unable To Apply Gate", style=wx.ICON_ERROR)
@@ -388,6 +402,7 @@ class BasicImgPlotWindowController(BasicPlotWindowController):
         self.model = model.ImgPlotWindowModel(self, data_file)
         self.colorbar = None
         self.init_plot_defaults()
+        module_logger.info("Successfully initialized BasicImgPlotWindowController.")
 
     def init_plot_defaults(self):
         super(BasicImgPlotWindowController, self).init_plot_defaults()
@@ -475,6 +490,7 @@ class ImgPlotWindowController(BasicImgPlotWindowController):
 
     def __init__(self, view, data_file):
         super(ImgPlotWindowController, self).__init__(view, data_file)
+        module_logger.info("Successfully initialized ImgPlotWindowController.")
 
     def check_data_dims(self):
         """If the data is a 3D array, set the data to a single 2D
@@ -503,12 +519,14 @@ class ImgPlotWindowController(BasicImgPlotWindowController):
                 self.set_titles(plot=titles['plot'], x=titles['x'], y=titles['y'])
                 self.view.axes.grid(self.axes_grid)
             except TypeError as err: # Tried to imgplot 1D array
+                module_logger.error("Unable to plot data, user attempted to imgplot 1D array: {0}".format(err))
                 err_msg = "{0}".format(err)
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                            caption="Unable To Plot Data", style=wx.ICON_ERROR)
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
             except OverflowError as err: # Data too large to plot
+                module_logger.error("Unable to plot data, data too large: {0}".format(err))
                 err_msg = "{0}".format(err)
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                            caption="Unable To Plot Data", style=wx.ICON_ERROR)
@@ -581,6 +599,7 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
         self.gates = {}
         self.get_gates()
         self.init_plot_defaults()
+        module_logger.info("Successfully initialized MegaPlotWindowController.")
 
     def plot(self, data):
         """Plots the dataset"""
@@ -590,12 +609,14 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
                 if self.view.slice_cb.IsChecked():
                     self.plot_cscan(self.scnr.cscan_data(self.slice_idx), self.slice_idx)
             except TypeError as err: # Tried to imgplot 1D array
+                module_logger.error("Unable to plot data, user attempted to imgplot 1D array: {0}".format(err))
                 err_msg = "{0}".format(err)
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                            caption="Unable To Plot Data", style=wx.ICON_ERROR)
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
             except OverflowError as err: # Data too large to plot
+                module_logger.error("Unable to plot data, data too large to plot: {0}".format(err))
                 err_msg = "{0}".format(err)
                 err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                            caption="Unable To Plot Data", style=wx.ICON_ERROR)
@@ -817,6 +838,7 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
                         self.set_titles(self.view.cscan_axes, plot=plot_title)
                         wx.EndBusyCursor()
                 except ValueError as err:
+                    module_logger.error("Unable to generate C-scan: {0}".format(err))
                     err_msg = "{0}".format(err)
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                caption="Unable To Generate C Scan", style=wx.ICON_ERROR)

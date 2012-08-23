@@ -4,6 +4,7 @@ from views import mainui
 from models import mainmodel
 import sys
 
+module_logger = mainmodel.get_logger(__name__)
 
 def platform_config():
     """Performs any platform-specific configuration
@@ -21,5 +22,7 @@ if __name__ == "__main__":
     import multiprocessing
 
     multiprocessing.freeze_support()
+    module_logger.info("Completed multiprocessing support.")
     platform_config()
+    module_logger.info("Completed platform config, starting main UI.")
     application = mainui.main()

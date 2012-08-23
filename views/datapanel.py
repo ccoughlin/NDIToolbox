@@ -8,8 +8,11 @@ __author__ = 'Chris R. Coughlin'
 import views.ui_defaults as ui_defaults
 from controllers.datapanel_ctrl import DataPanelController
 from controllers import pathfinder, open_file
+from models.mainmodel import get_logger
 import wx
 import os.path
+
+module_logger = get_logger(__name__)
 
 class DataPanel(wx.Panel):
     """Defines the wxPython panel used to display NDE Data"""
@@ -19,6 +22,7 @@ class DataPanel(wx.Panel):
         self.controller = DataPanelController(self)
         wx.Panel.__init__(self, id=wx.ID_ANY, name='', parent=self.parent)
         self.init_ui()
+        module_logger.info("Successfully initialized DataPanel.")
         self.populate()
 
     @property
@@ -27,6 +31,7 @@ class DataPanel(wx.Panel):
 
     def populate(self):
         """Retrieves the list of data files"""
+        module_logger.info("Retrieving list of data files from controller.")
         self.controller.populate_tree()
 
     def init_ui(self):
@@ -75,13 +80,15 @@ class DataPanelContextMenu(wx.Menu):
             browse_fldr = os.path.dirname(self.parent.data)
         try:
             open_file.open_file(browse_fldr)
-        except IOError: # file not found
+        except IOError as err: # file not found
+            module_logger.error("Unable to find folder: {0}".format(err))
             err_msg = "Unable to find folder '{0}'.\nPlease ensure the folder exists.".format(browse_fldr)
             err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                        caption="Unable To Open Folder", style=wx.ICON_ERROR)
             err_dlg.ShowModal()
             err_dlg.Destroy()
         except OSError as err: # other OS error
+            module_logger.error("Unable to browse to data folder (OS error): {0}".format(err))
             err_msg = "Unable to browse to data folder, error reported was:\n{0}".format(err)
             err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                        caption="Unable To Open Folder", style=wx.ICON_ERROR)

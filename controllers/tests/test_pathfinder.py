@@ -2,16 +2,42 @@
 
 __author__ = 'Chris R. Coughlin'
 
+import models
+from models.mainmodel import get_config
+from controllers import pathfinder
 import os.path
 import unittest
-from controllers import pathfinder
 
 class TestPathFinder(unittest.TestCase):
     """Tests the pathfinder module"""
 
     def setUp(self):
-        self.app_path = os.path.normcase(os.path.join(os.path.expanduser('~'), 'PycharmProjects', 'Bane'))
-        self.user_path = os.path.normcase(os.path.join(os.path.expanduser('~'), 'nditoolbox'))
+        self.app_path = os.path.normcase(os.path.dirname(os.path.dirname(models.__file__)))
+
+    @property
+    def user_path(self):
+        """Returns the currently-configured user path"""
+        cfg = get_config()
+        upath_key = "User Path"
+        if cfg.has_app_option(upath_key):
+            return cfg.get_app_option(upath_key)
+        else:
+            default_upath = os.path.normcase(os.path.join(os.path.expanduser('~'), 'nditoolbox'))
+            cfg.set_app_option({upath_key: default_upath})
+            return default_upath
+
+    @property
+    def log_path(self):
+        """Returns the path to the log file.  If not already set,
+        sets to user's home directory/nditoolbox.log and sets the default in the config file."""
+        _config = get_config()
+        logpath_key = "Log File"
+        if _config.has_app_option(logpath_key):
+            return _config.get_app_option(logpath_key)
+        else:
+            default_logpath = os.path.normcase(os.path.join(os.path.expanduser('~'), 'nditoolbox.log'))
+            _config.set_app_option({logpath_key: default_logpath})
+            return default_logpath
 
     def test_app_path(self):
         """Verify pathfinder reports the correct application path"""
@@ -85,6 +111,10 @@ class TestPathFinder(unittest.TestCase):
         """Verify correct path to documents folder"""
         doc_path = os.path.join(self.app_path, 'docs')
         self.assertEqual(doc_path, pathfinder.docs_path())
+
+    def test_log_path(self):
+        """Verify returning correct path to log file"""
+        self.assertEqual(self.log_path, pathfinder.log_path())
 
 if __name__ == "__main__":
     unittest.main()

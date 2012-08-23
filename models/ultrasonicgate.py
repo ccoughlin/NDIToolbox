@@ -7,7 +7,6 @@ __author__ = 'Chris R. Coughlin'
 
 from models import abstractplugin
 import numpy as np
-import scipy.signal
 
 class UltrasonicGate(abstractplugin.AbstractPlugin):
     """Base definition of an ultrasonic gate function"""
@@ -28,7 +27,7 @@ class UltrasonicGate(abstractplugin.AbstractPlugin):
         self.copyright = kwargs.get('copyright', self.copyright)
         self.start_idx = kwargs.get('start_pos', 0)
         self.stop_idx = kwargs.get('end_pos', 0)
-        self.num_points = self.stop_idx-self.start_idx
+        self.num_points = self.stop_idx - self.start_idx
         self._data = None
 
     @property
@@ -43,7 +42,7 @@ class UltrasonicGate(abstractplugin.AbstractPlugin):
         """Returns the window function - data between the start and
         stop indices of the UltrasonicGate will be multiplied by this
         function.  Default window is np.ones (i.e. no-op on data in range)"""
-        return np.ones(self.stop_idx-self.start_idx)
+        return np.ones(self.stop_idx - self.start_idx)
 
     def apply_gate(self):
         """Builds and then executes an ultrasonic gate:  multiplies

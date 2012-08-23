@@ -6,6 +6,7 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 from controllers.preview_window_ctrl import PreviewWindowController
 from controllers import pathfinder
 from models import workerthread
+from models.mainmodel import get_logger
 from views import dialogs
 import ui_defaults
 import wxspreadsheet
@@ -14,6 +15,8 @@ import os.path
 import Queue
 
 __author__ = 'Chris R. Coughlin'
+
+module_logger = get_logger(__name__)
 
 class PreviewWindow(wx.Frame):
     """Basic wxPython wxFrame for previewing data in tabular format"""
@@ -24,6 +27,7 @@ class PreviewWindow(wx.Frame):
         super(PreviewWindow, self).__init__(parent=self.parent, title=self.title)
         self.controller = PreviewWindowController(self, data_file)
         self.init_ui()
+        module_logger.info("Successfully initialized PreviewWindow.")
         self.load_data()
 
     def load_data(self):
@@ -36,6 +40,7 @@ class PreviewWindow(wx.Frame):
             if not data_thd.is_alive():
                 try:
                     exc_type, exc = exception_queue.get(block=False)
+                    module_logger.error("Unable to load data: {0}".format(exc))
                     err_msg = "An error occurred while loading data:\n{0}".format(exc)
                     if len(err_msg) > 150:
                         # Truncate lengthy error messages
@@ -48,10 +53,12 @@ class PreviewWindow(wx.Frame):
                 break
             wx.GetApp().Yield(True)
         if self.controller.data.ndim == 3:
+            module_logger.info("Data are 3D, requesting planar slice.")
             slice_dlg = dialogs.PlanarSliceDialog(parent=self, data=self.controller.data,
                                                   title="Specify 2D Plane")
             if slice_dlg.ShowModal() == wx.ID_OK:
                 self.controller.data = slice_dlg.get_data_slice()
+            module_logger.info("User cancelled planar slice operation.")
             slice_dlg.Destroy()
         self.controller.populate_spreadsheet()
 

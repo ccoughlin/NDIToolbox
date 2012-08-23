@@ -11,8 +11,6 @@ import mainmodel
 import ultrasonicgate
 import numpy as np
 import scipy.signal
-import os
-import sys
 
 class TwoDManipMixin(object):
     """Mixin class to provide data manipulation routines for one or two dimensional data sets"""
@@ -63,6 +61,7 @@ class TwoDManipMixin(object):
         if data is not None:
             data = np.absolute(data)
         return data
+
 
 class ThreeDManipMixin(object):
     """Mixin class to provide data manipulation routines for three dimensional data sets"""
@@ -120,6 +119,7 @@ class ThreeDManipMixin(object):
         cmap_choices = [m for m in cm.datad]
         cmap_choices.sort()
         return cmap_choices
+
 
 class BasicPlotWindowModel(object):
     """Model for the BasicPlotWindow"""
@@ -187,6 +187,7 @@ class PlotWindowModel(BasicPlotWindowModel, TwoDManipMixin):
         (full rectification in ultrasonics parlance)"""
         self.data = super(PlotWindowModel, self).rectify_full(self.data)
 
+
 class ImgPlotWindowModel(BasicPlotWindowModel, ThreeDManipMixin):
     """Model for the ImgPlotWindow"""
 
@@ -220,6 +221,7 @@ class ImgPlotWindowModel(BasicPlotWindowModel, ThreeDManipMixin):
         rows and j columns becomes an array A'ji with j
         rows and i columns."""
         self.data = super(ImgPlotWindowModel, self).transpose_data(self.data)
+
 
 class MegaPlotWindowModel(BasicPlotWindowModel, TwoDManipMixin, ThreeDManipMixin):
     """Model for the MegaPlotWindow"""

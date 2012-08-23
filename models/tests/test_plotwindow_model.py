@@ -61,6 +61,7 @@ class TestBasicPlotWindowModel(unittest.TestCase):
             plg_cls = self.basic_model.get_plugin(plugin_name)
             self.assertEqual(type(plugin_instance), type(plg_cls))
 
+
 class TestPlotWindowModel(unittest.TestCase):
     """Tests the PlotWindowModel class"""
 
