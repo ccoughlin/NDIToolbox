@@ -198,6 +198,14 @@ class TestRemotePluginInstaller(unittest.TestCase):
         req_handler = SimpleHTTPServer.SimpleHTTPRequestHandler
         cls.httpd = SocketServer.TCPServer(("localhost", cls.PORT), req_handler)
         cls.httpd.timeout = 5
+        cls.server_thd = threading.Thread(target=cls.httpd.serve_forever)
+        cls.server_thd.start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.httpd.shutdown()
+        if cls.server_thd.is_alive():
+            cls.server_thd.join(1)
 
     @classmethod
     def local_plugin(cls, plugin_name):
@@ -271,14 +279,9 @@ class TestRemotePluginInstaller(unittest.TestCase):
     def setUp(self):
         """Creates a SimpleHTTPServer instance to handle a single
         request.  Use self.server_thd.start() to initiate."""
-        self.server_thd = threading.Thread(target=TestRemotePluginInstaller.httpd.handle_request)
+        #self.server_thd = threading.Thread(target=TestRemotePluginInstaller.httpd.handle_request)
         self.good_plugin_installer = plugin_installer.RemotePluginInstaller(self.good_plugin_url)
         self.plugin_reader = zipper.UnZipper(self.good_plugin)
-
-    def tearDown(self):
-        """Shuts down the server process if still active"""
-        if self.server_thd.is_alive():
-            self.server_thd.join()
 
     def test_init(self):
         """Verify correct initialization"""
@@ -297,13 +300,97 @@ class TestRemotePluginInstaller(unittest.TestCase):
 
     def test_fetch(self):
         """Verify fetching a plugin"""
-        self.server_thd.start()
         self.good_plugin_installer.fetch()
-        with open(self.good_plugin, 'rb') as fidin:
-            local_plugin = fidin.read()
-            self.assertEqual(local_plugin, self.good_plugin_installer.plugin)
-            self.assertEqual(cStringIO.StringIO(local_plugin).getvalue(),
-                             self.good_plugin_installer.plugin_contents.getvalue())
+
+    def test_plugin_files(self):
+        """Verify plugin_files method returns a list of files in the plugin archive"""
+        expected_contents = self.plugin_reader.list_contents()
+        self.good_plugin_installer.fetch()
+        self.assertListEqual(expected_contents, self.good_plugin_installer.plugin_files)
+
+    def test_readme_filenames(self):
+        """Verify PluginInstaller maintains a list of acceptable root-level
+        README filenames"""
+        allowed_filenames = ['readme.txt', 'README.TXT', 'readme', 'README']
+        self.assertListEqual(allowed_filenames, self.good_plugin_installer.readme_files)
+
+    def test_retrieve_readme(self):
+        """Verify retrieve_readme method returns contents of plugin's root-level
+        README file"""
+        self.good_plugin_installer.fetch()
+        readme = None
+        plugin_files = self.plugin_reader.list_contents()
+        readme_filenames = ['readme.txt', 'README.TXT', 'readme', 'README']
+        for readme_file in readme_filenames:
+            if readme_file in plugin_files:
+                readme = self.plugin_reader.read(readme_file)
+        self.assertEqual(readme, self.good_plugin_installer.retrieve_readme())
+
+    def test_verify_plugin_good(self):
+        """Verify that verify_plugin method returns True if the plugin appears valid."""
+        self.good_plugin_installer.fetch()
+        self.assertTrue(self.good_plugin_installer.verify_plugin())
+
+    def test_verify_plugin_bad_folders(self):
+        """Verify that verify_plugin method returns False if the plugin appears invalid due
+        to improperly-named folders."""
+        bad_plugin_installer = plugin_installer.RemotePluginInstaller(self.badfolders_plugin_url)
+        bad_plugin_installer.fetch()
+        self.assertFalse(bad_plugin_installer.verify_plugin())
+
+    def test_verify_plugin_bad_name(self):
+        """Verify that verify_plugin method returns False if the plugin appears invalid due
+        to improperly-named plugin module."""
+        bad_plugin_installer = plugin_installer.RemotePluginInstaller(self.badname_plugin_url)
+        bad_plugin_installer.fetch()
+        self.assertFalse(bad_plugin_installer.verify_plugin())
+
+    def test_verify_plugin_bad_module(self):
+        """Verify that verify_plugin method returns False if the plugin appears invalid due
+        to improperly-named plugin module."""
+        bad_plugin_installer = plugin_installer.RemotePluginInstaller(self.badnomodule_plugin_url)
+        bad_plugin_installer.fetch()
+        self.assertFalse(bad_plugin_installer.verify_plugin())
+
+    def test_verify_plugin_bad_readme(self):
+        """Verify that verify_plugin method returns False if the plugin appears invalid due
+        to improperly-named README."""
+        bad_plugin_installer = plugin_installer.RemotePluginInstaller(self.badreadme_plugin_url)
+        bad_plugin_installer.fetch()
+        self.assertFalse(bad_plugin_installer.verify_plugin())
+
+    def test_verify_plugin_bad_noreadme(self):
+        """Verify that verify_plugin method returns False if the plugin appears invalid due
+        to not having a README file in the root."""
+        bad_plugin_installer = plugin_installer.RemotePluginInstaller(self.badnoreadme_plugin_url)
+        bad_plugin_installer.fetch()
+        self.assertFalse(bad_plugin_installer.verify_plugin())
+
+    def test_verify_plugin_bad_structure(self):
+        """Verify that verify_plugin method returns False if the plugin appears invalid due
+        to having an invalid structure (support files in sub-folder; only module.py and
+        README allowed in root)"""
+        bad_plugin_installer = plugin_installer.RemotePluginInstaller(self.badstructure_plugin_url)
+        bad_plugin_installer.fetch()
+        self.assertFalse(bad_plugin_installer.verify_plugin())
+
+    def test_install_plugin(self):
+        """Verify install_plugin method correctly installs a plugin; also
+        verifies handling of encrypted ZIPs"""
+        sample_plugin_url = TestRemotePluginInstaller.plugin_url('greets_plugin.zip')
+        installed_plugin_name = os.path.join(pathfinder.plugins_path(), 'greets_plugin.py')
+        installer = plugin_installer.RemotePluginInstaller(sample_plugin_url, zip_password='9225')
+        installer.fetch()
+        self.assertTrue(installer.verify_plugin())
+        install_success = installer.install_plugin()
+        self.assertTrue(os.path.exists(installed_plugin_name))
+        self.assertTrue(install_success)
+        # Clean up - attempt to remove the sample plugin if it already exists
+        if os.path.exists(installed_plugin_name):
+            try:
+                os.remove(installed_plugin_name)
+            except WindowsError: # file in use
+                return
 
 if __name__ == "__main__":
     random.seed()

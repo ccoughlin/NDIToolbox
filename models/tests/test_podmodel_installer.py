@@ -201,15 +201,9 @@ class TestRemotePODModelInstaller(test_plugin_installer.TestRemotePluginInstalle
     def setUp(self):
         """Creates a SimpleHTTPServer instance to handle a single
         request.  Use self.server_thd.start() to initiate."""
-        self.server_thd = threading.Thread(target=TestRemotePODModelInstaller.httpd.handle_request)
-        self.good_plugin_installer = podmodel_installer.RemotePODModelInstaller(self
-        .good_plugin_url)
+        #self.server_thd = threading.Thread(target=TestRemotePluginInstaller.httpd.handle_request)
+        self.good_plugin_installer = podmodel_installer.RemotePODModelInstaller(self.good_plugin_url)
         self.plugin_reader = zipper.UnZipper(self.good_plugin)
-
-    def tearDown(self):
-        """Shuts down the server process if still active"""
-        if self.server_thd.is_alive():
-            self.server_thd.join()
 
     def test_init(self):
         """Verify correct initialization"""
@@ -229,13 +223,30 @@ class TestRemotePODModelInstaller(test_plugin_installer.TestRemotePluginInstalle
 
     def test_fetch(self):
         """Verify fetching a plugin"""
-        self.server_thd.start()
         self.good_plugin_installer.fetch()
         with open(self.good_plugin, 'rb') as fidin:
             local_plugin = fidin.read()
             self.assertEqual(local_plugin, self.good_plugin_installer.plugin)
             self.assertEqual(cStringIO.StringIO(local_plugin).getvalue(),
                              self.good_plugin_installer.plugin_contents.getvalue())
+
+    def test_install_plugin(self):
+        """Verify install_plugin method correctly installs a plugin; also
+        verifies handling of encrypted ZIPs"""
+        sample_plugin_url = TestRemotePODModelInstaller.plugin_url('good_podmodel.zip')
+        installed_plugin_name = os.path.join(pathfinder.podmodels_path(), 'good_podmodel.py')
+        installer = podmodel_installer.RemotePODModelInstaller(sample_plugin_url)
+        installer.fetch()
+        self.assertTrue(installer.verify_plugin())
+        install_success = installer.install_plugin()
+        self.assertTrue(os.path.exists(installed_plugin_name))
+        self.assertTrue(install_success)
+        # Clean up - attempt to remove the sample plugin if it already exists
+        if os.path.exists(installed_plugin_name):
+            try:
+                os.remove(installed_plugin_name)
+            except WindowsError: # file in use
+                return
 
 if __name__ == "__main__":
     unittest.main()
