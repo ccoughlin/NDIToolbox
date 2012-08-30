@@ -9,6 +9,7 @@ from controllers import pathfinder
 from models import abstractplugin
 from models import mainmodel
 from configobj import ConfigObj
+import numpy as np
 import os.path
 
 class PODWindowModel(object):
@@ -30,9 +31,19 @@ class PODWindowModel(object):
         return mainmodel.get_data(file_name)
 
     @classmethod
+    def load_csv(cls, file_name):
+        """Returns NumPy array from the specified CSV file."""
+        return np.genfromtxt(file_name, delimiter=",")
+
+    @classmethod
     def save_data(cls, file_name, data):
         """Saves NumPy array data to the specified file name"""
         mainmodel.save_data(file_name, data)
+
+    @classmethod
+    def save_csv(cls, file_name, data):
+        """Saves NumPy array data as CSV data"""
+        np.savetxt(file_name, data, delimiter=",")
 
 
 class PODModel(abstractplugin.AbstractPlugin):

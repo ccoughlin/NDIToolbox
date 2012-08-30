@@ -25,7 +25,9 @@ class TestPODWindowModel(unittest.TestCase):
         self.sample_data_basename = "sample.dat"
         self.sample_data_file = os.path.join(os.path.dirname(__file__),
                                              self.sample_data_basename)
-        #np.savetxt(self.sample_data_file, self.sample_data)
+        self.sample_csvdata_basename = "sample.csv"
+        self.sample_csvdata_file = os.path.join(os.path.dirname(__file__), self.sample_csvdata_basename)
+        np.savetxt(self.sample_csvdata_file, self.sample_data, delimiter=",")
         with h5py.File(self.sample_data_file, 'w') as fidout:
             fidout.create_dataset(self.sample_data_basename, data=self.sample_data)
 
@@ -47,6 +49,11 @@ class TestPODWindowModel(unittest.TestCase):
         read_data = self.model.load_data(self.sample_data_file)
         self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
 
+    def test_load_csv(self):
+        """Verify load_csv classmethod returns correct data"""
+        read_data = self.model.load_csv(self.sample_csvdata_file)
+        self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
+
     def test_save_data(self):
         """Verify save_data classmethod correctly saves data"""
         if os.path.exists(self.sample_data_file + ".hdf5"):
@@ -56,9 +63,21 @@ class TestPODWindowModel(unittest.TestCase):
         returned_data = self.model.load_data(self.sample_data_file + ".hdf5")
         self.assertListEqual(returned_data.tolist(), self.sample_data.tolist())
 
+    def test_save_csv(self):
+        if os.path.exists(self.sample_csvdata_file):
+            os.remove(self.sample_csvdata_file)
+        self.model.save_csv(self.sample_csvdata_file, self.sample_data)
+        assert(os.path.exists(self.sample_csvdata_file))
+        returned_data = self.model.load_csv(self.sample_csvdata_file)
+        self.assertListEqual(returned_data.tolist(), self.sample_data.tolist())
+
     def tearDown(self):
-        if os.path.exists(self.sample_data_file + ".hdf5"):
-            os.remove(self.sample_data_file + ".hdf5")
+        for sample_file in [self.sample_csvdata_file, self.sample_data_file + ".hdf5"]:
+            if os.path.exists(sample_file):
+                try:
+                    os.remove(sample_file)
+                except WindowsError: # file in use (Windows)
+                    pass
 
 
 class TestPODModel(unittest.TestCase):
