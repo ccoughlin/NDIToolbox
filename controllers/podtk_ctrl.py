@@ -31,6 +31,16 @@ class PODWindowController(object):
         for model in pod_models:
             self.view.modeltree.add_model(model)
 
+    def get_data(self, file_name, file_type):
+        """Returns the NumPy data from the specified data file.  The file_type argument
+        is a str indicating the file format - currently supported are 'csv' and 'hdf5'.
+        """
+        if file_type.lower() == 'csv':
+            load_data_fn = self.model.load_csv
+        elif file_type.lower() == 'hdf5':
+            load_data_fn = self.model.load_data
+        return load_data_fn(file_name)
+
     # Event Handlers
     def on_quit(self, evt):
         """Handles Close Window request"""
@@ -148,24 +158,23 @@ class PODWindowController(object):
         """Handles request to load input data into worksheet"""
         input_data = self.view.modeltree.selected_inputdata()
         if input_data is not None:
-            if input_data['filetype'].lower() == 'csv':
-                try:
-                    data = self.model.load_data(input_data['filename'])
-                    self.populate_spreadsheet(self.view.input_grid, data)
-                except IOError as err:
-                    module_logger.error("Unable to read input data: {0}".format(err))
-                    err_dlg = wx.MessageDialog(self.view, caption="Failed To Read File",
-                                               message=str(err), style=wx.OK | wx.ICON_ERROR)
-                    err_dlg.ShowModal()
-                    err_dlg.Destroy()
+            try:
+                data = self.get_data(input_data['filename'], input_data['filetype'])
+                self.populate_spreadsheet(self.view.input_grid, data)
+            except IOError as err:
+                module_logger.error("Unable to read input data: {0}".format(err))
+                err_dlg = wx.MessageDialog(self.view, caption="Failed To Read File",
+                                           message=str(err), style=wx.OK | wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
 
     def on_choose_inputdata(self, evt):
         """Handles request to set input data file"""
         selected_input_data = self.view.modeltree.GetSelection()
         if selected_input_data.IsOk():
-            file_dlg = wx.FileDialog(self.view, message="Please select a CSV file",
-                                     wildcard="CSV files (*.csv)|*.csv|Text Files (*.txt)|*"\
-                                              ".txt|All Files (*.*)|*.*"
+            file_dlg = wx.FileDialog(self.view, message="Please select a data file",
+                                     wildcard="HDF5 files (*.hdf5)|*.hdf5|CSV files (*.csv)|*.csv|"\
+                                              "All Files (*.*)|*.*"
                                      ,
                                      style=wx.FD_OPEN)
             if file_dlg.ShowModal() == wx.ID_OK:
@@ -187,7 +196,7 @@ class PODWindowController(object):
             if file_dlg.ShowModal() == wx.ID_OK:
                 try:
                     grid = self.get_active_grid()
-                    data = self.model.load_data(file_dlg.GetPath())
+                    data = self.get_data(file_dlg.GetPath(), "csv")
                     if data is not None:
                         self.populate_spreadsheet(grid, data)
                     else:
