@@ -72,7 +72,7 @@ class TestPODWindowModel(unittest.TestCase):
         self.assertListEqual(returned_data.tolist(), self.sample_data.tolist())
 
     def tearDown(self):
-        for sample_file in [self.sample_csvdata_file, self.sample_data_file + ".hdf5"]:
+        for sample_file in [self.sample_csvdata_file, self.sample_data_file, self.sample_data_file+".hdf5"]:
             if os.path.exists(sample_file):
                 try:
                     os.remove(sample_file)
