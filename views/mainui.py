@@ -41,6 +41,10 @@ class UI(wx.Frame):
         """Creates the File menu"""
         self.file_mnu = wx.Menu()
         self.import_mnu = wx.Menu()
+        hdf5_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="HDF5 File...",
+                                help="Copies an HDF5 file to your NDIToolbox data folder")
+        self.import_mnu.AppendItem(hdf5_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_add_data, id=hdf5_mnui.GetId())
         txt_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="Text File (CSV, etc.)...",
                                help="Imports delimited ASCII data file")
         self.import_mnu.AppendItem(txt_mnui)
