@@ -83,14 +83,14 @@ class DataPanelContextMenu(wx.Menu):
         except IOError as err: # file not found
             module_logger.error("Unable to find folder: {0}".format(err))
             err_msg = "Unable to find folder '{0}'.\nPlease ensure the folder exists.".format(browse_fldr)
-            err_dlg = wx.MessageDialog(self.view, message=err_msg,
+            err_dlg = wx.MessageDialog(self.parent, message=err_msg,
                                        caption="Unable To Open Folder", style=wx.ICON_ERROR)
             err_dlg.ShowModal()
             err_dlg.Destroy()
         except OSError as err: # other OS error
             module_logger.error("Unable to browse to data folder (OS error): {0}".format(err))
             err_msg = "Unable to browse to data folder, error reported was:\n{0}".format(err)
-            err_dlg = wx.MessageDialog(self.view, message=err_msg,
+            err_dlg = wx.MessageDialog(self.parent, message=err_msg,
                                        caption="Unable To Open Folder", style=wx.ICON_ERROR)
             err_dlg.ShowModal()
             err_dlg.Destroy()

@@ -35,10 +35,10 @@ class PODWindowController(object):
         """Returns the NumPy data from the specified data file.  The file_type argument
         is a str indicating the file format - currently supported are 'csv' and 'hdf5'.
         """
-        if file_type.lower() == 'csv':
-            load_data_fn = self.model.load_csv
-        elif file_type.lower() == 'hdf5':
+        if file_type.lower() == 'hdf5':
             load_data_fn = self.model.load_data
+        else: # default to csv
+            load_data_fn = self.model.load_csv
         return load_data_fn(file_name)
 
     # Event Handlers

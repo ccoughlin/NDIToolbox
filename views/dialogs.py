@@ -138,13 +138,13 @@ class ImportTextDialog(wx.Dialog):
 
     def get_import_parameters(self):
         """Returns a dict of the text import parameters"""
-        params = {}
-        params['delimiter'] = self._get_delim()
-        params['commentchar'] = self.commentchar_tc.GetValue()
-        params['skipheader'] = self.headerlines_ctrl.GetValue()
-        params['skipfooter'] = self.footerlines_ctrl.GetValue()
-        params['usecols'] = self._get_cols()
-        params['transpose'] = self.transpose_cb.IsChecked()
+        #params = {}
+        params = {'delimiter':self._get_delim(),
+                  'commentchar':self.commentchar_tc.GetValue(),
+                  'skipheader':self.headerlines_ctrl.GetValue(),
+                  'skipfooter':self.footerlines_ctrl.GetValue(),
+                  'usecols':self._get_cols(),
+                  'transpose':self.transpose_cb.IsChecked()}
         return params
 
 
@@ -217,11 +217,9 @@ class ExportTextDialog(wx.Dialog):
 
     def get_export_parameters(self):
         """Returns a dict of the text export parameters"""
-        params = {}
-        params['delimiter'] = self.delimiter_choices.get(self.delim_combobox.GetStringSelection(),
-                                                         ",")
-        params['format'] = self.format_choices.get(self.fmt_combobox.GetStringSelection(), "%f")
-        params['newline'] = self.eol_choices.get(self.nline_combobox.GetStringSelection(), "\n")
+        params = {'delimiter':self.delimiter_choices.get(self.delim_combobox.GetStringSelection(), ","),
+                  'format':self.format_choices.get(self.fmt_combobox.GetStringSelection(), "%f"),
+                  'newline':self.eol_choices.get(self.nline_combobox.GetStringSelection(), "\n")}
         return params
 
 
@@ -237,7 +235,7 @@ class IntegerRangeDialog(wx.Dialog):
                  start_range_lbl='Min', finish_range_lbl='Max',
                  start_min=0, start_max=sys.maxint,
                  finish_min=0, finish_max=sys.maxint):
-        super(RangeDialog, self).__init__(parent=None, title=dlg_title)
+        super(IntegerRangeDialog, self).__init__(parent=None, title=dlg_title)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         msg_text = wx.StaticText(self, -1, dlg_msg)
@@ -312,7 +310,7 @@ class FloatRangeDialog(wx.Dialog):
 
     def GetValue(self):
         """Returns the tuple (start,finish) if the dialog was accepted."""
-        return (self.start_ctrl.GetValue(), self.finish_ctrl.GetValue())
+        return self.start_ctrl.GetValue(), self.finish_ctrl.GetValue()
 
 
 class progressDialog(object):
@@ -716,6 +714,7 @@ class PlanarSliceDialog(wx.Dialog):
         if self.data is not None:
             data_shape = self.data.shape
             selected_plane_idx = self.plane_choice.GetSelection()
+            max_idx = sys.float_info.max
             if selected_plane_idx == 0: # Z index
                 max_idx = data_shape[2] - 1
             elif selected_plane_idx == 1: # Y index

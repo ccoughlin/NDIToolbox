@@ -317,7 +317,6 @@ class MainModel(object):
 
     def import_dicom(self, data_file):
         """Imports a DICOM/DICONDE pixel map"""
-        """Imports a DICOM/DICONDE pixel map"""
         try:
             import dicom
 

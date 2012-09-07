@@ -58,7 +58,6 @@ class TestFetchPluginDialogModel(unittest.TestCase):
         """Verify model returns the plugin archive's README"""
         readme_fetcher = zipper.UnZipper(self.plugin)
         expected_readme = readme_fetcher.read("readme.txt")
-        self.model.get_plugin(self.plugin_url_params)
         retrieved_readme = self.model.get_readme(self.plugin_url_params)
         self.assertEqual(expected_readme, retrieved_readme)
 

@@ -40,8 +40,9 @@ class FetchPluginDialogModel(object):
 
     def get_readme(self, url_dict):
         """Returns the plugin's README contents."""
-        if self.plugin_fetcher is not None:
-            return self.plugin_fetcher.retrieve_readme()
+        if self.plugin_fetcher is None:
+            self.get_plugin(url_dict)
+        return self.plugin_fetcher.retrieve_readme()
 
 
 class FetchRemotePluginDialogModel(FetchPluginDialogModel):

@@ -342,7 +342,7 @@ class PlotWindowController(BasicPlotWindowController):
         """Applies full rectification to the current data set"""
         self.model.rectify_full()
 
-    def generate_gate_id(self, gate_name):
+    def generate_gate_id(self):
         """Generates an ID number for the specified gate name.
         Used to identify gates in wxPython menu events."""
         id = 1011 + len(self.gates)
@@ -351,7 +351,7 @@ class PlotWindowController(BasicPlotWindowController):
     def get_gates(self):
         """Returns a dict listing available window functions"""
         for gate_name in self.model.gates:
-            self.gates[self.generate_gate_id(gate_name)] = gate_name
+            self.gates[self.generate_gate_id()] = gate_name
 
     def on_apply_gate(self, evt):
         """Handles request to apply window function ('gate' in UT)

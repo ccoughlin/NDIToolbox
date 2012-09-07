@@ -312,6 +312,7 @@ class MainUIController(object):
     def on_choose_loglevel(self, evt):
         """Handles request to set the log level severity"""
         available_log_levels = mainmodel.available_log_levels
+        current_log_level_str = available_log_levels[0]
         log_level_strs = available_log_levels.keys()
         current_log_level = mainmodel.get_loglevel()
         for log_str, log_lvl in available_log_levels.iteritems():

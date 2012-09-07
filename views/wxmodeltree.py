@@ -11,8 +11,8 @@ from models.mainmodel import get_logger
 module_logger = get_logger(__name__)
 
 class ModelTree(wx.TreeCtrl):
-    '''PODModel customized version of wxPython's TreeCtrl, adds
-    extra functionality for POD Toolkit'''
+    """PODModel customized version of wxPython's TreeCtrl, adds
+    extra functionality for POD Toolkit"""
 
     def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=wx.TR_DEFAULT_STYLE):
@@ -28,7 +28,7 @@ class ModelTree(wx.TreeCtrl):
         self.DeleteChildren(self.root)
 
     def add_model(self, PODModel_tuple):
-        '''Adds the model PODModel to the tree'''
+        """Adds the model PODModel to the tree"""
         PODModel_name = PODModel_tuple[0]
         PODModel = PODModel_tuple[1]()
         module_logger.info("Adding POD Model {0} {1} to tree.".format(PODModel_name, PODModel))
@@ -50,7 +50,7 @@ class ModelTree(wx.TreeCtrl):
         return newmodel_branch
 
     def get_all_model_items(self):
-        '''Returns a list of all the PODModel wxTreeItems in the tree'''
+        """Returns a list of all the PODModel wxTreeItems in the tree"""
         models = []
         branch, breadcrumb = self.GetFirstChild(self.root)
         while branch.IsOk():
@@ -59,12 +59,12 @@ class ModelTree(wx.TreeCtrl):
         return models
 
     def get_all_models(self):
-        '''Returns a list of all the PODModel instances in the tree'''
+        """Returns a list of all the PODModel instances in the tree"""
         return [self.GetItemPyData(model_item) for model_item in self.get_all_model_items()]
 
     def update_model(self):
-        '''Updates the currently-selected POD Model based on the current configuration.
-        Walks the tree.'''
+        """Updates the currently-selected POD Model based on the current configuration.
+        Walks the tree."""
         model_item = self.selected_model_item()
         module_logger.info("Updating POD Model item '{0}'.".format(model_item))
         if model_item is not None:
@@ -88,7 +88,7 @@ class ModelTree(wx.TreeCtrl):
             model.settings = settings
 
     def get_branch(self, branch):
-        '''Builds and returns a ModelProperty dict based on the provided branch'''
+        """Builds and returns a ModelProperty dict based on the provided branch"""
         branchdict = {}
         leaf, cookie = self.GetFirstChild(branch)
         while leaf.IsOk():
@@ -97,8 +97,8 @@ class ModelTree(wx.TreeCtrl):
         return branchdict
 
     def selected_model_item(self):
-        '''Returns the wx TreeItem for the currently selected PODModel.
-        Walks the tree up if required.'''
+        """Returns the wx TreeItem for the currently selected PODModel.
+        Walks the tree up if required."""
         selection = self.GetSelection()
         model = None
         if selection.IsOk():
@@ -109,7 +109,7 @@ class ModelTree(wx.TreeCtrl):
         return model
 
     def selected_model_name(self):
-        '''Returns the name of the currently selected PODModel.'''
+        """Returns the name of the currently selected PODModel."""
         selected_model = self.selected_model_item()
         if selected_model is not None:
             return self.GetItemText(selected_model)
@@ -117,22 +117,22 @@ class ModelTree(wx.TreeCtrl):
             return None
 
     def selection_is_root(self):
-        '''Returns True if the tree's root is the current selection.'''
+        """Returns True if the tree's root is the current selection."""
         return self.GetSelection() == self.GetRootItem()
 
     def selection_is_model(self):
-        '''Returns True if the current selection is a PODModel.  Does
-        not walk the tree.'''
+        """Returns True if the current selection is a PODModel.  Does
+        not walk the tree."""
         selection = self.GetSelection()
         return self.GetItemParent(selection) == self.GetRootItem()
 
     def selectionParentLabel(self):
-        '''Returns the label of the current selection's parent or an
-        empty string if no parent (root).'''
+        """Returns the label of the current selection's parent or an
+        empty string if no parent (root)."""
         selection = self.GetSelection()
         parent_lbl = ''
-        ''' Swallow the assertion exception that arises if when the root's
-        selected'''
+        # Swallow the assertion exception that arises if when the root's
+        # selected
         try:
             if selection.IsOk():
                 parent_lbl = self.GetItemText(self.GetItemParent(selection))
@@ -140,45 +140,45 @@ class ModelTree(wx.TreeCtrl):
             return parent_lbl
 
     def selection_is_inputdata(self):
-        '''Returns True if the current selection is inputdata.  Does not walk the tree.'''
+        """Returns True if the current selection is inputdata.  Does not walk the tree."""
         return self.selectionParentLabel() == self.inputdata_lbl
 
     def selection_is_parameter(self):
-        '''Returns True if the current selection is a parameter.  Does not walk the tree.'''
+        """Returns True if the current selection is a parameter.  Does not walk the tree."""
         return self.selectionParentLabel() == self.parameters_lbl
 
     def selection_is_setting(self):
-        '''Returns True if the current selection is a setting.  Does not walk the tree.'''
+        """Returns True if the current selection is a setting.  Does not walk the tree."""
         return self.selectionParentLabel() == self.settings_lbl
 
     def get_selected_object(self):
-        '''Returns a Python object instance of the current selection.'''
+        """Returns a Python object instance of the current selection."""
         return self.GetPyData(self.GetSelection())
 
     def get_model(self):
-        '''Returns the selected POD Model with the current configuration.  Walks the tree.'''
+        """Returns the selected POD Model with the current configuration.  Walks the tree."""
         self.update_model()
         return self.GetPyData(self.selected_model_item())
 
     def selected_inputdata(self):
-        '''Returns a ModelProperty instance of the currently selected
-        inputdata, or None if inputdata isn't selected.'''
+        """Returns a ModelProperty instance of the currently selected
+        inputdata, or None if inputdata isn't selected."""
         inputdata = None
         if self.selection_is_inputdata():
             inputdata = self.get_selected_object()
         return inputdata
 
     def selected_parameter(self):
-        '''Returns a ModelProperty instance of the currently selected
-        parameter, or None if a parameter isn't selected.'''
+        """Returns a ModelProperty instance of the currently selected
+        parameter, or None if a parameter isn't selected."""
         param = None
         if self.selection_is_parameter():
             param = self.get_selected_object()
         return param
 
     def selected_setting(self):
-        '''Returns a ModelProperty instance of the currently selected
-        setting, or None if a setting isn't selected.'''
+        """Returns a ModelProperty instance of the currently selected
+        setting, or None if a setting isn't selected."""
         setting = None
         if self.selection_is_setting():
             setting = self.get_selected_object()
@@ -186,7 +186,7 @@ class ModelTree(wx.TreeCtrl):
 
 
 class ModelTreeContextMenu(wx.Menu):
-    '''Basic right-click popup menu for ModelTree controls.'''
+    """Basic right-click popup menu for ModelTree controls."""
 
     def __init__(self, parent):
         wx.Menu.__init__(self)
@@ -194,7 +194,7 @@ class ModelTreeContextMenu(wx.Menu):
         self.parent = parent
         self.controller = self.parent.controller
         self.tree = self.parent.modeltree
-        '''Contextual menu is based on what type of item is selected'''
+        # Contextual menu is based on what type of item is selected
         if self.tree.selection_is_root():
             self.generate_rootmenu()
         if self.tree.selection_is_model():
@@ -203,13 +203,13 @@ class ModelTreeContextMenu(wx.Menu):
             self.generate_inputdatamenu()
 
     def generate_rootmenu(self):
-        '''Generate a menu when right-clicking the root'''
+        """Generate a menu when right-clicking the root"""
         add_model = wx.MenuItem(self, wx.NewId(), 'Install Model')
         self.AppendItem(add_model)
         self.Bind(wx.EVT_MENU, self.controller.on_install_model, id=add_model.GetId())
 
     def generate_modelmenu(self):
-        '''Contextual menu for right-clicking on a model'''
+        """Contextual menu for right-clicking on a model"""
         save_model = wx.MenuItem(self, wx.NewId(), "Save This Model")
         self.AppendItem(save_model)
         self.Bind(wx.EVT_MENU, self.controller.on_save_model, id=save_model.GetId())
@@ -218,7 +218,7 @@ class ModelTreeContextMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.controller.on_delete_model, id=del_model.GetId())
 
     def generate_inputdatamenu(self):
-        '''Contextual menu for right-clicking an InputData item'''
+        """Contextual menu for right-clicking an InputData item"""
         edit_sheet = wx.MenuItem(self, wx.NewId(), 'Edit Worksheet')
         self.AppendItem(edit_sheet)
         self.Bind(wx.EVT_MENU, self.controller.on_edit_inputdata, id=edit_sheet.GetId())

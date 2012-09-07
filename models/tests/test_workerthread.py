@@ -14,7 +14,7 @@ class TestWorkerThread(unittest.TestCase):
 
     def sample_function(self, a, b):
         """Sample function to test WorkerThread execution"""
-        return (a + b)
+        return a + b
 
     def sample_exception_function(self, a, b):
         """Sample function to test handling Exceptions"""
