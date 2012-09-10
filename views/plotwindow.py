@@ -56,11 +56,12 @@ class PlotWindow(wx.Frame):
                     pass
                 break
             wx.GetApp().Yield(True)
-        self.title = 'Plot - {0}'.format(os.path.basename(self.data_file))
-        wx.Frame.__init__(self, id=wx.ID_ANY, parent=self.parent, title=self.title)
-        self.init_menu()
-        self.init_ui()
-        self.controller.plot(self.controller.data)
+        if self.has_data():
+            self.title = 'Plot - {0}'.format(os.path.basename(self.data_file))
+            wx.Frame.__init__(self, id=wx.ID_ANY, parent=self.parent, title=self.title)
+            self.init_menu()
+            self.init_ui()
+            self.controller.plot(self.controller.data)
 
     def init_ui(self):
         """Creates the PlotWindow UI"""

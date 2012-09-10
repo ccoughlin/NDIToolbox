@@ -87,6 +87,11 @@ class UI(wx.Frame):
         self.prefs_mnu.AppendItem(log_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_choose_loglevel, id=log_mnui.GetId())
         self.tool_mnu.AppendMenu(wx.ID_ANY, 'Preferences', self.prefs_mnu)
+        self.tool_mnu.AppendSeparator()
+        gc_mnui = wx.MenuItem(self.tool_mnu, wx.ID_ANY, text="Free Memory...",
+                              help="Attempt to free up memory by scheduling garbage collection")
+        self.tool_mnu.AppendItem(gc_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_gc, id=gc_mnui.GetId())
         self.menubar.Append(self.tool_mnu, "&Tools")
 
     def init_help_menu(self):

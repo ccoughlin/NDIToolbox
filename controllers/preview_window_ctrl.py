@@ -29,7 +29,11 @@ class PreviewWindowController(object):
 
     def load_data(self):
         """Loads the instance's data file"""
-        self.model.load_data()
+        try:
+            self.model.load_data()
+        except MemoryError as err: # out of memory
+            module_logger.exception("Insufficient memory - {0}".format(err))
+            raise MemoryError("Insufficient memory to load data")
 
     def slice_data(self, slice_idx):
         """Sets the 3D data to a viewable 2D slice"""

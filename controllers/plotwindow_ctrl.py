@@ -269,7 +269,11 @@ class BasicPlotWindowController(object):
 
     def load_data(self):
         """Loads the data from the specified file name"""
-        self.model.load_data()
+        try:
+            self.model.load_data()
+        except MemoryError as err: # out of memory
+            module_logger.exception("Insufficient memory - {0}".format(err))
+            raise MemoryError("Insufficient memory to load data")
 
     def get_plugins(self):
         """Returns a list of the available NDIToolbox plugins"""
@@ -495,6 +499,8 @@ class ImgPlotWindowController(BasicImgPlotWindowController):
     def check_data_dims(self):
         """If the data is a 3D array, set the data to a single 2D
         slice."""
+        if self.data is None:
+            self.load_data()
         if self.data.ndim == 3:
             slice_dlg = dialogs.PlanarSliceDialog(parent=self.view, data=self.data,
                                                   title="Specify 2D Plane")

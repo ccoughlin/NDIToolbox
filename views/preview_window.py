@@ -30,6 +30,10 @@ class PreviewWindow(wx.Frame):
         module_logger.info("Successfully initialized PreviewWindow.")
         self.load_data()
 
+    def has_data(self):
+        """Returns True if data is not None"""
+        return self.controller.data is not None
+
     def load_data(self):
         exception_queue = Queue.Queue()
         data_thd = workerthread.WorkerThread(exception_queue=exception_queue,
@@ -52,15 +56,16 @@ class PreviewWindow(wx.Frame):
                     pass
                 break
             wx.GetApp().Yield(True)
-        if self.controller.data.ndim == 3:
-            module_logger.info("Data are 3D, requesting planar slice.")
-            slice_dlg = dialogs.PlanarSliceDialog(parent=self, data=self.controller.data,
-                                                  title="Specify 2D Plane")
-            if slice_dlg.ShowModal() == wx.ID_OK:
-                self.controller.data = slice_dlg.get_data_slice()
-            module_logger.info("User cancelled planar slice operation.")
-            slice_dlg.Destroy()
-        self.controller.populate_spreadsheet()
+        if self.has_data():
+            if self.controller.data.ndim == 3:
+                module_logger.info("Data are 3D, requesting planar slice.")
+                slice_dlg = dialogs.PlanarSliceDialog(parent=self, data=self.controller.data,
+                                                      title="Specify 2D Plane")
+                if slice_dlg.ShowModal() == wx.ID_OK:
+                    self.controller.data = slice_dlg.get_data_slice()
+                module_logger.info("User cancelled planar slice operation.")
+                slice_dlg.Destroy()
+            self.controller.populate_spreadsheet()
 
     def init_ui(self):
         """Creates and lays out the user interface"""
