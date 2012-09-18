@@ -94,30 +94,29 @@ def load_dynamic_modules(module_path, module_class):
         module_logger.info("Adding {0} to sys.path".format(module_path))
         sys.path.append(module_path)
     dynamic_modules = []
-    for root, dirs, files in os.walk(module_path):
-        for found_file in files:
-            file_name, file_extension = os.path.splitext(found_file)
-            if file_extension == os.extsep + "py":
-                try:
-                    module_hdl, path_name, description = imp.find_module(file_name)
-                    dyn_module = imp.load_module(file_name, module_hdl, path_name, description)
-                    dyn_module_classes = inspect.getmembers(dyn_module, inspect.isclass)
-                    for dyn_module_class in dyn_module_classes:
-                        if issubclass(dyn_module_class[1], module_class):
-                            # Load only those plugins defined in the current module
-                            # (i.e. don't instantiate any parent plugins)
-                            if dyn_module_class[1].__module__ == file_name:
-                                module_logger.info("Module {0} successfully imported.".format(dyn_module_class))
-                                dynamic_modules.append(dyn_module_class)
-                except ImportError as err: # imp.load_module failed to load module
-                    module_logger.error("load_module failed: {0}".format(err))
-                    raise err
-                except Exception as err: # unknown error
-                    module_logger.error("Unable to load module: {0}".format(err))
-                    raise err
-                finally:
-                    if module_hdl:
-                        module_hdl.close()
+    for found_file in os.listdir(module_path):
+        file_name, file_extension = os.path.splitext(found_file)
+        if file_extension == os.extsep + "py":
+            try:
+                module_hdl, path_name, description = imp.find_module(file_name)
+                dyn_module = imp.load_module(file_name, module_hdl, path_name, description)
+                dyn_module_classes = inspect.getmembers(dyn_module, inspect.isclass)
+                for dyn_module_class in dyn_module_classes:
+                    if issubclass(dyn_module_class[1], module_class):
+                        # Load only those plugins defined in the current module
+                        # (i.e. don't instantiate any parent plugins)
+                        if dyn_module_class[1].__module__ == file_name:
+                            module_logger.info("Module {0} successfully imported.".format(dyn_module_class))
+                            dynamic_modules.append(dyn_module_class)
+            except ImportError as err: # imp.load_module failed to load module
+                module_logger.error("load_module failed: {0}".format(err))
+                raise err
+            except Exception as err: # unknown error
+                module_logger.error("Unable to load module: {0}".format(err))
+                raise err
+            finally:
+                if module_hdl:
+                    module_hdl.close()
     return dynamic_modules
 
 
