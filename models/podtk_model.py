@@ -8,6 +8,7 @@ __author__ = 'Chris R. Coughlin'
 from controllers import pathfinder
 from models import abstractplugin
 from models import mainmodel
+from models import dataio
 from configobj import ConfigObj
 import numpy as np
 import os.path
@@ -28,7 +29,7 @@ class PODWindowModel(object):
     @classmethod
     def load_data(cls, file_name):
         """Returns NumPy array from the specified file."""
-        return mainmodel.get_data(file_name)
+        return dataio.get_data(file_name)
 
     @classmethod
     def load_csv(cls, file_name):
@@ -38,7 +39,7 @@ class PODWindowModel(object):
     @classmethod
     def save_data(cls, file_name, data):
         """Saves NumPy array data to the specified file name"""
-        mainmodel.save_data(file_name, data)
+        dataio.save_data(file_name, data)
 
     @classmethod
     def save_csv(cls, file_name, data):

@@ -6,7 +6,7 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 from controllers import pathfinder
-from models import mainmodel
+from models import dataio
 import wx
 import matplotlib
 import matplotlib.cm as cm
@@ -61,7 +61,7 @@ def plot_pipe(data, title, width, height, pipe):
 
 def plot(data_filename, width, height):
     """Returns a PNG plot of the specified data file's dataset"""
-    data = mainmodel.get_data(data_filename)
+    data = dataio.get_data(data_filename)
     return gen_thumbnail(plot_stream(data,
                                      os.path.basename(data_filename),
                                      width, height),
@@ -73,7 +73,7 @@ def multiprocess_plot(data_filename, width, height):
     The result is also saved to the thumbnails folder for reuse.  If the data has more than
     two dimensions, returns None and no thumbnail image is produced.
     """
-    data = mainmodel.get_data(data_filename)
+    data = dataio.get_data(data_filename)
     if data.ndim < 3:
         in_conn, out_conn = Pipe()
         plot_proc = Process(target=plot_pipe,

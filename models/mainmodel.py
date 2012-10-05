@@ -9,8 +9,6 @@ from controllers import pathfinder
 from models import abstractplugin
 from models import config
 import numpy as np
-import scipy.misc
-import h5py
 import imp
 import inspect
 import logging
@@ -52,7 +50,7 @@ def get_logger(module_name):
     logger = logging.getLogger('.'.join(['nditoolbox', module_name]))
     logger.setLevel(get_loglevel())
     # Default to starting a new log every 7 days, keeping a copy of the last 7 days' events
-    log_handler = logging.handlers.TimedRotatingFileHandler(pathfinder.log_path(), when='D', interval=7, backupCount=1)
+    log_handler = logging.FileHandler(pathfinder.log_path())
     log_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     log_handler.setFormatter(log_format)
     logger.addHandler(log_handler)
@@ -66,25 +64,6 @@ def clear_log():
         os.remove(log_file)
 
 module_logger = get_logger(__name__)
-
-def get_data(data_fname):
-    with h5py.File(data_fname, 'r') as fidin:
-        root, ext = os.path.splitext(os.path.basename(data_fname))
-        for key in fidin.keys():
-            if key.startswith(root):
-                return fidin[key][...]
-
-
-def save_data(data_fname, data):
-    """Saves the data to the HDF5 file data_fname"""
-    root, ext = os.path.splitext(data_fname)
-    output_filename = data_fname
-    hdf5_ext = '.hdf5'
-    if ext.lower() != hdf5_ext:
-        output_filename += hdf5_ext
-    with h5py.File(output_filename, 'w') as fidout:
-        fidout.create_dataset(os.path.basename(data_fname), data=data)
-
 
 def load_dynamic_modules(module_path, module_class):
     """Dynamically imports the modules in module_path and searches
@@ -289,50 +268,6 @@ class MainModel(object):
     def copy_data(self, data_file):
         """Adds the specified data file to the data folder"""
         shutil.copy(data_file, pathfinder.data_path())
-
-    def export_txt(self, dest, src, **export_params):
-        """Exports the NumPy array data to the text file data_fname,
-        using the supplied export parameters."""
-        delim_char = export_params.get('delimiter', None)
-        newline = export_params.get('newline', '\n')
-        fmt = export_params.get('format', '%f')
-        data = get_data(src)
-        np.savetxt(dest, data, fmt=fmt, delimiter=delim_char, newline=newline)
-
-    def import_txt(self, data_fname, **import_params):
-        """Loads the data from an ASCII-delimited text file, and copies
-        the data to a new HDF5 file in the data folder"""
-        comment_char = import_params.get('commentchar', '#')
-        delim_char = import_params.get('delimiter', None)
-        header_lines = import_params.get('skipheader', 0)
-        footer_lines = import_params.get('skipfooter', 0)
-        cols_to_read = import_params.get('usecols', None)
-        transpose_data = import_params.get('transpose', False)
-        data = np.genfromtxt(data_fname, comments=comment_char, delimiter=delim_char,
-                             skip_header=header_lines, skip_footer=footer_lines, usecols=cols_to_read,
-                             unpack=transpose_data)
-        output_fname = os.path.join(pathfinder.data_path(), os.path.basename(data_fname))
-        save_data(output_fname, data)
-
-    def import_dicom(self, data_file):
-        """Imports a DICOM/DICONDE pixel map"""
-        try:
-            import dicom
-
-            di_struct = dicom.read_file(data_file)
-            di_fname = os.path.join(pathfinder.data_path(),
-                                    os.path.basename(data_file))
-            save_data(di_fname, di_struct.pixel_array)
-        except ImportError as err: # pydicom not installed
-            module_logger.error("pydicom not found: {0}".format(err))
-            raise ImportError("pydicom module not installed.")
-
-    def import_img(self, data_file, flatten=True):
-        """Imports an image file, by default flattening
-        the image to a single layer grayscale."""
-        img_arr = scipy.misc.imread(data_file, flatten)
-        img_fname = os.path.join(pathfinder.data_path(), os.path.basename(data_file))
-        save_data(img_fname, img_arr)
 
     def remove_data(self, data_file):
         """Removes specified file from the device"""

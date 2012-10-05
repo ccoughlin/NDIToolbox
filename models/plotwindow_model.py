@@ -7,6 +7,7 @@ from matplotlib import cm
 __author__ = 'Chris R. Coughlin'
 
 from controllers import pathfinder
+import dataio
 import mainmodel
 import ultrasonicgate
 import numpy as np
@@ -132,7 +133,7 @@ class BasicPlotWindowModel(object):
 
     def load_data(self):
         """Loads the data from the instance's data file"""
-        self.original_data = mainmodel.get_data(self.data_file)
+        self.original_data = dataio.get_data(self.data_file)
         self.revert_data()
 
     def revert_data(self):

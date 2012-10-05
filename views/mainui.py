@@ -49,6 +49,14 @@ class UI(wx.Frame):
                                help="Imports delimited ASCII data file")
         self.import_mnu.AppendItem(txt_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_import_text, id=txt_mnui.GetId())
+        csc_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="UTWin CScan (.csc)...",
+                               help="Imports a .csc file")
+        self.import_mnu.AppendItem(csc_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_import_csc, id=csc_mnui.GetId())
+        sdt_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="Unidirectional Winspect 6/7 (.sdt)...",
+                               help="Imports a unidirectional .sdt file")
+        self.import_mnu.AppendItem(sdt_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_import_sdt, id=sdt_mnui.GetId())
         dicom_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="DICOM/DICONDE...",
                                  help="Imports a DICOM / DICONDE data file")
         self.import_mnu.AppendItem(dicom_mnui)

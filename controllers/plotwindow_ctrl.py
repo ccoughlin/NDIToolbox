@@ -7,6 +7,7 @@ __author__ = 'Chris R. Coughlin'
 from views import dialogs
 from views import fetchplugin_dialog
 from models import mainmodel
+from models import dataio
 from models import ndescanhandler
 import models.plotwindow_model as model
 import matplotlib
@@ -197,7 +198,7 @@ class BasicPlotWindowController(object):
                                  wildcard=wild_card,
                                  style=wx.SAVE | wx.OVERWRITE_PROMPT)
         if save_dlg.ShowModal() == wx.ID_OK:
-            mainmodel.save_data(save_dlg.GetPath(), self.data)
+            dataio.save_data(save_dlg.GetPath(), self.data)
             self.view.parent.refresh()
         save_dlg.Destroy()
 

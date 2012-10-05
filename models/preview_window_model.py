@@ -3,7 +3,7 @@
 Chris R. Coughlin (TRI/Austin, Inc.)
 """
 
-from models import mainmodel
+from models import dataio
 
 __author__ = 'Chris R. Coughlin'
 
@@ -17,7 +17,7 @@ class PreviewWindowModel(object):
 
     def load_data(self):
         """Loads the data from the instance's data file"""
-        self.data = mainmodel.get_data(self.data_file)
+        self.data = dataio.get_data(self.data_file)
 
     def slice_data(self, slice_idx):
         """Sets the 3D self.data to a single 2D slice."""

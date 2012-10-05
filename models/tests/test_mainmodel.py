@@ -12,7 +12,6 @@ import models.ultrasonicgate as ultrasonicgate
 import controllers.pathfinder as pathfinder
 import h5py
 import numpy as np
-import scipy.misc
 import imp
 import logging
 import multiprocessing
@@ -192,131 +191,6 @@ class TestMainModel(unittest.TestCase):
         try:
             shutil.rmtree(temp_user_path)
         except WindowsError: # folder in use
-            pass
-
-    def test_get_data(self):
-        """Verify get_data function returns a NumPy array"""
-        read_data = model.get_data(self.sample_data_file)
-        self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
-
-    def test_save_data(self):
-        """Verify save_data function saves NumPy array to disk"""
-        sample_filename = "test_savedata.dat"
-        sample_path = os.path.join(os.path.dirname(__file__), sample_filename)
-        model.save_data(sample_path, self.sample_data)
-        self.assertTrue(os.path.exists(sample_path + ".hdf5"))
-        with h5py.File(sample_path + ".hdf5", "r") as fidin:
-            froot, ext = os.path.splitext(os.path.basename(sample_filename))
-            for key in fidin.keys():
-                if key.startswith(froot):
-                    read_data = fidin[key][...]
-                    self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
-        if os.path.exists(sample_path + ".hdf5"):
-            os.remove(sample_path + ".hdf5")
-
-    def test_import_txt(self):
-        """Verify import of ASCII delimited data files"""
-        sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files',
-                                        '1.25 from hole Single Column.asc')
-        assert(os.path.exists(sample_data_file))
-        import_params = {'delimiter': None}
-        expected_data = np.loadtxt(sample_data_file, delimiter=import_params['delimiter'])
-        self.model.import_txt(sample_data_file, **import_params)
-        dest_file = os.path.join(pathfinder.data_path(),
-                                 os.path.basename(sample_data_file) + ".hdf5")
-        self.assertTrue(os.path.exists(dest_file))
-        with h5py.File(dest_file, "r") as fidin:
-            root, ext = os.path.splitext(os.path.basename(dest_file))
-            for key in fidin.keys():
-                if key.startswith(root):
-                    read_data = fidin[key][...]
-                    self.assertListEqual(expected_data.tolist(), read_data.tolist())
-        try:
-            if os.path.exists(dest_file):
-                os.remove(dest_file)
-        except WindowsError: # file in use
-            pass
-
-    def test_export_txt(self):
-        """Verify export of data to delimited ASCII"""
-        # Use integer data to avoid the floating point conversion to/from files
-        sample_data = self.sample_data.astype(np.int64)
-        sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files',
-                                        'sample.hdf5')
-        dest_file = os.path.join(os.path.dirname(__file__), 'support_files',
-                                 'sample.txt')
-        with h5py.File(sample_data_file, "w") as fidout:
-            fidout.create_dataset(os.path.basename(sample_data_file), data=sample_data)
-            export_params = {'delimiter': ','}
-            self.model.export_txt(dest_file, sample_data_file, **export_params)
-            retrieved_data = np.genfromtxt(dest_file, delimiter=export_params['delimiter'])
-            self.assertListEqual(sample_data.tolist(), retrieved_data.tolist())
-        try:
-            if os.path.exists(sample_data_file):
-                os.remove(sample_data_file)
-            if os.path.exists(dest_file):
-                os.remove(dest_file)
-        except WindowsError: # file in use
-            pass
-
-    @skipIfModuleNotInstalled("dicom")
-    def test_import_dicom(self):
-        """Verify import of DICOM / DICONDE data"""
-        # Load the ASTM DICONDE example files,
-        # save, then ensure the resulting arrays
-        # are identical
-        import dicom
-
-        diconde_folder = os.path.join(os.path.dirname(__file__), 'support_files')
-        for root, dirs, files in os.walk(diconde_folder):
-            for fname in files:
-                dicom_data_file = os.path.join(root, fname)
-                basename, ext = os.path.splitext(dicom_data_file)
-                # Simple check to ensure we're looking at DICOM files
-                if ext.lower() == '.dcm':
-                    dicom_data = dicom.read_file(dicom_data_file)
-                    dicom_arr = dicom_data.pixel_array
-                    try:
-                        self.model.import_dicom(dicom_data_file)
-                    except TypeError:
-                        print(dicom_data_file)
-                    dest_file = os.path.join(pathfinder.data_path(),
-                                             os.path.basename(dicom_data_file) + ".hdf5")
-                    self.assertTrue(os.path.exists(dest_file))
-                    #read_data = np.loadtxt(dest_file, delimiter=',')
-                    with h5py.File(dest_file, "r") as fidin:
-                        froot, ext = os.path.splitext(os.path.basename(dest_file))
-                        for key in fidin.keys():
-                            if key.startswith(froot):
-                                read_data = fidin[key][...]
-                                self.assertListEqual(dicom_arr.tolist(), read_data.tolist())
-                    try:
-                        if os.path.exists(dest_file):
-                            os.remove(dest_file)
-                    except WindowsError: # File in use
-                        pass
-
-    @skipIfModuleNotInstalled("Image", "PIL")
-    def test_import_img(self):
-        """Verify import of images"""
-        sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files',
-                                        'austin_sky320x240.jpg')
-        assert(os.path.exists(sample_data_file))
-        expected_data = scipy.misc.imread(sample_data_file, flatten=True)
-        self.model.import_img(sample_data_file, flatten=True)
-        dest_file = os.path.join(pathfinder.data_path(),
-                                 os.path.basename(sample_data_file) + ".hdf5")
-        self.assertTrue(os.path.exists(dest_file))
-        with h5py.File(dest_file, "r") as fidin:
-            root, ext = os.path.splitext(os.path.basename(dest_file))
-            for key in fidin.keys():
-                if key.startswith(root):
-                    read_data = fidin[key][...]
-                    self.assertListEqual(expected_data.tolist(), read_data.tolist())
-        try:
-            if os.path.exists(dest_file):
-                os.remove(dest_file)
-        except WindowsError: # file in use
             pass
 
     def test_load_dynamic_modules(self):

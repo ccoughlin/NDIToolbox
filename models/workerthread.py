@@ -9,8 +9,6 @@ from models.mainmodel import get_logger
 import threading
 import sys
 
-module_logger = get_logger(__name__)
-
 class WorkerThread(threading.Thread):
     """Daemon Thread wrapper to execute long-running processes"""
 
@@ -25,9 +23,6 @@ class WorkerThread(threading.Thread):
         self.kwargs = kwargs
         self.exception_queue = exception_queue
         self.result_queue = return_queue
-        if self.result_queue is None:
-            module_logger.info("Results Queue set to None.")
-        module_logger.info("Successfully initialized WorkerThread.")
 
     def run(self):
         """Runs the target function.  Exceptions are returned
@@ -39,6 +34,5 @@ class WorkerThread(threading.Thread):
             if self.result_queue is not None:
                 self.result_queue.put(retval)
         except Exception as err:
-            module_logger.error("Error executing target function: {0}".format(err))
             # Pass a message to the calling thread with the Exception information
             self.exception_queue.put(sys.exc_info()[:2])
