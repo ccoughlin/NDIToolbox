@@ -16,6 +16,69 @@ import webbrowser
 
 module_logger = get_logger(__name__)
 
+class ImportDataDialog(wx.Dialog):
+    """Specify type of file for import into NDIToolbox"""
+    filetype_choices = [('NDIToolbox', [".hdf5"], 'hdf5'),
+                        ('Delimited Text', [".txt", ".csv", ".dat", ".tab", ".asc"], 'text'),
+                        ('Image', [".bmp", ".dcx", ".eps", ".gif", ".im", ".imt", ".jpg", ".jpeg", ".pcx", ".png",
+                                   ".ppm", ".psd", ".sgi", ".tga", ".tiff", ".xpm"], 'image'),
+                        ('UTWin Cscan', [".csc"], 'utwin_cscan'),
+                        ('Winspect 6/7 Unidirectional', [".sdt"], 'winspect7'),
+                        ('DICOM/DICONDE', [".dcm"], 'dicom')]
+
+    def __init__(self, parent, file_name, id=-1, title="Import Data", pos=wx.DefaultPosition,
+                 size=wx.DefaultSize, style=wx.DEFAULT_DIALOG_STYLE, name=wx.DialogNameStr):
+        super(ImportDataDialog, self).__init__(parent, id, title, pos, size, style, name)
+        self.datafile_name = file_name
+        self.generate()
+
+    def generate(self):
+        """Creates the UI"""
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        filelbls = [filetype[0] for filetype in ImportDataDialog.filetype_choices]
+        self.filetypes_rb = wx.RadioBox(self, wx.ID_ANY, "Please select file type", majorDimension=1,
+                                        choices=filelbls, style=wx.RA_SPECIFY_COLS)
+        self.select_filetype()
+        self.sizer.Add(self.filetypes_rb, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
+                       ui_defaults.widget_margin)
+        self._generate_std_buttons()
+        self.SetSizerAndFit(self.sizer)
+
+    def _generate_std_buttons(self):
+        """Generates the standard OK/Cancel dialog buttons"""
+        self.stdbtns = wx.StdDialogButtonSizer()
+        ok_btn = wx.Button(self, wx.ID_OK)
+        cancel_btn = wx.Button(self, wx.ID_CANCEL)
+        self.stdbtns.AddButton(ok_btn)
+        self.stdbtns.AddButton(cancel_btn)
+        self.stdbtns.Realize()
+        self.sizer.Add(self.stdbtns, ui_defaults.lbl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
+
+    def select_filetype(self):
+        """Preselects the assumed type of file based on its extension"""
+        selection_idx = -1
+        root, extension = os.path.splitext(self.datafile_name)
+        filetype_extensions = [filetype[1] for filetype in ImportDataDialog.filetype_choices]
+        for idx in range(len(filetype_extensions)):
+            if extension.lower() in filetype_extensions[idx]:
+                selection_idx = idx
+                break
+        if selection_idx != -1:
+            self.filetypes_rb.SetSelection(selection_idx)
+
+    def get_selected_filetype(self):
+        """Returns the selected file type as a string:
+
+        'hdf5': NDIToolbox HDF5 file
+        'text': ASCII delimited-text
+        'image': Bitmap
+        'utwin_cscan': UTWin CScan
+        'winspect7': Winspect version 6 or 7
+        'dicom': DICOM/DICONDE
+        """
+        file_types = [filetype[2] for filetype in ImportDataDialog.filetype_choices]
+        return file_types[self.filetypes_rb.GetSelection()]
+
 class ImportTextDialog(wx.Dialog):
     """Specify import parameters for loading ASCII-delimited text files."""
 
@@ -78,8 +141,7 @@ class ImportTextDialog(wx.Dialog):
         self.fsizer.Add(cols_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
                         ui_defaults.widget_margin)
         self.cols_tc = wx.TextCtrl(self, wx.ID_ANY, u'All', wx.DefaultPosition, wx.DefaultSize)
-        self.cols_tc.SetToolTipString("Comma-delimited list of columns to read (first column is "
-                                      "0)")
+        self.cols_tc.SetToolTipString("Comma-delimited list of columns to read (first column is 0)")
         self.fsizer.Add(self.cols_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
                         ui_defaults.widget_margin)
 
@@ -88,8 +150,7 @@ class ImportTextDialog(wx.Dialog):
         self.fsizer.Add(transpose_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
                         ui_defaults.widget_margin)
         self.transpose_cb = wx.CheckBox(self, wx.ID_ANY, u'Do not tranpose data',
-                                        wx.DefaultPosition
-                                        , wx.DefaultSize)
+                                        wx.DefaultPosition, wx.DefaultSize)
         self.transpose_cb.SetToolTipString("Check this box to transpose the data array after load")
         self.Bind(wx.EVT_CHECKBOX, self.on_transpose_cb, self.transpose_cb)
         self.fsizer.Add(self.transpose_cb, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,

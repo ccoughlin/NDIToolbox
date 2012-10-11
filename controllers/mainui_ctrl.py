@@ -214,9 +214,9 @@ class MainUIController(object):
         if len(log_contents) is 0:
             log_contents = default_log_contents
         text_display_dlg = dlg.TextDisplayDialog(parent=self.view, text=log_contents,
-                                                     title='NDIToolbox Log - {0}'.format(log_path),
-                                                     wrap=False,
-                                                     style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+                                                 title='NDIToolbox Log - {0}'.format(log_path),
+                                                 wrap=False,
+                                                 style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         text_display_dlg.Show()
 
     def on_clear_log(self, evt):
@@ -267,14 +267,39 @@ class MainUIController(object):
 
     def on_add_data(self, evt):
         """Handles request to add data to data folder"""
-        wildcards = "HDF5 files (*.hdf5)|*.hdf5|All Files (*.*)|*.*"
+        default_wildcard = "NDIToolbox Files (*.hdf5)|*.hdf5"
+        allfiles_wildcard = "All Files (*.*)|*.*"
+        img_wildcards = "Image Files|(*.bmp;*.dcx;*.eps;*.gif;*.im;*.imt;*.jpg;*.jpeg;*.pcx;*.png;*.ppm;*.psd;*.sgi;*.tga;*.tiff;*.xpm)"
+        txt_wildcards = "Text Files|*.txt;*.csv;*.dat;*.tab;*.asc"
+        winspect_wildcard = "Winspect 6/7|*.sdt"
+        utwin_wildcard = "UTWin CScans |*.csc"
+        dicom_wildcard = "DICOM/DICONDE |*.dcm"
+        wildcards = "|".join([default_wildcard, img_wildcards, txt_wildcards, winspect_wildcard,
+                              utwin_wildcard, dicom_wildcard, allfiles_wildcard])
         file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file',
                                  wildcard=wildcards, style=wx.FD_OPEN)
         if file_dlg.ShowModal() == wx.ID_OK:
-            wx.BeginBusyCursor()
-            self.model.copy_data(file_dlg.GetPath())
-            self.view.data_panel.populate()
-            wx.EndBusyCursor()
+            try:
+                wx.BeginBusyCursor()
+                import_dlg = dlg.ImportDataDialog(parent=self.view, file_name=file_dlg.GetPath())
+                if import_dlg.ShowModal() == wx.ID_OK:
+                    file_type = import_dlg.get_selected_filetype()
+                    file_to_import = file_dlg.GetPath()
+                    if file_type == 'hdf5': # Native NDIToolbox HDF5
+                        self.import_hdf5(file_to_import)
+                    elif file_type == 'text': # Delimited Text
+                        self.import_text(file_to_import)
+                    elif file_type == 'image': # Bitmaps
+                        self.import_image(file_to_import)
+                    elif file_type == 'utwin_cscan': # UTWin Cscan (.csc)
+                        self.import_csc(file_to_import)
+                    elif file_type == 'winspect7': # Winspect 6 or 7 (.sdt)
+                        self.import_sdt(file_to_import)
+                    elif file_type == 'dicom': # DICOM/DICONDE (.dcm)
+                        self.import_dicom(file_to_import)
+            finally:
+                import_dlg.Destroy()
+                wx.EndBusyCursor()
 
     def on_browse_userpath(self, evt):
         """Handles request to browse to the default userpath"""
@@ -334,46 +359,71 @@ class MainUIController(object):
         unreachable_objects = gc.collect()
         info_msg = "Garbage collection successful, identified {0} objects.".format(unreachable_objects)
         info_dlg = wx.MessageDialog(self.view, message=info_msg,
-                                   caption="Collection Complete", style=wx.ICON_INFORMATION)
+                                    caption="Collection Complete", style=wx.ICON_INFORMATION)
         info_dlg.ShowModal()
         info_dlg.Destroy()
+
+    def import_data(self, import_fn, *args, **kwargs):
+        """Imports data using the specified function"""
+        exception_queue = Queue.Queue()
+        import_thd = workerthread.WorkerThread(exception_queue=exception_queue,
+                                               target=import_fn, *args, **kwargs)
+        import_thd.start()
+        while True:
+            import_thd.join(0.125)
+            if not import_thd.is_alive():
+                try:
+                    exc_type, exc = exception_queue.get(block=False)
+                    module_logger.error("Error importing text file: {0}".format(exc))
+                    err_msg = "An error occurred during import:\n{0}".format(exc)
+                    err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                               caption="Unable To Import File", style=wx.ICON_ERROR)
+                    err_dlg.ShowModal()
+                except Queue.Empty:
+                    pass
+                gc.collect()
+                break
+            wx.GetApp().Yield()
+
+    def choose_import_file(self, wildcard):
+        """Creates a wx.FileDialog with specified wildcard for user to choose a data file to import.
+        Returns full path and filename of file if OK is chosen, otherwise returns None."""
+        import_dlg = wx.FileDialog(parent=self.view, message="Please specify a data file",
+                                   wildcard=wildcard, style=wx.FD_OPEN)
+        if import_dlg.ShowModal() == wx.ID_OK:
+            return import_dlg.GetPath()
+        return None
+
+    def import_hdf5(self, file_name):
+        """Copies the specified HDF5 file to the data folder"""
+        self.import_data(self.model.copy_data, args=(file_name, ))
+        self.view.data_panel.populate()
+
+    def on_import_hdf5(self, evt):
+        """Handles request to add HDF5 file to data folder"""
+        hdf5_file = self.choose_import_file(wildcard = "NDIToolbox Files (*.hdf5)|*.hdf5")
+        if hdf5_file is not None:
+            self.import_hdf5(hdf5_file)
+
+    def import_text(self, file_name):
+        """Converts and imports the specified ASCII-delimited data file"""
+        try:
+            import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
+            if import_dlg.ShowModal() == wx.ID_OK:
+                read_parameters = import_dlg.get_import_parameters()
+                self.import_data(dataio.import_txt, args=(file_name,), kwargs=read_parameters)
+                self.view.data_panel.populate()
+        finally:
+            import_dlg.Destroy()
 
     def on_import_text(self, evt):
         """Handles request to add ASCII data to data folder"""
         txt_wildcards = ["TXT (*.txt)|*.txt", "CSV (*.csv)|*.csv",
                          "DAT (*.dat)|*.dat", "TAB (*.tab)|*.tab",
                          "All Files (*.*)|*.*"]
-        file_dlg = wx.FileDialog(parent=self.view, message="Please specify a data file",
-                                 wildcard="|".join(txt_wildcards),style=wx.FD_OPEN)
-        if file_dlg.ShowModal() == wx.ID_OK:
-            try:
-                import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
-                if import_dlg.ShowModal() == wx.ID_OK:
-                    read_parameters = import_dlg.get_import_parameters()
-                    wx.BeginBusyCursor()
-                    exception_queue = Queue.Queue()
-                    imp_text_thd = workerthread.WorkerThread(exception_queue=exception_queue,
-                                                             target=dataio.import_txt,
-                                                             args=(file_dlg.GetPath(),), kwargs=read_parameters)
-                    imp_text_thd.start()
-                    while True:
-                        imp_text_thd.join(0.125)
-                        if not imp_text_thd.is_alive():
-                            try:
-                                exc_type, exc = exception_queue.get(block=False)
-                                module_logger.error("Error importing text file: {0}".format(exc))
-                                err_msg = "An error occurred during import:\n{0}".format(exc)
-                                err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                                           caption="Unable To Import File", style=wx.ICON_ERROR)
-                                err_dlg.ShowModal()
-                            except Queue.Empty:
-                                pass
-                            break
-                        wx.GetApp().Yield()
-                    self.view.data_panel.populate()
-            finally:
-                import_dlg.Destroy()
-                wx.EndBusyCursor()
+        text_file = self.choose_import_file(wildcard="|".join(txt_wildcards))
+        if text_file is not None:
+            self.import_text(text_file)
 
     def on_export_text(self, evt):
         """Handles request to export selected data to delimited ASCII"""
@@ -407,54 +457,29 @@ class MainUIController(object):
                 wx.EndBusyCursor()
             exportfmt_dlg.Destroy()
 
+    def import_dicom(self, file_name):
+        """Converts and imports the specified DICOM/DICONDE data file"""
+        self.import_data(dataio.import_dicom, args=(file_name,))
+        self.view.data_panel.populate()
+
     def on_import_dicom(self, evt):
         """Handles request to add DICOM/DICONDE data to data folder"""
         wildcards = "DICOM files (*.dcm)|*.dcm|All Files (*.*)|*.*"
-        file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file',
-                                 wildcard=wildcards, style=wx.FD_OPEN)
-        if file_dlg.ShowModal() == wx.ID_OK:
-            try:
-                wx.BeginBusyCursor()
-                exception_queue = Queue.Queue()
-                imp_dicom_thd = workerthread.WorkerThread(exception_queue=exception_queue,
-                                                          target=dataio.import_dicom,
-                                                          args=(file_dlg.GetPath(), ))
-                imp_dicom_thd.start()
-                while True:
-                    imp_dicom_thd.join(0.125)
-                    if not imp_dicom_thd.is_alive():
-                        try:
-                            exc_type, exc = exception_queue.get(block=False)
-                            module_logger.error("Error importing DICOM file: {0}".format(exc))
-                            err_msg = "An error occurred during import:\n{0}".format(exc)
-                            err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                                       caption="Unable To Import File", style=wx.ICON_ERROR)
-                            err_dlg.ShowModal()
-                        except Queue.Empty:
-                            pass
-                        break
-                    wx.GetApp().Yield()
-                self.view.data_panel.populate()
-            except TypeError: # 3D array not implemented
-                err_dlg = wx.MessageDialog(self.view,
-                                           message="3D Arrays are not supported in this version.",
-                                           caption="Unable To Import Data", style=wx.ICON_ERROR)
-                err_dlg.ShowModal()
-                err_dlg.Destroy()
-            finally:
-                wx.EndBusyCursor()
+        dicom_file = self.choose_import_file(wildcards)
+        if dicom_file is not None:
+            self.import_dicom(dicom_file)
 
-    def on_import_image(self, evt):
-        """Handles request to add image data to data folder"""
+    def import_image(self, file_name):
+        """Converts and imports the specified bitmap image.  Requires PIL.
+        """
+        # Check for PIL
         try:
             from PIL import Image
-
             module_logger.info("from PIL import Image successful.")
         except ImportError:
             module_logger.error("from PIL import Image failed, trying second format.")
             try:
                 import Image
-
                 module_logger.info("import Image successful.")
             except ImportError: # PIL not installed
                 module_logger.error("import Image failed to import PIL.")
@@ -464,112 +489,52 @@ class MainUIController(object):
                 err_dlg.ShowModal()
                 err_dlg.Destroy()
                 return
+        flatten_img = True
+        msg = "The image data should be converted to grayscale for data analysis.  Proceed?"
+        flatten_dlg = wx.MessageDialog(parent=self.view.parent,
+                                       message=msg,
+                                       caption="Flatten Palette?",
+                                       style=wx.YES_NO | wx.YES_DEFAULT)
+        if flatten_dlg.ShowModal() == wx.ID_NO:
+            flatten_img = False
+        self.import_data(dataio.import_img, args=(file_name, flatten_img))
+        self.view.data_panel.populate()
 
+    def on_import_image(self, evt):
+        """Handles request to add image data to data folder"""
         img_wildcards = ["All Files (*.*)|*.*", "BMP (*.bmp)|*.bmp", "DCX (*.dcx)|*.dcx",
                          "EPS (*.eps)|*.eps", "GIF (*.gif)|*.gif", "IM (*.im)|*.im",
                          "IMT (*.imt)|*.imt", "JPEG (*.jpg,*.jpeg)|*.jpg;*.jpeg",
                          "PCX (*.pcx)|*.pcx", "PNG (*.png)|*.png", "PPM (*.ppm)|*.ppm",
                          "PSD (*.psd)|*.psd", "SGI (*.sgi)|*.sgi", "TGA (*.tga)|*.tga",
                          "TIFF (*.tiff)|*.tiff", "XPM (*.xpm)|*.xpm"]
-        file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file',
-                                 wildcard="|".join(img_wildcards), style=wx.FD_OPEN)
-        if file_dlg.ShowModal() == wx.ID_OK:
-            flatten_img = True
-            msg = "The image data should be converted to grayscale for data analysis.  Proceed?"
-            flatten_dlg = wx.MessageDialog(parent=self.view.parent,
-                                           message=msg,
-                                           caption="Flatten Palette?",
-                                           style=wx.YES_NO | wx.YES_DEFAULT)
-            if flatten_dlg.ShowModal() == wx.ID_NO:
-                flatten_img = False
-                module_logger.info("User declined to flatten image palette.")
-            try:
-                wx.BeginBusyCursor()
-                exception_queue = Queue.Queue()
-                imp_img_thd = workerthread.WorkerThread(exception_queue=exception_queue,
-                                                        target=dataio.import_img,
-                                                        args=(file_dlg.GetPath(), flatten_img))
-                imp_img_thd.start()
-                module_logger.info("Loading image.")
-                while True:
-                    imp_img_thd.join(0.125)
-                    if not imp_img_thd.is_alive():
-                        try:
-                            exc_type, exc = exception_queue.get(block=False)
-                            module_logger.error("Error occurred importing image: {0}".format(exc))
-                            err_msg = "An error occurred during import:\n{0}".format(exc)
-                            err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                                       caption="Unable To Import File", style=wx.ICON_ERROR)
-                            err_dlg.ShowModal()
-                        except Queue.Empty:
-                            pass
-                        break
-                    wx.GetApp().Yield()
-                self.view.data_panel.populate()
-            finally:
-                wx.EndBusyCursor()
+        img_file = self.choose_import_file(wildcard="|".join(img_wildcards))
+        if img_file is not None:
+            self.import_image(img_file)
+
+    def import_csc(self, file_name):
+        """Converts and imports a UTWin Cscan data file"""
+        self.import_data(dataio.import_utwin, args=(file_name,))
+        self.view.data_panel.populate()
 
     def on_import_csc(self, evt):
         """Handles request to add UTWin Cscan data to data folder"""
         wildcards = "UTWin CScans (*.csc)|*.csc|All Files (*.*)|*.*"
-        file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file',
-                                 wildcard=wildcards, style=wx.FD_OPEN)
-        if file_dlg.ShowModal() == wx.ID_OK:
-            try:
-                wx.BeginBusyCursor()
-                exception_queue = Queue.Queue()
-                imp_csc_thd = workerthread.WorkerThread(exception_queue=exception_queue,
-                                                          target=dataio.import_utwin,
-                                                          args=(file_dlg.GetPath(), ))
-                imp_csc_thd.start()
-                while True:
-                    imp_csc_thd.join(0.125)
-                    if not imp_csc_thd.is_alive():
-                        try:
-                            exc_type, exc = exception_queue.get(block=False)
-                            module_logger.error("Error importing UTWin Cscan file: {0}".format(exc))
-                            err_msg = "An error occurred during import:\n{0}".format(exc)
-                            err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                                       caption="Unable To Import File", style=wx.ICON_ERROR)
-                            err_dlg.ShowModal()
-                        except Queue.Empty:
-                            pass
-                        break
-                    wx.GetApp().Yield()
-                self.view.data_panel.populate()
-            finally:
-                wx.EndBusyCursor()
+        csc_file = self.choose_import_file(wildcards)
+        if csc_file is not None:
+            self.import_csc(csc_file)
+
+    def import_sdt(self, file_name):
+        """Converts and imports a Winspect 6/7 data file"""
+        self.import_data(dataio.import_winspect, args=(file_name,))
+        self.view.data_panel.populate()
 
     def on_import_sdt(self, evt):
         """Handles request to add Winspect data to data folder"""
         wildcards = "Winspect 6/7 (*.sdt)|*.sdt|All Files (*.*)|*.*"
-        file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file',
-                                 wildcard=wildcards, style=wx.FD_OPEN)
-        if file_dlg.ShowModal() == wx.ID_OK:
-            try:
-                wx.BeginBusyCursor()
-                exception_queue = Queue.Queue()
-                imp_sdt_thd = workerthread.WorkerThread(exception_queue=exception_queue,
-                                                        target=dataio.import_winspect,
-                                                        args=(file_dlg.GetPath(), ))
-                imp_sdt_thd.start()
-                while True:
-                    imp_sdt_thd.join(0.125)
-                    if not imp_sdt_thd.is_alive():
-                        try:
-                            exc_type, exc = exception_queue.get(block=False)
-                            module_logger.error("Error importing Winspect file: {0}".format(exc))
-                            err_msg = "An error occurred during import:\n{0}".format(exc)
-                            err_dlg = wx.MessageDialog(self.view, message=err_msg,
-                                                       caption="Unable To Import File", style=wx.ICON_ERROR)
-                            err_dlg.ShowModal()
-                        except Queue.Empty:
-                            pass
-                        break
-                    wx.GetApp().Yield()
-                self.view.data_panel.populate()
-            finally:
-                wx.EndBusyCursor()
+        sdt_file = self.choose_import_file(wildcards)
+        if sdt_file is not None:
+            self.import_sdt(sdt_file)
 
     def on_remove_data(self, evt):
         """Handles request to remove data from data folder"""

@@ -9,6 +9,7 @@ from controllers import pathfinder
 import numpy as np
 import scipy.misc
 import h5py
+import gc
 import itertools
 import os
 import os.path
@@ -30,6 +31,7 @@ def save_data(data_fname, data):
         output_filename += hdf5_ext
     with h5py.File(output_filename, 'w') as fidout:
         fidout.create_dataset(os.path.basename(data_fname), data=data)
+        gc.collect()
 
 def get_txt_data(data_fname, **import_params):
     """Loads and returns the NumPy data from an ASCII-delimited text file"""
@@ -57,6 +59,7 @@ def export_txt(dest, src, **export_params):
     fmt = export_params.get('format', '%f')
     data = get_data(src)
     np.savetxt(dest, data, fmt=fmt, delimiter=delim_char, newline=newline)
+    gc.collect()
 
 def get_dicom_data(data_file):
     """Returns NumPy array of DICOM/DICONDE data"""
@@ -460,6 +463,13 @@ class WinspectDataSubset(object):
             if element_type in config.get("Element Representation"):
                 self.element_type = WinspectReader.element_types[element_type]
         self.sample_points = WinspectReader.find_numbers(config.get("Number Of Sample Points", "0"), int)
+        # If we haven't yet determined what type of data is in this subset, try to set it according to the number
+        # of sample points
+        if self.data_type is None:
+            if self.sample_points > 1:
+                self.data_type = "waveform"
+            else:
+                self.data_type = "amplitude"
         self.minimum_position = WinspectReader.find_numbers(config.get("Minimum Sample Position", "0"))
         self.resolution = WinspectReader.find_numbers(config.get("Sample Resolution", "0"))
         self.measurement_range = WinspectReader.find_numbers(config.get("Measurement Range"))

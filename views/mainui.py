@@ -44,7 +44,7 @@ class UI(wx.Frame):
         hdf5_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="HDF5 File...",
                                 help="Copies an HDF5 file to your NDIToolbox data folder")
         self.import_mnu.AppendItem(hdf5_mnui)
-        self.Bind(wx.EVT_MENU, self.controller.on_add_data, id=hdf5_mnui.GetId())
+        self.Bind(wx.EVT_MENU, self.controller.on_import_hdf5, id=hdf5_mnui.GetId())
         txt_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="Text File (CSV, etc.)...",
                                help="Imports delimited ASCII data file")
         self.import_mnu.AppendItem(txt_mnui)
@@ -174,6 +174,9 @@ class UI(wx.Frame):
         Bottom().CloseButton(False).MinimizeButton(True).MaximizeButton(True).
         Floatable(True).Dockable(True))
         self.enable_preview_panel(self.controller.get_preview_state())
+        self.accel_tbl = wx.AcceleratorTable([(wx.ACCEL_CTRL, wx.WXK_NUMPAD_ADD, self.add_data_tool.GetId()),
+                                              (wx.ACCEL_CTRL, ord('A'), self.add_data_tool.GetId())])
+        self.SetAcceleratorTable(self.accel_tbl)
         self.SetIcon(self.controller.get_icon())
         self._mgr.Update()
 
@@ -184,22 +187,19 @@ class UI(wx.Frame):
         # Toggle button to enable / disable automatic previews of data
         self.gen_bitmaps_tool = self.toolbar.AddCheckTool(id=wx.ID_ANY,
                                                           shortHelp='Enable Data Thumbnails',
-                                                          bitmap=self.controller.get_bitmap(
-                                                              'Picture.png'))
+                                                          bitmap=self.controller.get_bitmap('Picture.png'))
         self.toolbar.ToggleTool(self.gen_bitmaps_tool.GetId(),
                                 self.controller.get_preview_state())
         self.Bind(wx.EVT_TOOL, self.controller.on_preview_toggle, self.gen_bitmaps_tool)
         # Refresh UI with contents of data folder
         self.refresh_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Refresh',
                                                            shortHelp='Refresh Data',
-                                                           bitmap=self.controller.get_bitmap(
-                                                               'Refresh.png'))
+                                                           bitmap=self.controller.get_bitmap('Refresh.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_refresh_data, self.refresh_data_tool)
         # Add data to data folder
         self.add_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Add Data',
-                                                       shortHelp='Add data to data folder',
-                                                       bitmap=self.controller.get_bitmap(
-                                                           'Plus.png'))
+                                                       shortHelp='Import data to data folder (CTRL-A)',
+                                                       bitmap=self.controller.get_bitmap('Plus.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_add_data, self.add_data_tool)
         # Export data to ASCII
         self.export_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Export Data',
@@ -209,28 +209,22 @@ class UI(wx.Frame):
         # Remove data from data folder
         self.remove_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Remove Data',
                                                           shortHelp='Remove data from data folder',
-                                                          bitmap=self.controller.get_bitmap(
-                                                              'Minus.png'))
+                                                          bitmap=self.controller.get_bitmap('Minus.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_remove_data, self.remove_data_tool)
         # Preview data in spreadsheet
         self.preview_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Preview Data',
                                                            shortHelp='Preview data in spreadsheet',
-                                                           bitmap=self.controller.get_bitmap(
-                                                               'Table.png'))
+                                                           bitmap=self.controller.get_bitmap('Table.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_preview_data, self.preview_data_tool)
         # Plot data
         self.plot_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'X-Y Plot',
-                                                        shortHelp='Generates X-Y plot of selected'\
-                                                                  ' data',
-                                                        bitmap=self.controller.get_bitmap(
-                                                            'Stats2.png'))
+                                                        shortHelp='Generates X-Y plot of selected data',
+                                                        bitmap=self.controller.get_bitmap('Stats2.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_plot_data, self.plot_data_tool)
         # Image plot of data
         self.imageplot_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Image Plot',
-                                                             shortHelp='Generates image plot of '\
-                                                                       'selected data',
-                                                             bitmap=self.controller.get_bitmap(
-                                                                 'imgplt.png'))
+                                                             shortHelp='Generates image plot of selected data',
+                                                             bitmap=self.controller.get_bitmap('imgplt.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_imageplot_data, self.imageplot_data_tool)
         # MegaNDE plot of 3D data
         self.megaplot_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Mega Plot',
