@@ -496,7 +496,7 @@ class WinspectDataSubset(object):
 
     def set_shape(self):
         """Sets the proper shape of the data array according to the information laid out in the file header."""
-        self.array_shape = [axis.sample_points for axis in self.parent.axes]
+        self.array_shape = [self.parent.axes[1].sample_points, self.parent.axes[0].sample_points]
         if self.sample_points > 1:
             self.array_shape.append(self.sample_points)
 
