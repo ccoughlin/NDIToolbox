@@ -22,8 +22,8 @@ class ImportDataDialog(wx.Dialog):
                         ('Delimited Text', [".txt", ".csv", ".dat", ".tab", ".asc"], 'text'),
                         ('Image', [".bmp", ".dcx", ".eps", ".gif", ".im", ".imt", ".jpg", ".jpeg", ".pcx", ".png",
                                    ".ppm", ".psd", ".sgi", ".tga", ".tiff", ".xpm"], 'image'),
-                        ('UTWin Cscan', [".csc"], 'utwin_cscan'),
-                        ('Winspect 6/7 Unidirectional', [".sdt"], 'winspect7'),
+                        ('UTWin CScan', [".csc"], 'utwin_cscan'),
+                        ('Winspect 6/7 CScan', [".sdt"], 'winspect7'),
                         ('DICOM/DICONDE', [".dcm"], 'dicom')]
 
     def __init__(self, parent, file_name, id=-1, title="Import Data", pos=wx.DefaultPosition,

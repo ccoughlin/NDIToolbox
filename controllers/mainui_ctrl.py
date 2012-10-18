@@ -271,7 +271,7 @@ class MainUIController(object):
         allfiles_wildcard = "All Files (*.*)|*.*"
         img_wildcards = "Image Files|(*.bmp;*.dcx;*.eps;*.gif;*.im;*.imt;*.jpg;*.jpeg;*.pcx;*.png;*.ppm;*.psd;*.sgi;*.tga;*.tiff;*.xpm)"
         txt_wildcards = "Text Files|*.txt;*.csv;*.dat;*.tab;*.asc"
-        winspect_wildcard = "Winspect 6/7|*.sdt"
+        winspect_wildcard = "Winspect 6/7 CScans |*.sdt"
         utwin_wildcard = "UTWin CScans |*.csc"
         dicom_wildcard = "DICOM/DICONDE |*.dcm"
         wildcards = "|".join([default_wildcard, img_wildcards, txt_wildcards, winspect_wildcard,
@@ -531,7 +531,7 @@ class MainUIController(object):
 
     def on_import_sdt(self, evt):
         """Handles request to add Winspect data to data folder"""
-        wildcards = "Winspect 6/7 (*.sdt)|*.sdt|All Files (*.*)|*.*"
+        wildcards = "Winspect 6/7 CScans (*.sdt)|*.sdt|All Files (*.*)|*.*"
         sdt_file = self.choose_import_file(wildcards)
         if sdt_file is not None:
             self.import_sdt(sdt_file)

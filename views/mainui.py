@@ -53,8 +53,8 @@ class UI(wx.Frame):
                                help="Imports a .csc file")
         self.import_mnu.AppendItem(csc_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_import_csc, id=csc_mnui.GetId())
-        sdt_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="Unidirectional Winspect 6/7 (.sdt)...",
-                               help="Imports a unidirectional .sdt file")
+        sdt_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="Winspect 6/7 CScan (.sdt)...",
+                               help="Imports a .sdt file")
         self.import_mnu.AppendItem(sdt_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_import_sdt, id=sdt_mnui.GetId())
         dicom_mnui = wx.MenuItem(self.import_mnu, wx.ID_ANY, text="DICOM/DICONDE...",
