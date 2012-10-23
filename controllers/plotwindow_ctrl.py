@@ -149,7 +149,15 @@ class BasicPlotWindowController(object):
             cfg = self.configure_plugin_dlg(plugin_instance)
             if cfg is None:
                 return
-        plugin_process, plugin_queue, exception_queue = mainmodel.run_plugin(plugin_cls, self.data, cfg, **kwargs)
+        try:
+            plugin_process, plugin_queue, exception_queue = mainmodel.run_plugin(plugin_cls, self.data, cfg, **kwargs)
+        except MemoryError as err: # Insufficient memory to run plugin with current data
+            err_dlg = wx.MessageDialog(self.view, message="Insufficient memory to run plugin.",
+                                       caption="Unable To Run Plugin",
+                                       style=wx.ICON_ERROR)
+            err_dlg.ShowModal()
+            err_dlg.Destroy()
+            return
         keepGoing = True
         try:
             progress_dlg = wx.ProgressDialog("Running Plugin",
