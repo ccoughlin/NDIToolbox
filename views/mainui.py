@@ -28,6 +28,7 @@ class UI(wx.Frame):
         self.controller.verify_userpath()
         self.controller.verify_imports()
         self.Bind(wx.EVT_CLOSE, self.controller.on_quit)
+        self.Bind(wx.EVT_WINDOW_DESTROY, self.controller.on_window_destroy)
 
     def init_menu(self):
         """Creates the main application menu"""

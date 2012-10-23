@@ -131,6 +131,11 @@ class MainUIController(object):
         self.view._mgr.UnInit()
         self.view.Destroy()
 
+    def on_window_destroy(self, evt):
+        """Attempts to free up memory every time a window is destroyed"""
+        # wxPython seems to require a delay before calling garbage collection
+        wx.CallLater(1000, gc.collect)
+
     def on_help(self, evt):
         """Handles request to open help documents"""
         self.open_url(os.path.join(pathfinder.docs_path(), 'index.html'))

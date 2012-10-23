@@ -147,7 +147,6 @@ def run_plugin(plugin_cls, data=None, config=None, **kwargs):
     plugin_process = multiprocessing.Process(target=plugin_wrapper,
                                              args=(plugin_exception_queue, plugin_cls, data, plugin_queue, config),
                                              kwargs=kwargs)
-    plugin_process.daemon = True
     plugin_process.start()
     return plugin_process, plugin_queue, plugin_exception_queue
 
