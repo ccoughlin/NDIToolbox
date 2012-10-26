@@ -420,7 +420,11 @@ class BasicImgPlotWindowController(BasicPlotWindowController):
 
     def init_plot_defaults(self):
         super(BasicImgPlotWindowController, self).init_plot_defaults()
-        self.colormap = cm.get_cmap('Spectral')
+        cfg = mainmodel.get_config()
+        if cfg.has_option("ImgPlot", "colormap"):
+            self.colormap = cm.get_cmap(cfg.get("ImgPlot", "colormap"))
+        else:
+            self.colormap = cm.get_cmap('Spectral')
 
     def on_set_cbarlbl(self, evt):
         """Sets the label for the imgplot's colorbar"""
@@ -489,11 +493,14 @@ class BasicImgPlotWindowController(BasicPlotWindowController):
                                                      "Please select a colormap for this plot.",
                                                      colormaps)
         if cmap_dlg.accepted is True:
+            cfg = mainmodel.get_config()
             colormap = cmap_dlg.selection
             if colormap == '':
                 self.colormap = cm.spectral
+                cfg.set("ImgPlot", {"colormap":"spectral"})
             else:
                 self.colormap = cm.get_cmap(colormap)
+                cfg.set("ImgPlot", {"colormap":colormap})
             if self.view.img is not None:
                 self.view.img.set_cmap(self.colormap)
                 self.refresh_plot()
@@ -765,6 +772,18 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
         """Handles toggle of enable/disable navigation toolbar checkbox"""
         self.view.toggle_toolbar()
 
+    def set_navtools_config(self, navtools_enabled):
+        """Sets the enable navtools option in the config"""
+        cfg = mainmodel.get_config()
+        cfg.set("MegaPlot", {"enable navtools":navtools_enabled})
+
+    def get_navtools_config(self):
+        """Returns the enable navtools setting from config."""
+        cfg = mainmodel.get_config()
+        if cfg.has_option("MegaPlot", "enable navtools"):
+            return cfg.get_boolean("MegaPlot", "enable navtools")
+        return True
+
     def on_sliceidx_change(self, evt):
         """Responds to changes in the z position spin control"""
         self.update_plot(self.view.xpos_sc.GetValue(), self.view.ypos_sc.GetValue(),
@@ -802,11 +821,14 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
                                                      "Please select a colormap for this plot.",
                                                      colormaps)
         if cmap_dlg.accepted is True:
+            cfg = mainmodel.get_config()
             colormap = cmap_dlg.selection
             if colormap == '':
                 self.colormap = cm.spectral
+                cfg.set("ImgPlot", {"colormap":"spectral"})
             else:
                 self.colormap = cm.get_cmap(colormap)
+                cfg.set("ImgPlot", {"colormap":colormap})
             if self.view.cscan_img is not None:
                 self.view.cscan_img.set_cmap(self.colormap)
                 self.refresh_plot()

@@ -39,7 +39,7 @@ def deleted_user_path():
     Returns a list of folders successfully deleted or None if no folders
     were deleted."""
     data_folders = [pathfinder.user_path(), pathfinder.data_path(), pathfinder.thumbnails_path(),
-                    pathfinder.plugins_path()]
+                    pathfinder.plugins_path(), pathfinder.colormaps_path()]
     deleted_folders = []
     for folder in data_folders:
         exists_and_empty = os.path.exists(folder) and os.listdir(folder) == []
@@ -112,7 +112,8 @@ class TestMainModel(unittest.TestCase):
         """Verify user data folders were created"""
         data_folders = [pathfinder.user_path(), pathfinder.data_path(),
                         pathfinder.thumbnails_path(), pathfinder.gates_path(),
-                        pathfinder.plugins_path(), pathfinder.podmodels_path()]
+                        pathfinder.plugins_path(), pathfinder.podmodels_path(),
+                        pathfinder.colormaps_path()]
         self.model.check_user_path()
         for folder in data_folders:
             self.assertTrue(os.path.exists(folder))

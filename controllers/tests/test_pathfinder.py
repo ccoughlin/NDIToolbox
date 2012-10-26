@@ -116,5 +116,10 @@ class TestPathFinder(unittest.TestCase):
         """Verify returning correct path to log file"""
         self.assertEqual(self.log_path, pathfinder.log_path())
 
+    def test_colormaps_path(self):
+        """Verify returning correct path to colormaps"""
+        colormaps_path = os.path.join(self.user_path, "colormaps")
+        self.assertEqual(colormaps_path, pathfinder.colormaps_path())
+
 if __name__ == "__main__":
     unittest.main()

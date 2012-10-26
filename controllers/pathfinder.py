@@ -135,3 +135,8 @@ def podmodels_path():
 def gates_path():
     """Returns the path to ultrasonic gates"""
     return os.path.join(user_path(), "gates")
+
+@normalized
+def colormaps_path():
+    """Returns the path to user-defined colormaps"""
+    return os.path.join(user_path(), "colormaps")

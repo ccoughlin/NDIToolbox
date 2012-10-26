@@ -394,7 +394,7 @@ class MegaPlotWindow(PlotWindow):
         self.figure.canvas.mpl_connect("button_press_event", self.controller.on_click)
         self.main_panel_sizer.Add(self.canvas, 1, ui_defaults.sizer_flags, 0)
         self.navtools_cb = wx.CheckBox(self.main_panel, wx.ID_ANY, "Use Plot Navigation Tools")
-        self.navtools_cb.SetValue(True)
+        self.navtools_cb.SetValue(self.controller.get_navtools_config())
         self.navtools_cb.SetToolTipString("Check to use pan/zoom tools")
         self.Bind(wx.EVT_CHECKBOX, self.controller.on_check_navtools, self.navtools_cb)
         self.main_panel_sizer.Add(self.navtools_cb, ui_defaults.lbl_pct, ui_defaults.sizer_flags,
@@ -419,7 +419,6 @@ class MegaPlotWindow(PlotWindow):
             self.main_panel_sizer.Add(self.toolbar, 0, wx.LEFT | wx.EXPAND, 0)
         self.toolbar.update()
         self.toggle_toolbar()
-        self.toggle_toolbar()
 
     def toggle_toolbar(self):
         """Enables / disables the navigation toolbar and sets
@@ -429,6 +428,7 @@ class MegaPlotWindow(PlotWindow):
         else:
             self.canvas.SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
         self.toolbar.Enable(self.navtools_enabled())
+        self.controller.set_navtools_config(self.navtools_enabled())
 
     def init_plot_menu(self):
         """Creates the Plot menu"""
