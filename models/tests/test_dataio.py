@@ -60,6 +60,12 @@ class TestDataIO(unittest.TestCase):
         read_data = dataio.get_data(self.sample_data_file)
         self.assertTrue(np.array_equal(self.sample_data, read_data))
 
+    def test_get_data_slice(self):
+        """Verify get_data function returns a slice if specified"""
+        slice_idx = np.s_[5:15]
+        read_hyperslab = dataio.get_data(self.sample_data_file, slice_idx)
+        self.assertTrue(np.array_equal(self.sample_data[slice_idx], read_hyperslab))
+
     def test_get_txt_data(self):
         """Verify retrieval of ASCII delimited data"""
         sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files',

@@ -15,12 +15,17 @@ import os
 import os.path
 import re
 
-def get_data(data_fname):
+def get_data(data_fname, slice_idx=None):
+    """Returns the NumPy array from the specified HDF5 file.  If slice_idx is specified (numpy.s_),
+    returns a slice of the data rather than the entire array (default)."""
     with h5py.File(data_fname, 'r') as fidin:
         root, ext = os.path.splitext(os.path.basename(data_fname))
         for key in fidin.keys():
             if key.startswith(root):
-                return fidin[key][...]
+                if slice_idx is None:
+                    return fidin[key][...]
+                else:
+                    return fidin[key][slice_idx]
 
 def save_data(data_fname, data):
     """Saves the data to the HDF5 file data_fname"""
