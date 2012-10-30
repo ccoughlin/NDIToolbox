@@ -422,9 +422,9 @@ class BasicImgPlotWindowController(BasicPlotWindowController):
         super(BasicImgPlotWindowController, self).init_plot_defaults()
         cfg = mainmodel.get_config()
         if cfg.has_option("ImgPlot", "colormap"):
-            self.colormap = cm.get_cmap(cfg.get("ImgPlot", "colormap"))
+            self.colormap = self.model.get_cmap(cfg.get("ImgPlot", "colormap"))
         else:
-            self.colormap = cm.get_cmap('Spectral')
+            self.colormap = self.model.get_cmap('Spectral')
 
     def on_set_cbarlbl(self, evt):
         """Sets the label for the imgplot's colorbar"""
@@ -479,7 +479,7 @@ class BasicImgPlotWindowController(BasicPlotWindowController):
             if not m.endswith("_r"):
                 ax = plt.subplot(num_maps, 1, i + 1)
                 plt.axis('off')
-                plt.imshow(colormap_strip, aspect='equal', cmap=plt.get_cmap(m), origin='lower')
+                plt.imshow(colormap_strip, aspect='equal', cmap=self.model.get_cmap(m), origin='lower')
                 pos = list(ax.get_position().bounds)
                 figure.text(pos[0] - 0.01, pos[1], m, fontsize=10, horizontalalignment='right')
         plt.show()
@@ -496,10 +496,10 @@ class BasicImgPlotWindowController(BasicPlotWindowController):
             cfg = mainmodel.get_config()
             colormap = cmap_dlg.selection
             if colormap == '':
-                self.colormap = cm.spectral
+                self.colormap = self.model.get_cmap('Spectral')
                 cfg.set("ImgPlot", {"colormap":"spectral"})
             else:
-                self.colormap = cm.get_cmap(colormap)
+                self.colormap = self.model.get_cmap(colormap)
                 cfg.set("ImgPlot", {"colormap":colormap})
             if self.view.img is not None:
                 self.view.img.set_cmap(self.colormap)
@@ -824,10 +824,10 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
             cfg = mainmodel.get_config()
             colormap = cmap_dlg.selection
             if colormap == '':
-                self.colormap = cm.spectral
+                self.colormap = self.model.get_cmap('Spectral')
                 cfg.set("ImgPlot", {"colormap":"spectral"})
             else:
-                self.colormap = cm.get_cmap(colormap)
+                self.colormap = self.model.get_cmap(colormap)
                 cfg.set("ImgPlot", {"colormap":colormap})
             if self.view.cscan_img is not None:
                 self.view.cscan_img.set_cmap(self.colormap)

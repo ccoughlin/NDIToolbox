@@ -121,18 +121,22 @@ class PlotWindow(wx.Frame):
     def init_plot_menu(self):
         """Creates the Plot menu"""
         self.plot_mnu = wx.Menu()
-        plottitle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set Plot Title",
+
+        self.labels_mnu = wx.Menu() # Titles and Labels
+        plottitle_mnui = wx.MenuItem(self.labels_mnu, wx.ID_ANY, text="Set Plot Title",
                                      help="Set Plot Title")
         self.Bind(wx.EVT_MENU, self.controller.on_set_plottitle, id=plottitle_mnui.GetId())
-        self.plot_mnu.AppendItem(plottitle_mnui)
-        xlbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set X Axis Label",
+        self.labels_mnu.AppendItem(plottitle_mnui)
+        xlbl_mnui = wx.MenuItem(self.labels_mnu, wx.ID_ANY, text="Set X Axis Label",
                                 help="Set X Axis Label")
         self.Bind(wx.EVT_MENU, self.controller.on_set_xlabel, id=xlbl_mnui.GetId())
-        self.plot_mnu.AppendItem(xlbl_mnui)
-        ylbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set Y Axis Label",
+        self.labels_mnu.AppendItem(xlbl_mnui)
+        ylbl_mnui = wx.MenuItem(self.labels_mnu, wx.ID_ANY, text="Set Y Axis Label",
                                 help="Set Y Axis Label")
         self.Bind(wx.EVT_MENU, self.controller.on_set_ylabel, id=ylbl_mnui.GetId())
-        self.plot_mnu.AppendItem(ylbl_mnui)
+        self.labels_mnu.AppendItem(ylbl_mnui)
+        self.plot_mnu.AppendMenu(wx.ID_ANY, 'Title And Labels', self.labels_mnu)
+
         gridtoggle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Toggle Grid",
                                       help="Turns grid on or off")
         self.plot_mnu.AppendItem(gridtoggle_mnui)
@@ -249,34 +253,41 @@ class ImgPlotWindow(PlotWindow):
     def init_plot_menu(self):
         """Creates the Plot menu"""
         self.plot_mnu = wx.Menu()
-        plottitle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set Plot Title",
+
+        self.labels_mnu = wx.Menu() # Titles and Labels
+        plottitle_mnui = wx.MenuItem(self.labels_mnu, wx.ID_ANY, text="Set Plot Title",
                                      help="Set Plot Title")
         self.Bind(wx.EVT_MENU, self.controller.on_set_plottitle, id=plottitle_mnui.GetId())
-        self.plot_mnu.AppendItem(plottitle_mnui)
-        xlbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set X Axis Label",
+        self.labels_mnu.AppendItem(plottitle_mnui)
+        xlbl_mnui = wx.MenuItem(self.labels_mnu, wx.ID_ANY, text="Set X Axis Label",
                                 help="Set X Axis Label")
         self.Bind(wx.EVT_MENU, self.controller.on_set_xlabel, id=xlbl_mnui.GetId())
-        self.plot_mnu.AppendItem(xlbl_mnui)
-        ylbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set Y Axis Label",
+        self.labels_mnu.AppendItem(xlbl_mnui)
+        ylbl_mnui = wx.MenuItem(self.labels_mnu, wx.ID_ANY, text="Set Y Axis Label",
                                 help="Set Y Axis Label")
         self.Bind(wx.EVT_MENU, self.controller.on_set_ylabel, id=ylbl_mnui.GetId())
-        self.plot_mnu.AppendItem(ylbl_mnui)
-        cbarlbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Set Colorbar Label',
+        self.labels_mnu.AppendItem(ylbl_mnui)
+        cbarlbl_mnui = wx.MenuItem(self.labels_mnu, wx.ID_ANY, text='Set Colorbar Label',
                                    help='Set Colorbar Label')
         self.Bind(wx.EVT_MENU, self.controller.on_set_cbarlbl, id=cbarlbl_mnui.GetId())
-        self.plot_mnu.AppendItem(cbarlbl_mnui)
+        self.labels_mnu.AppendItem(cbarlbl_mnui)
+        self.plot_mnu.AppendMenu(wx.ID_ANY, "Title And Labels", self.labels_mnu)
+
+        self.colormaps_mnu = wx.Menu() # Colormaps
+        self.preview_cmaps_mnui = wx.MenuItem(self.colormaps_mnu, wx.ID_ANY, text='Preview Colormaps',
+                                              help='Preview available colormaps')
+        self.Bind(wx.EVT_MENU, self.controller.on_preview_cmaps, id=self.preview_cmaps_mnui.GetId())
+        self.colormaps_mnu.AppendItem(self.preview_cmaps_mnui)
+        self.select_cmap_mnui = wx.MenuItem(self.colormaps_mnu, wx.ID_ANY, text='Select Colormap...',
+                                            help='Selects colormap')
+        self.Bind(wx.EVT_MENU, self.controller.on_select_cmap, id=self.select_cmap_mnui.GetId())
+        self.colormaps_mnu.AppendItem(self.select_cmap_mnui)
+        self.plot_mnu.AppendMenu(wx.ID_ANY, "Colormaps", self.colormaps_mnu)
+
         gridtoggle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Toggle Grid",
                                       help="Turns grid on or off")
         self.plot_mnu.AppendItem(gridtoggle_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_toggle_grid, id=gridtoggle_mnui.GetId())
-        self.preview_cmaps_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Preview Colormaps',
-                                              help='Preview available colormaps')
-        self.Bind(wx.EVT_MENU, self.controller.on_preview_cmaps, id=self.preview_cmaps_mnui.GetId())
-        self.plot_mnu.AppendItem(self.preview_cmaps_mnui)
-        self.select_cmap_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Select Colormap...',
-                                            help='Selects colormap')
-        self.Bind(wx.EVT_MENU, self.controller.on_select_cmap, id=self.select_cmap_mnui.GetId())
-        self.plot_mnu.AppendItem(self.select_cmap_mnui)
         self.menubar.Append(self.plot_mnu, "&Plot")
 
     def init_specific_ops_menu(self):
@@ -433,31 +444,41 @@ class MegaPlotWindow(PlotWindow):
     def init_plot_menu(self):
         """Creates the Plot menu"""
         self.plot_mnu = wx.Menu()
-        plottitle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set Plot Title",
+
+        self.labels_mnu = wx.Menu() # Titles and Labels
+        plottitle_mnui = wx.MenuItem(self.labels_mnu, wx.ID_ANY, text="Set Plot Title",
                                      help="Set Plot Title")
         self.Bind(wx.EVT_MENU, self.controller.on_set_plottitle, id=plottitle_mnui.GetId())
-        self.plot_mnu.AppendItem(plottitle_mnui)
-        xlbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set X Axis Label",
+        self.labels_mnu.AppendItem(plottitle_mnui)
+        xlbl_mnui = wx.MenuItem(self.labels_mnu, wx.ID_ANY, text="Set X Axis Label",
                                 help="Set X Axis Label")
         self.Bind(wx.EVT_MENU, self.controller.on_set_xlabel, id=xlbl_mnui.GetId())
-        self.plot_mnu.AppendItem(xlbl_mnui)
-        ylbl_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Set Y Axis Label",
+        self.labels_mnu.AppendItem(xlbl_mnui)
+        ylbl_mnui = wx.MenuItem(self.labels_mnu, wx.ID_ANY, text="Set Y Axis Label",
                                 help="Set Y Axis Label")
         self.Bind(wx.EVT_MENU, self.controller.on_set_ylabel, id=ylbl_mnui.GetId())
-        self.plot_mnu.AppendItem(ylbl_mnui)
+        self.labels_mnu.AppendItem(ylbl_mnui)
+        cbarlbl_mnui = wx.MenuItem(self.labels_mnu, wx.ID_ANY, text='Set Colorbar Label',
+                                   help='Set Colorbar Label')
+        self.Bind(wx.EVT_MENU, self.controller.on_set_cbarlbl, id=cbarlbl_mnui.GetId())
+        self.labels_mnu.AppendItem(cbarlbl_mnui)
+        self.plot_mnu.AppendMenu(wx.ID_ANY, "Title And Labels", self.labels_mnu)
+
+        self.colormaps_mnu = wx.Menu() # Colormaps
+        self.preview_cmaps_mnui = wx.MenuItem(self.colormaps_mnu, wx.ID_ANY, text='Preview Colormaps',
+                                              help='Preview available colormaps')
+        self.Bind(wx.EVT_MENU, self.controller.on_preview_cmaps, id=self.preview_cmaps_mnui.GetId())
+        self.colormaps_mnu.AppendItem(self.preview_cmaps_mnui)
+        self.select_cmap_mnui = wx.MenuItem(self.colormaps_mnu, wx.ID_ANY, text='Select Colormap...',
+                                            help='Selects colormap')
+        self.Bind(wx.EVT_MENU, self.controller.on_select_cmap, id=self.select_cmap_mnui.GetId())
+        self.colormaps_mnu.AppendItem(self.select_cmap_mnui)
+        self.plot_mnu.AppendMenu(wx.ID_ANY, "Colormaps", self.colormaps_mnu)
 
         gridtoggle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Toggle Grid",
                                       help="Turns grid on or off")
         self.plot_mnu.AppendItem(gridtoggle_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_toggle_grid, id=gridtoggle_mnui.GetId())
-        self.preview_cmaps_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Preview Colormaps',
-                                              help='Preview available colormaps')
-        self.Bind(wx.EVT_MENU, self.controller.on_preview_cmaps, id=self.preview_cmaps_mnui.GetId())
-        self.plot_mnu.AppendItem(self.preview_cmaps_mnui)
-        self.select_cmap_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text='Select Colormap...',
-                                            help='Selects colormap')
-        self.Bind(wx.EVT_MENU, self.controller.on_select_cmap, id=self.select_cmap_mnui.GetId())
-        self.plot_mnu.AppendItem(self.select_cmap_mnui)
         self.menubar.Append(self.plot_mnu, "&Plot")
 
     def init_specific_ops_menu(self):

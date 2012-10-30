@@ -11,7 +11,12 @@ import models.mainmodel as mainmodel
 import models.abstractplugin as abstractplugin
 import models.ultrasonicgate as ultrasonicgate
 import numpy as np
+from matplotlib import cm
+import matplotlib.colors
 import scipy.signal
+import json
+import os
+import os.path
 import random
 import unittest
 
@@ -197,6 +202,59 @@ class TestImgPlotWindowModel(unittest.TestCase):
         expected_data = self.model.data.T
         self.model.transpose_data()
         self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+
+    def test_get_colormaps(self):
+        """Verify returning a list of colormaps"""
+        cmap_choices = [m for m in cm.datad]
+        cmap_choices.extend(self.model.get_user_colormaps())
+        cmap_choices.sort()
+        self.assertListEqual(cmap_choices, self.model.get_colormap_choices())
+
+    def test_get_system_colormaps(self):
+        """Verify returning a list of predefined colormaps"""
+        cmap_choices = [m for m in cm.datad]
+        self.assertListEqual(cmap_choices, self.model.get_system_colormaps())
+
+    def test_get_user_colormaps(self):
+        """Verify returning a list of user-defined colormaps"""
+        colormap_folder = os.path.join(pathfinder.app_path(), 'colormaps')
+        expected_colormaps = []
+        for root, dirs, files in os.walk(colormap_folder):
+            for fname in files:
+                with open(os.path.join(root, fname), "r") as fidin:
+                    cmap_dict = json.load(fidin)
+                    expected_colormaps.append(cmap_dict.get('name', fname))
+        self.assertListEqual(expected_colormaps, self.model.get_user_colormaps(colormap_folder))
+
+    def test_save_colormap(self):
+        """Verify saving a colormap"""
+        shipped_colormaps_folder = os.path.join(pathfinder.app_path(), 'colormaps')
+        shipped_colormaps = os.listdir(shipped_colormaps_folder)
+        for shipped_colormap in shipped_colormaps:
+            shipped_colormap_file = os.path.join(shipped_colormaps_folder, shipped_colormap)
+            with open(shipped_colormap_file, "r") as fidin:
+                cmap_dict = json.load(fidin)
+                self.model.save_colormap(cmap_dict)
+                cmap_file = os.path.join(pathfinder.colormaps_path(), cmap_dict['name'])
+                self.assertTrue(os.path.exists(cmap_file))
+
+    def test_get_cmap(self):
+        """Verify returning a valid matplotlib Colormap (predefined or user-created)"""
+        colormap_folder = os.path.join(pathfinder.app_path(), 'colormaps')
+        colormaps = self.model.get_system_colormaps()
+        colormaps.extend(self.model.get_user_colormaps(colormap_folder))
+        for cmap_name in colormaps:
+            cmap = self.model.get_cmap(cmap_name, colormap_folder)
+            self.assertTrue(isinstance(cmap, matplotlib.colors.Colormap))
+
+    def test_load_colormap(self):
+        """Verify load_colormap returns a valid matplotlib Colormap"""
+        colormap_folder = os.path.join(pathfinder.app_path(), 'colormaps')
+        colormaps = self.model.get_user_colormaps(colormap_folder)
+        for cmap_name in colormaps:
+            cmap_file = os.path.join(colormap_folder, cmap_name)
+            cmap = self.model.load_colormap(cmap_file)
+            self.assertTrue(isinstance(cmap, matplotlib.colors.Colormap))
 
 if __name__ == "__main__":
     random.seed()

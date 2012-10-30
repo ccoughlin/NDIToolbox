@@ -149,6 +149,10 @@ class TestMainModel(unittest.TestCase):
         gates folder."""
         self.copy_system_gates()
 
+    def test_copy_system_colormaps(self):
+        """Verify main model copies colormaps to the user's colormaps folder."""
+        self.copy_system_colormaps()
+
     def copy_system_plugins(self):
         """Verify system plugins are copied to the user's plugins folder"""
         # Sample of system plugins to install
@@ -168,6 +172,16 @@ class TestMainModel(unittest.TestCase):
         for gate in gate_plugins:
             installed_gate = os.path.join(pathfinder.gates_path(), gate)
             self.assertTrue(os.path.exists(installed_gate))
+
+    def copy_system_colormaps(self):
+        """Verify system colormaps are copied to user's folder"""
+        colormaps_folder = os.path.join(pathfinder.app_path(), 'colormaps')
+        colormaps = os.listdir(colormaps_folder)
+        self.remove_system_files(colormaps, pathfinder.colormaps_path())
+        self.model.copy_system_colormaps()
+        for cmap in colormaps:
+            installed_cmap = os.path.join(pathfinder.colormaps_path(), cmap)
+            self.assertTrue(os.path.exists(installed_cmap))
 
     def remove_system_files(self, file_list, dest):
         """Attempts to remove every file in file_list found in dest folder.

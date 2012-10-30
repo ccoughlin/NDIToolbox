@@ -133,10 +133,13 @@ class TestUnzipper(unittest.TestCase):
         """Remove test files are removed at the end of testing
         (deletions on Windows can fail if file is in use)
         """
-        if os.path.exists(TestUnzipper.zip_file_path):
-            os.remove(TestUnzipper.zip_file_path)
-        if os.path.exists(TestUnzipper.destination_folder):
-            shutil.rmtree(TestUnzipper.destination_folder)
+        try:
+            if os.path.exists(TestUnzipper.zip_file_path):
+                os.remove(TestUnzipper.zip_file_path)
+            if os.path.exists(TestUnzipper.destination_folder):
+                shutil.rmtree(TestUnzipper.destination_folder)
+        except WindowsError: # File in use (Windows)
+            pass
 
 if __name__ == "__main__":
     unittest.main()

@@ -253,6 +253,13 @@ class MainModel(object):
         system_gates_folder = os.path.join(pathfinder.app_path(), 'gates')
         self.copy_system_files(system_gates_folder, pathfinder.gates_path())
 
+    def copy_system_colormaps(self):
+        """Copies matplotlib colormaps that ship with the application to the user's colormaps folder."""
+        colormaps_folder = os.path.join(pathfinder.app_path(), 'colormaps')
+        colormaps = os.listdir(colormaps_folder)
+        for colormap_file in colormaps:
+            shutil.copy(os.path.join(colormaps_folder, colormap_file), pathfinder.colormaps_path())
+
     def copy_system_files(self, src_folder, dest_folder):
         """Copies the Python (.py) files in src_folder to dest_folder.
         Used to install local user-editable copies of plugins, POD Models,
