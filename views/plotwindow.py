@@ -282,6 +282,10 @@ class ImgPlotWindow(PlotWindow):
                                             help='Selects colormap')
         self.Bind(wx.EVT_MENU, self.controller.on_select_cmap, id=self.select_cmap_mnui.GetId())
         self.colormaps_mnu.AppendItem(self.select_cmap_mnui)
+        self.create_cmap_mnui = wx.MenuItem(self.colormaps_mnu, wx.ID_ANY, text='Create Colormap...',
+                                           help='Create or edit a colormap')
+        self.colormaps_mnu.AppendItem(self.create_cmap_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_create_cmap, id=self.create_cmap_mnui.GetId())
         self.plot_mnu.AppendMenu(wx.ID_ANY, "Colormaps", self.colormaps_mnu)
 
         gridtoggle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Toggle Grid",
@@ -473,6 +477,10 @@ class MegaPlotWindow(PlotWindow):
                                             help='Selects colormap')
         self.Bind(wx.EVT_MENU, self.controller.on_select_cmap, id=self.select_cmap_mnui.GetId())
         self.colormaps_mnu.AppendItem(self.select_cmap_mnui)
+        self.create_cmap_mnui = wx.MenuItem(self.colormaps_mnu, wx.ID_ANY, text='Create Colormap...',
+                                            help='Create or edit a colormap')
+        self.colormaps_mnu.AppendItem(self.create_cmap_mnui)
+        self.Bind(wx.EVT_MENU, self.controller.on_create_cmap, id=self.create_cmap_mnui.GetId())
         self.plot_mnu.AppendMenu(wx.ID_ANY, "Colormaps", self.colormaps_mnu)
 
         gridtoggle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Toggle Grid",

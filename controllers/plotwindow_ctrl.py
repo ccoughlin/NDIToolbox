@@ -6,6 +6,7 @@ __author__ = 'Chris R. Coughlin'
 
 from views import dialogs
 from views import fetchplugin_dialog
+from views import colormapcreator
 from models import mainmodel
 from models import dataio
 from models import ndescanhandler
@@ -505,6 +506,10 @@ class BasicImgPlotWindowController(BasicPlotWindowController):
                 self.view.img.set_cmap(self.colormap)
                 self.refresh_plot()
 
+    def on_create_cmap(self, evt):
+        """Handles request to create a new matplotlib colormap"""
+        cmapcreator_ui = colormapcreator.ColormapCreatorUI(parent=self.view)
+        cmapcreator_ui.Show()
 
 class ImgPlotWindowController(BasicImgPlotWindowController):
     """Controller for ImgPlotWindow class"""
