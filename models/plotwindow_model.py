@@ -10,7 +10,6 @@ import mainmodel
 import ultrasonicgate
 from matplotlib import cm
 import matplotlib.colors as colors
-import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal
 import os
@@ -148,7 +147,7 @@ class ThreeDManipMixin(object):
         user_colormaps = self.get_user_colormaps(cmap_folder)
         system_colormaps = self.get_system_colormaps()
         if cmap_name in system_colormaps:
-            return plt.get_cmap(cmap_name)
+            return cm.get_cmap(cmap_name)
         elif cmap_name in user_colormaps:
             cmap_file = os.path.join(cmap_folder, cmap_name)
             cmap = self.load_colormap(cmap_file)
