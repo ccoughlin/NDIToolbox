@@ -43,20 +43,23 @@ class ColormapCreatorUI(wx.Frame):
         self.Bind(wx.EVT_CHOICE, self.controller.on_preview, self.cmap_cb)
         self.c_panel_sizer.Add(self.cmap_cb, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
                                ui_defaults.widget_margin)
-        self.colors_lb = wx.gizmos.EditableListBox(self.c_panel, wx.ID_ANY, "Edit Colors:", wx.DefaultPosition,
-                                                   wx.DefaultSize)
-        self.colors_lb.SetToolTipString("Enter RGB components of each color")
+        self.colors_lb = wx.gizmos.EditableListBox(self.c_panel, wx.ID_ANY, "Colors:", wx.DefaultPosition,
+                                                   wx.DefaultSize,
+                                                   style=wx.gizmos.EL_ALLOW_NEW|wx.gizmos.EL_ALLOW_DELETE)
+        self.colors_lb.SetToolTipString("Add, delete, and reorder colors in the colormap")
         self.c_panel_sizer.Add(self.colors_lb, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
                                ui_defaults.widget_margin)
+        self.addcolor_btn = self.colors_lb.GetNewButton()
+        self.addcolor_btn.Bind(wx.EVT_BUTTON, self.controller.on_add_color)
         self.c_panel.SetSizerAndFit(self.c_panel_sizer)
-        self._mgr.AddPane(self.c_panel, wx.aui.AuiPaneInfo().Name("colors").Caption("Colormap Colors").Left().
+        self._mgr.AddPane(self.c_panel, wx.aui.AuiPaneInfo().Name("colors").Caption("Colormap").Left().
         CloseButton(False).MinimizeButton(True).MaximizeButton(True).Floatable(True).Dockable(True).
         MinSize(wx.Size(200, 100)))
 
         # Preview Panel
         self.preview_panel = wx.Panel(self)
         self.preview_panel_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.preview_btn = wx.Button(self.preview_panel, wx.ID_ANY, "Preview", wx.DefaultPosition,
+        self.preview_btn = wx.Button(self.preview_panel, wx.ID_ANY, "Preview Colormap", wx.DefaultPosition,
                                      wx.DefaultSize)
         self.preview_btn.SetToolTipString("Redraws the plot to demonstrate the current colormap")
         self.Bind(wx.EVT_BUTTON, self.controller.on_preview, self.preview_btn)
@@ -68,7 +71,7 @@ class ColormapCreatorUI(wx.Frame):
         self.preview_panel_sizer.Add(self.canvas, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
                                      ui_defaults.widget_margin)
         self.preview_panel.SetSizerAndFit(self.preview_panel_sizer)
-        self._mgr.AddPane(self.preview_panel, wx.aui.AuiPaneInfo().Name("preview").Caption("Colormap Preview").Center().
+        self._mgr.AddPane(self.preview_panel, wx.aui.AuiPaneInfo().Name("preview").Caption("Preview").Center().
         CloseButton(False).MinimizeButton(True).MaximizeButton(True).Floatable(True).Dockable(True).
         MinSize(wx.Size(600, 100)))
         self._mgr.Update()
@@ -105,6 +108,15 @@ class ColormapCreatorUI(wx.Frame):
             self.cmap_cb.SetSelection(0)
         elif cmap_type == 'list':
             self.cmap_cb.SetSelection(1)
+
+    def add_color(self, rgb_list):
+        """Adds the list of RGB components [R,G,B] to the list of colors.  Each component should be a floating-point
+        number between 0 and 1."""
+        colors_lc = self.colors_lb.GetListCtrl()
+        color_idx = colors_lc.GetFocusedItem()
+        if color_idx == -1:
+            color_idx = colors_lc.GetItemCount()-1
+        colors_lc.InsertStringItem(color_idx, ','.join([str(el) for el in rgb_list]))
 
 def main():
     app = wx.PySimpleApp()

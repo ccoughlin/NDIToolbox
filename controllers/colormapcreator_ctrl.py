@@ -126,3 +126,12 @@ class ColormapCreatorController(object):
                 self.set_colormap()
             finally:
                 file_dlg.Destroy()
+
+    def on_add_color(self, evt):
+        """Handles request to add a new color to the colormap"""
+        color_dlg = wx.ColourDialog(self.view)
+        color_dlg.GetColourData().SetChooseFull(True)
+        if color_dlg.ShowModal() == wx.ID_OK:
+            color_data = color_dlg.GetColourData()
+            normalized_color_data = [component/255. for component in color_data.GetColour().Get()]
+            self.view.add_color(normalized_color_data)
