@@ -483,6 +483,11 @@ class MegaPlotWindow(PlotWindow):
         self.Bind(wx.EVT_MENU, self.controller.on_create_cmap, id=self.create_cmap_mnui.GetId())
         self.plot_mnu.AppendMenu(wx.ID_ANY, "Colormaps", self.colormaps_mnu)
 
+        self.plot_conventional_bscans_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Plot Conventional B-scans",
+                                                         help="Plot conventional 2D B-scans", kind=wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.controller.on_change_bscans, id=self.plot_conventional_bscans_mnui.GetId())
+        self.plot_mnu.AppendItem(self.plot_conventional_bscans_mnui)
+        self.plot_conventional_bscans_mnui.Check(self.controller.conventional_bscans)
         gridtoggle_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Toggle Grid",
                                       help="Turns grid on or off")
         self.plot_mnu.AppendItem(gridtoggle_mnui)
@@ -515,3 +520,18 @@ class MegaPlotWindow(PlotWindow):
     def navtools_enabled(self):
         """Returns True if plot navigation bar is enabled"""
         return self.navtools_cb.IsChecked()
+
+    @property
+    def plot_conventional_bscans(self):
+        """True if the Bscan plots should be conventional 2D imgplots vs. the original Megaplot 1D"""
+        return self.plot_conventional_bscans_mnui.IsChecked()
+
+    @plot_conventional_bscans.setter
+    def plot_conventional_bscans(self, on=True):
+        """Sets the use of conventional Bscans or the original 1D Megaplot Bscans"""
+        self.plot_conventional_bscans_mnui.Check(on)
+
+    @property
+    def plot_linear_bscans(self):
+        """True if the Bscan plots should be the original 1D Megaplot plots"""
+        return not self.plot_conventional_bscans

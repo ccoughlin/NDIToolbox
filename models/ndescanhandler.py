@@ -40,23 +40,31 @@ class NDEScanHandler(object):
         """Returns the waveform from the (x,y) position"""
         return self.data[ypos, xpos, :]
 
-    def hbscan_data(self, slice_idx, ypos):
-        """Returns the horizontal slice at y=ypos
-        through the 2D slice at z=slice_idx."""
+    def hslice_cscan_data(self, slice_idx, ypos):
+        """Returns the horizontal slice at y=ypos through the 2D slice at z=slice_idx (1D cross-section through the
+        C-scan at specified Z index)."""
         # TODO: replace with single operation
         # self.data[ypos, :, slice_idx]
         # when initial testing complete
         cscan_data = self.cscan_data(slice_idx)
         return cscan_data[ypos, :]
 
-    def vbscan_data(self, slice_idx, xpos):
-        """Returns the vertical slice at x=xpos
-        through the 2D slice at z=slice_idx."""
+    def hbscan_data(self, y_idx):
+        """Returns the 2D planar slice at the specified Y position through the 3D data."""
+        return self.data[y_idx, :, :]
+
+    def vslice_cscan_data(self, slice_idx, xpos):
+        """Returns the vertical slice at x=xpos through the 2D slice at z=slice_idx (1D cross-section through the
+        C-scan at specified Z index)."""
         # TODO: replace with single operation
         # self.data[:, xpos, slice_idx]
         # when initial testing complete
         cscan_data = self.cscan_data(slice_idx)
         return cscan_data[:, xpos]
+
+    def vbscan_data(self, x_idx):
+        """Returns the 2D planar slice at the specified X position through the 3D data."""
+        return self.data[:, x_idx, :]
 
     def gen_cscan(self, start_idx, stop_idx, fn=None):
         """Returns a computed C scan dataset:  takes the subset

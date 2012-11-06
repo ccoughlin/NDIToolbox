@@ -41,7 +41,7 @@ class TestNDEScanHandler(unittest.TestCase):
         for slice_idx in random_slices:
             expected_array = self.threed_array[:, :, slice_idx]
             returned_slice = self.scnr.cscan_data(slice_idx)
-            self.assertListEqual(expected_array.tolist(), returned_slice.tolist())
+            self.assertTrue(np.array_equal(expected_array, returned_slice))
 
     def test_ascan_data(self):
         """Verify returning a complete waveform from a given (x,y) position"""
@@ -50,25 +50,37 @@ class TestNDEScanHandler(unittest.TestCase):
             ypos = random.randint(self.min_y, self.max_y)
             expected_waveform = self.threed_array[ypos, xpos, :]
             returned_waveform = self.scnr.ascan_data(xpos, ypos)
-            self.assertListEqual(expected_waveform.tolist(), returned_waveform.tolist())
+            self.assertTrue(np.array_equal(expected_waveform, returned_waveform))
 
-    def test_horizontalbscan_data(self):
+    def test_horizontalslice_bscan_data(self):
         """Verify returning the horizontal B Scan from the C Scan
         (1D slice at constant y from the 2D NumPy array)."""
         slice_idx = random.randint(self.min_z, self.max_z)
         for ypos in range(self.min_y, self.max_y):
             expected_slice = self.threed_array[ypos, :, slice_idx]
-            returned_bscan = self.scnr.hbscan_data(slice_idx, ypos)
-            self.assertListEqual(expected_slice.tolist(), returned_bscan.tolist())
+            returned_bscan = self.scnr.hslice_cscan_data(slice_idx, ypos)
+            self.assertTrue(np.array_equal(expected_slice, returned_bscan))
 
-    def test_verticalbscan_data(self):
+    def test_verticalslice_bscan_data(self):
         """Verify returning the vertical B Scan from the C Scan
         (1D slice at constant x from the 2D NumPy array)."""
         slice_idx = random.randint(self.min_z, self.max_z)
         for xpos in range(self.min_x, self.max_x):
             expected_slice = self.threed_array[:, xpos, slice_idx]
-            returned_bscan = self.scnr.vbscan_data(slice_idx, xpos)
-            self.assertListEqual(expected_slice.tolist(), returned_bscan.tolist())
+            returned_bscan = self.scnr.vslice_cscan_data(slice_idx, xpos)
+            self.assertTrue(np.array_equal(expected_slice, returned_bscan))
+
+    def test_hbscan_data(self):
+        """Verify returning a planar slice from the 3D data at the given y position."""
+        slice_idx = random.randint(self.min_y, self.max_y)
+        expected_slice = self.scnr.data[slice_idx, :, :]
+        self.assertTrue(np.array_equal(expected_slice, self.scnr.hbscan_data(slice_idx)))
+
+    def test_vbscan_data(self):
+        """Verify returning a planar slice from the 3D data at the given x position."""
+        slice_idx = random.randint(self.min_x, self.max_x)
+        expected_slice = self.scnr.data[:, slice_idx, :]
+        self.assertTrue(np.array_equal(expected_slice, self.scnr.vbscan_data(slice_idx)))
 
     def test_gen_cscan(self):
         """Verify returning a 2D array based on a supplied
@@ -86,7 +98,7 @@ class TestNDEScanHandler(unittest.TestCase):
         for op in available_ops:
             expected_result = op(self.threed_array[:, :, start_idx:stop_idx], axis=2)
             returned_result = self.scnr.gen_cscan(start_idx, stop_idx, op)
-            self.assertListEqual(expected_result.tolist(), returned_result.tolist())
+            self.assertTrue(np.array_equal(expected_result, returned_result))
 
 if __name__ == "__main__":
     random.seed()
