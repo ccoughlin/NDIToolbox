@@ -619,6 +619,8 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
     def __init__(self, view, data_file):
         self.view = view
         self.slice_idx = 0
+        self.xpos = 0
+        self.ypos = 0
         self.axes_grid = True
         self.model = model.MegaPlotWindowModel(self, data_file)
         self.colorbar = None
@@ -634,6 +636,8 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
         cfg = mainmodel.get_config()
         if cfg.has_option("MegaPlot", "conventional bscans"):
             self.conventional_bscans = cfg.get_boolean("MegaPlot", "conventional bscans")
+        else:
+            self.conventional_bscans = False
 
     def plot(self, data):
         """Plots the dataset"""
@@ -820,11 +824,19 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
         self.update_plot(self.view.xpos_sc.GetValue(), self.view.ypos_sc.GetValue())
 
     @replace_plot
-    def update_plot(self, xpos, ypos, slice_idx=None):
-        """Updates the A and B scans based on the provided
-        (x,y) position in the data.  If slice_idx is provided
-        the C scan plot is updated to that position, default
-        is to leave unchanged if slice_idx is None."""
+    def update_plot(self, xpos=None, ypos=None, slice_idx=None):
+        """Updates the A and B scans based on the provided (x,y) position in the data.  If xpos and/or ypos
+        are None (default), A and B scans are updated on the last (x,y) position selected by the user.
+        If slice_idx is provided the C scan plot is updated to that position, default is to leave unchanged if
+        slice_idx is None."""
+        if xpos is None:
+            xpos = self.xpos
+        else:
+            self.xpos = xpos
+        if ypos is None:
+            ypos = self.ypos
+        else:
+            self.ypos = ypos
         self.view.xpos_sc.SetValue(xpos)
         self.view.ypos_sc.SetValue(ypos)
         self.plot_ascan(self.scnr.ascan_data(xpos, ypos), xpos, ypos)
@@ -877,7 +889,7 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
         self.conventional_bscans = self.view.plot_conventional_bscans
         cfg = mainmodel.get_config()
         cfg.set("MegaPlot", {"conventional bscans":self.conventional_bscans})
-        self.refresh_plot()
+        self.update_plot()
 
     @replace_plot
     def on_rectify(self, evt):
