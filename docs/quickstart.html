@@ -1,295 +1,545 @@
-<!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="generator" content=
+  "HTML Tidy for Linux/x86 (vers 11 February 2007), see www.w3.org" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 
-    <title>Getting Started With NDIToolbox</title>
-    <meta name="description" content="">
-    <meta name="author" content="">
+  <title>Getting Started With NDIToolbox</title>
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+  <meta name="viewport" content="width=device-width" />
+  <link rel="stylesheet" href="css/bootstrap.css" type="text/css" />
+  <style type="text/css">
+/*<![CDATA[*/
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
 
-    <meta name="viewport" content="width=device-width">
-
-
-    <link rel="stylesheet" href="css/bootstrap.css">
-    <link href="css/lightbox.css" rel="stylesheet"/>
-    <link rel="stylesheet" href="css/style.css">
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+  /*]]>*/
+  </style>
+  <link href="css/lightbox.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
 </head>
-<body>
-<div class="navbar navbar-fixed-top">
-    <div class="navbar-inner">
-        <div class="container-fluid">
-            <a class="brand" href="http://www.nditoolbox.com">NDIToolbox</a>
 
-            <div class="nav-collapse">
-                <ul class="nav">
-                    <li><a href="index.html">Main</a></li>
-                    <li class="active"><a href="quickstart.html">Quick Start</a></li>
-                    <li class="dropdown" id="plugins_mnu">
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#plugins_mnu">
-                            Plugins
-                            <b class="caret"></b>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a href="plugins.html">Plugins For End Users</a></li>
-                            <li><a href="plugins_developers.html">Plugins For Developers</a></li>
-                            <li><a href="plugins_samples.html">Sample Plugins</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="contact.html">Contact</a></li>
-                </ul>
-            </div>
-            <!--/.nav-collapse -->
-        </div>
+<body>
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container-fluid">
+        <a class="brand" href="http://www.nditoolbox.com">NDIToolbox</a>
+
+        <div class="nav-collapse">
+          <ul class="nav">
+            <li><a href="index.html">Main</a></li>
+
+            <li class="active"><a href="quickstart.html">Quick Start</a></li>
+
+            <li class="dropdown" id="plugins_mnu">
+              <a class="dropdown-toggle" data-toggle="dropdown" href=
+              "#plugins_mnu">Plugins</a>
+
+              <ul class="dropdown-menu">
+                <li><a href="plugins.html">Plugins For End Users</a></li>
+
+                <li><a href="plugins_developers.html">Plugins For Developers</a></li>
+
+                <li><a href="plugins_samples.html">Sample Plugins</a></li>
+              </ul>
+            </li>
+
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+  </div>
+
+  <div class="span3">
+    <div class="well sidebar-nav">
+      <ul class="nav nav-list">
+        <li class="nav-header">Topic Navigation</li>
+
+        <li><a href="#qs_first_run">First Run</a></li>
+
+        <li><a href="#qs_using">Using NDIToolbox</a></li>
+
+        <li><a href="#qs_data">Working With Data</a></li>
+
+        <li><a href="#qs_preview">Previewing Data</a></li>
+
+        <li><a href="#qs_threed">Working With 3D Data</a></li>
+
+        <li><a href="#qs_plot">Plotting Data</a></li>
+
+        <li><a href="#qs_next">Next Steps</a></li>
+      </ul>
+    </div><!--/.well -->
+  </div><!--/span-->
+
+  <div class="span9">
+    <div class="hero-unit">
+      <h1>Getting Started</h1>
+
+      <p>A quick how-to on the basics of using NDIToolbox</p>
     </div>
 
-</div>
-<div class="span10">
-<div class="hero-unit">
-    <h1>Getting Started</h1>
+    <h2><a name="qs_first_run">First Run</a></h2>
 
-    <p>A quick how-to on the basics of using NDIToolbox</p>
-</div>
-<h2>First Run</h2>
+    <p>The first time you start NDIToolbox, it will create a local folder under your
+    <code>$HOME</code> folder (e.g. <code>c:\users\chris</code> in Windows 7/8 or
+    <code>/home/chris</code> under Linux) to store data files, plugins, POD models, and
+    other user-generated files. As of this writing the local folder is by default called
+    <code>nditoolbox</code> (or <code>a7117</code> in earlier builds, named after the
+    internal TRI/Austin project number), but you can choose any location you like. So
+    after the first run of NDIToolbox you&#8217;ll have a local data folder that looks
+    like this:</p>
 
-<p>The first time you start NDIToolbox, it will create a local folder under your <code>$HOME</code> folder (e.g.
-    <code>c:\users\chris</code> in Windows 7 or <code>/home/chris</code> under Linux) to store data files, plugins,
-    POD models, and thumbnails. As of this writing the local folder is by default called <code>nditoolbox</code> (or
-    <code>a7117</code> in earlier builds, named
-    after the internal TRI/Austin project number), but you can choose any location you like. So after the first run
-    of NDIToolbox you&#8217;ll have a local data folder that looks like this:</p>
+    <p class="centeredImage"><a href="images/folder_layout.png" rel="lightbox"><img src=
+    "images/folder_layout.png" width="377" height="219" /></a></p>
 
-<p class="centeredImage"><a href="images/folder_layout.png" rel="lightbox"><img src="images/folder_layout.png"
-                                                                                width="377" height="219"/></a></p>
+    <p>A configuration file will also be stored under your <code>$HOME</code> folder as
+    <code>nditoolbox.cfg</code>. The configuration file stores basic information about
+    how you're using NDIToolbox, such as how to plot 2D data and where to find your user
+    files. You may also encounter a file <code>nditoolbox.log</code> in the same folder
+    as <code>nditoolbox.cfg</code>, which is a log file used to record errors that occur
+    while using NDIToolbox. The log file is viewable from within NDIToolbox by selecting
+    <strong>Display Application Log...</strong> from the <strong>Help</strong> menu. If
+    you run into difficulties with NDIToolbox, you can copy-paste the contents of this
+    log (or add as an attachment of course) to any correspondence with TRI.</p>
 
-<p>A configuration file will also be stored under your <code>$HOME</code> folder as <code>nditoolbox.cfg</code>.</p>
+    <h2><a name="qs_using">Using NDIToolbox</a></h2>
 
-<h2>Using NDIToolbox</h2>
+    <p>NDIToolbox is designed around the idea of managing data. You have multiple data
+    files organized in a particular way, and you&#8217;d like to use NDIToolbox to plot,
+    preview, and manipulate the data. How you organize your data is up to you but one
+    suggestion would be to organize by structure and inspection. For example, you can
+    create a subfolder <code>Pennybacker Bridge</code> under your data folder to house
+    all the inspections of the <a href=
+    "http://en.wikipedia.org/wiki/Pennybacker_Bridge">Pennybacker Bridge</a>; under this
+    subfolder place additional subfolders <code>Bridge Deck</code> and <code>Steel
+    Cables</code> to house inspections of the bridge&#8217;s substructures, subfolders
+    under these for particular inspections of the substructure, and so on.</p>
 
-<p>NDIToolbox is designed around the idea of managing data. You have multiple data files organized in a particular
-    way, and you&#8217;d like to use NDIToolbox to plot, preview, and manipulate the data. How you organize your
-    data is up to you but one suggestion would be to organize by structure and inspection. For example, you can
-    create a subfolder <code>Pennybacker Bridge</code> under your data folder to house all the inspections of the
-    <a href="http://en.wikipedia.org/wiki/Pennybacker_Bridge">Pennybacker Bridge</a>; under this subfolder place
-    additional subfolders <code>Bridge Deck</code> and <code>Steel Cables</code> to house inspections of the
-    bridge&#8217;s substructures, subfolders under these for particular inspections of the substructure, and so on.
-</p>
-<ul>
-    <li><code>c:\users\chris\nditoolbox\data\Pennybacker Bridge</code></li>
-    <li><code>c:\users\chris\nditoolbox\data\Pennybacker Bridge\Bridge Deck</code></li>
-    <li><code>c:\users\chris\nditoolbox\data\Pennybacker Bridge\Bridge Deck\GPR April 21 2012</code></li>
-    <li><code>c:\users\chris\nditoolbox\data\Pennybacker Bridge\Steel Cables</code></li>
-    <li><code>c:\users\chris\nditoolbox\data\Pennybacker Bridge\Steel Cables\UT Nov 3 2010</code></li>
-</ul>
-<p>If you don&#8217;t want or need this level of organization, you can of course just use <code>c:\users\chris\nditoolbox\data</code>
-    as-is, it&#8217;s up to you.</p>
+    <ul>
+      <li><code>c:\users\chris\nditoolbox\data\Pennybacker Bridge</code></li>
 
-<p>When the user interface is shown you&#8217;ll see two panels. The <strong>NDE Data</strong> panel at the top lists
-    all the files
-    currently in the local data folder. </p>
+      <li><code>c:\users\chris\nditoolbox\data\Pennybacker Bridge\Bridge Deck</code></li>
 
-<p class="centeredImage"><a href="images/a7117_screenshot_data_panel.png" rel="lightbox" title="NDE Data Panel"><img
-        src="images/a7117_screenshot_data_panel.png" width="211" height="392"/></a></p>
+      <li><code>c:\users\chris\nditoolbox\data\Pennybacker Bridge\Bridge Deck\GPR April
+      21 2012</code></li>
 
-<p>To refresh the list of data files, press the <strong>Refresh Data</strong> button in the toolbar; you can also add
-    and remove data
-    from this folder by pressing the <strong>+</strong> and <strong>&#8211;</strong> buttons in the toolbar
-    respectively. Adding a data file prompts
-    you to browse to an existing HDF5 data file, which will be copied to the local data folder. Removing a data file
-    removes the file from the local data folder; the original data file isn&#8217;t affected.</p>
+      <li><code>c:\users\chris\nditoolbox\data\Pennybacker Bridge\Steel
+      Cables</code></li>
 
-<p class="centeredImage"><a href="images/toolbar_one.png" rel="lightbox"><img src="images/toolbar_one.png"
-                                                                              width="230" height="150"/></a></p>
+      <li><code>c:\users\chris\nditoolbox\data\Pennybacker Bridge\Steel Cables\UT Nov 3
+      2010</code></li>
+    </ul>
 
-<p>The <strong>Plot</strong> panel at the bottom displays thumbnail images of your data as an easy way to browse large
-    sets
-    of data. When you select a data file in the <strong>NDE Data</strong> panel, NDIToolbox will show the thumbnail plot
-    of this
-    file. The first time you select a file there will be a slight delay in displaying the thumbnail as NDIToolbox is
-    generating it in the background, but after this initial generation it will continue to use this same thumbnail
-    until you <strong>Refresh Data</strong> or the file&#8217;s path changes. If you&#8217;d rather not use thumbnails,
-    disable them
-    by toggling the <strong>Enable/Disable Thumbnails</strong> button.</p>
+    <p>If you don&#8217;t want or need this level of organization, you can of course just
+    use <code>c:\users\chris\nditoolbox\data</code> as-is, it&#8217;s up to you.</p>
 
-<p class="centeredImage"><a href="images/a7117_screenshot_thumbnails_panel.png" rel="lightbox"
-                            title="Thumbnail Preview Panel"><img src="images/a7117_screenshot_thumbnails_panel.png"
-                                                                 width="211" height="392"/></a></p>
+    <p>When the user interface is shown you&#8217;ll see two panels. The <strong>NDE
+    Data</strong> panel at the top lists all the files currently in the local data
+    folder.</p>
 
-<h2>Data Files</h2>
+    <p class="centeredImage"><a href="images/a7117_screenshot_data_panel.png" rel=
+    "lightbox" title="NDE Data Panel"><img src="images/a7117_screenshot_data_panel.png"
+    width="211" height="392" /></a></p>
 
-<p>NDIToolbox uses the <a href="http://en.wikipedia.org/wiki/Hierarchical_Data_Format">Hierarchical Data Format</a>
-    to store data. To import data in other formats (DICOM, DICONDE, delimited text, bitmap images, etc.), select the
-    appropriate menu item from the <strong>Import</strong> submenu under the File menu. The file will be read and
-    converted to
-    HDF5 before it is copied to the local data folder. Depending on the type of file being imported, you may be
-    asked to provide additional details - for example, importing an ASCII delimited-text file such as a CSV will
-    bring up a dialog that asks you what character is used as the delimiter, whether lines at the top or bottom
-    should be skipped, whether you'd like to import all or a select number of columns, and so on.</p>
+    <p>To refresh the list of data files, press the <strong>Refresh Data</strong> button
+    in the toolbar; you can also add and remove data from this folder by pressing the
+    <strong>+</strong> and <strong>&#8211;</strong> buttons in the toolbar respectively.
+    Adding a data file prompts you to browse to an existing data file, which will be
+    converted to HDF5 if necessary and copied to the local data folder. Removing a data
+    file removes the file from the local data folder; the original data file isn&#8217;t
+    affected.</p>
 
-<p class="centeredImage"><a href="images/import_text_file.png" rel="lightbox" title="Import Text File Dialog"><img
-        src="images/import_text_file.png" width="256" height="302"/></a></p>
+    <p class="centeredImage"><a href="images/toolbar_one.png" rel="lightbox"><img src=
+    "images/toolbar_one.png" width="230" height="150" /></a></p>
 
-<p>You can also export HDF5 files in the local data folder to a text (CSV) file by selecting the file in the <strong>NDE
-    Data</strong> panel and selecting the <strong>Export Data</strong> button (looks like a disk) in the toolbar.</p>
+    <p>The <strong>Plot</strong> panel at the bottom displays thumbnail images of your
+    data as an easy way to browse large sets of data. When you select a data file in the
+    <strong>NDE Data</strong> panel, NDIToolbox will show the thumbnail plot of this
+    file. The first time you select a file there will be a slight delay in displaying the
+    thumbnail as NDIToolbox is generating it in the background, but after this initial
+    generation it will continue to use this same thumbnail until you <strong>Refresh
+    Data</strong> or the file&#8217;s path changes. If you&#8217;d rather not use
+    thumbnails, disable them by toggling the <strong>Enable/Disable Thumbnails</strong>
+    button.</p>
 
-<h2>Plots And Previews</h2>
+    <p class="centeredImage"><a href="images/a7117_screenshot_thumbnails_panel.png" rel=
+    "lightbox" title="Thumbnail Preview Panel"><img src=
+    "images/a7117_screenshot_thumbnails_panel.png" width="211" height="392" /></a></p>
 
-<p>To preview a data file, select it from the <strong>NDE Data</strong> panel and press the <strong>Data</strong> button
-    in the toolbar (looks
-    like a table). After loading the data you&#8217;ll be presented with a spreadsheet showing the contents.</p>
+    <h2><a name="qs_data">Working With Data</a></h2>
 
-<p class="centeredImage"><a href="images/toolbar_two.png" rel="lightbox"><img src="images/toolbar_two.png"
-                                                                              width="145" height="140"/></a></p>
+    <h3>Importing Data</h3>
 
-<p>NDIToolbox also supports previews and plots of three-dimensional data. Throughout this document and in NDIToolbox
-    we refer to X, Y, and Z axes. The following figure illustrates the coordinate system used: Y is the row number,
-    X is the column number, and Z is the third dimension into your data.</p>
+    <p>NDIToolbox uses the <a href=
+    "http://en.wikipedia.org/wiki/Hierarchical_Data_Format">Hierarchical Data Format</a>
+    to store data. To import data in other formats (DICOM, DICONDE, delimited text,
+    bitmap images, etc.), select the appropriate menu item from the
+    <strong>Import</strong> submenu under the File menu, click the <strong>Import
+    Data</strong> button in the toolbar, or use the keyboard shortcuts CTRL-A or CTRL-+.
+    The file will be read and converted to HDF5 before it is copied to the local data
+    folder. Depending on the type of file being imported, you may be asked to provide
+    additional details - for example, importing an ASCII delimited-text file such as a
+    CSV will bring up a dialog that asks you what character is used as the delimiter,
+    whether lines at the top or bottom should be skipped, whether you'd like to import
+    all or a select number of columns, and so on. If the file contains more than one
+    dataset (for example, an amplitude and a full waveform dataset), NDIToolbox will
+    import each as separate HDF5 files.</p>
 
-<p class="centeredImage"><a href="images/numpy_array_dims.png" rel="lightbox"
-                            title="X, Y, and Z axes in 3D Data"><img src="images/numpy_array_dims.png" width="150"
-                                                                     height="139"/></a></p>
+    <p class="centeredImage"><a href="images/import_text_file.png" rel="lightbox" title=
+    "Import Text File Dialog"><img src="images/import_text_file.png" width="256" height=
+    "302" /></a></p>
 
-<p>For three-dimensional data, you&#8217;ll be asked how to take a two-dimensional &#8220;slice&#8221; for preview.
-    This slice is a plane through the 3D data that&#8217;s defined by its orientation and an index. The orientation
-    of the slice specifies which plane your slice will be parallel to: X-Y, X-Z, or Y-Z. The index of the slice
-    specifies how far into the other dimension your slice will be. For example, specifying an orientation of <strong>Parallel
-        To X-Y</strong> means that your slice will be somewhere in the Z axis, while <strong>Parallel to Y-Z</strong>
-    will
-    mean your slice will be taken somewhere in the X axis.</p>
+    <p>The current version of NDIToolbox can import data from the following file
+    types.</p>
 
-<p class="centeredImage"><a href="images/slice_3d_data.png" rel="lightbox" title="Slice 3D Data Dialog"><img
-        src="images/slice_3d_data.png" width="346" height="304"/></a></p>
+    <ul>
+      <li>ASCII delimited text (e.g. CSV)</li>
 
-<p>If you're familiar with NumPy, here's how the slicing works. For a three-dimensional data set A, a point P at
-    position (x0, y0, z0) is given by P = A[y0, x0, z0] (notice that the Y index is first - NumPy indexes data
-    beginning with row and then column). A planar slice in A is one of the following.</p>
+      <li><a href="http://www.qnetworld.com/ndt_software/winspect.html">Winspect</a>
+      6/7</li>
 
-<p>
-<ul>
-    <li>A slice S in Z (parallel to the X-Y plane) at index z0 is given by S = A[:, :, z0] (S is every point in A
-        for which Z=z0)
-    </li>
-    <li>A slice S in Y (parallel to the X-Z plane) at index y0 is given by S = A[y0, :, :] (S is every point in A
-        for which Y=y0)
-    </li>
-    <li>A slice S in X (parallel to the Y-Z plane) at index x0 is given by S = A[:, x0, :] (S is every point in A
-        for which X=x0)
-    </li>
-</ul>
-</p>
+      <li><a href="http://www.epandt.com/us/logiciel_utwin_ut_us.html">UTWin</a>
+      Cscans</li>
 
-<p>To plot a data file, select it from the <strong>NDE Data</strong> panel and press either the <strong>X-Y
-    Plot</strong> button (looks like a line
-    chart) or the <strong>Image Plot</strong> button, depending on whether you want to plot a simple line chart or an
-    image plot.
-    After reading the data NDIToolbox will open a new window with the plot. You can also add/edit plot and axis
-    titles and toggle the grid; image plots additionally allow choosing different color scales and applying labels
-    to the colorbar.</p>
+      <li><a href="http://medical.nema.org/">DICOM</a> and <a href=
+      "http://www.astm.org/COMMIT/DICONDE_Information.htm">DICONDE</a> (experimental
+      feature)</li>
 
-<p class="centeredImage"><a href="images/xyplot.png" rel="lightbox[plots]" title="X-Y Plot"><img
-        src="images/xyplot.png" width="371" height="293"/></a>
-    <a href="images/imgplot.png" rel="lightbox[plots]"><img src="images/imgplot.png" width="393" height="304"/></a>
-</p>
+      <li>Several image formats including:
 
-<p>To pan around the plot press the <strong>Pan</strong> button in the toolbar at the bottom of the plot window, and
-    drag the plot
-    with the left mouse button. You can also zoom in/out in horizontal and vertical scale by dragging with the right
-    mouse button. To zoom in to a particular region, press the <strong>Zoom</strong> button and select a region in the
-    plot. To reset
-    the plot to its original bounds, press the <strong>Home</strong> button.</p>
+        <ul>
+          <li>BMP</li>
 
-<p class="centeredImage"><a href="images/plot_toolbar.png" rel="lightbox" title="Plot Tools"><img
-        src="images/plot_toolbar.png" width="255" height="125"/></a></p>
+          <li>GIF</li>
 
-<p>If you&#8217;d like to export the plot as a bitmap or PDF, press the <strong>Save</strong> button and choose a
-    destination
-    filename. You can also save the data as an HDF5 file by choosing <strong>Save Current Data</strong> from the
-    <strong>File</strong> menu.</p>
+          <li>JPEG</li>
 
-<p>Plots have various operations such as rectification, window functions, etc., depending on what type of plot is
-    shown. NDIToolbox also supports <a href="plugins.html">plugins</a> that can alter the data in a plot. To get back to
-    the original dataset
-    after running any of these operations, choose <strong>Revert To Original</strong> from the plot window&#8217;s
-    <strong>Operations</strong> menu.
-    This will discard all the changes you&#8217;ve made to the data, and replot the original dataset. You can also
-    save a modified dataset by selecting <strong>Save Current Data</strong> from the plot window&#8217;s
-    <strong>File</strong> menu.</p>
+          <li>PCX</li>
 
-<p>As is the case with previewing data, when you select a three-dimensional data file to plot in an image plot you&#8217;ll
-    be asked to specify the plane to plot. NDIToolbox also has a &#8220;MegaPlot&#8221; that plots three-dimensional
-    data directly using a common presentation style for NDE data shown below.</p>
+          <li>PNG</li>
 
-<p class="centeredImage"><a href="images/megaplot_screenshot.png" rel="lightbox"
-                            title="Sample of NDIToolbox's 'MegaPlot'"><img src="images/megaplot_screenshot.png"
-                                                                           width="450" height="385"/></a></p>
+          <li>PPM</li>
 
-<p>In this type of plot, a C-scan plot in the lower-right indicates your position in the Z Axis in the 3D data. When
-    you click on a position (x0, y0) inside the C-scan, the plot will update the other three panels:</p>
-<ul>
-    <li>The A-scan (upper-left) is a plot of the data through Z at position (x=x0, y=y0).</li>
-    <li>The Vertical B-scan (upper-right) is a vertical slice of the current C-scan plot (x=x0, y).</li>
-    <li>The Horizontal B-scan (lower-left) is a horizontal slice of the current C-scan plot (x, y=y0).</li>
-</ul>
-<p class="centeredImage"><a href="images/numpy_array_scans.png" rel="lightbox" title="NDE Scans in MegaPlot"><img
-        src="images/numpy_array_scans.png" alt="" width="300" height="226"/></a></p>
+          <li>PSD</li>
 
-<p>Frequently in ultrasonics NDE you&#8217;d like to define a subset of the 3D data to generate a C-scan rather than
-    simply taking a slice in Z. From the <strong>Operations</strong> menu, choose the <strong>Define C Scan</strong>
-    menu item. You&#8217;ll be asked
-    to specify the range over which you&#8217;ll be generating the C-scan, e.g. if you specify 222-444 the C-scan
-    data will be generated using the subset of data between Z=222 and Z=444. Next, you choose the function used to
-    generate the C-scan. Several options are available including <code>min</code>, <code>max</code>, and
-    <code>average</code>. Choose the function and
-    click <strong>Ok</strong>, and the C-scan data will now be the results of applying this function against the
-    specified subset of
-    data. For example, the following screenshot shows the results of applying the <code>min</code> function against
-    Z=222:444 in
-    the ultrasonic immersion tank data shown above in the MegaPlot screenshot.</p>
+          <li>TIFF</li>
+        </ul>A full list of supported image file formats is available in the <a href=
+        "http://www.pythonware.com/library/pil/handbook/index.htm">Python Imaging Library
+        Handbook</a>.
+      </li>
+    </ul>
 
-<p class="centeredImage"><a href="images/megaplot_screenshot_slice.png" rel="lightbox"
-                            title="Sample of NDIToolbox's 'MegaPlot'"><img
-        src="images/megaplot_screenshot_slice.png" width="450" height="385"/></a></p>
+    <h3>Exporting Data</h3>
 
-<p>Notice that when you generate a C-scan plot in this fashion that the B-scan plots are now taking data from this
-    C-scan and not the original data. The A-scan continues to take data from the original data set.</p>
+    <p>You can also export HDF5 files in the local data folder to a text (CSV) file by
+    selecting the file in the <strong>NDE Data</strong> panel and selecting the
+    <strong>Export Data</strong> button (looks like a disk) in the toolbar.</p>
 
-<p>One thing to note about MegaPlots is that although your data is presented in one or two dimensions, the
-    underlying 3D data is unchanged. Plugins that don't expect a 3D data set can behave strangely or run slowly. If
-    you need to use a plugin and you're not sure if it supports 3D data, consider plotting a slice of the 3D data
+    <h2>Plots And Previews</h2>
+
+    <h3><a name="qs_preview">Previewing Data</a></h3>
+
+    <p>To preview a data file, select it from the <strong>NDE Data</strong> panel and
+    press the <strong>Data</strong> button in the toolbar (looks like a table). After
+    loading the data you&#8217;ll be presented with a spreadsheet showing the
+    contents.</p>
+
+    <p class="centeredImage"><a href="images/toolbar_two.png" rel="lightbox"><img src=
+    "images/toolbar_two.png" width="145" height="140" /></a></p>
+
+    <h3><a name="qs_threed">Working With Three Dimensional Data</a></h3>
+
+    <p>NDIToolbox supports previews and plots of three-dimensional data. Throughout this
+    document and in NDIToolbox we refer to X, Y, and Z axes. The following figure
+    illustrates the coordinate system used: Y is the row number, X is the column number,
+    and Z is the third dimension into your data.</p>
+
+    <p class="centeredImage"><a href="images/numpy_array_dims.png" rel="lightbox" title=
+    "X, Y, and Z axes in 3D Data"><img src="images/numpy_array_dims.png" width="150"
+    height="139" /></a></p>
+
+    <p>For three-dimensional data, you&#8217;ll be asked how to take a two-dimensional
+    &#8220;slice&#8221; for preview. This slice is a plane through the 3D data
+    that&#8217;s defined by its orientation and an index. The orientation of the slice
+    specifies which plane your slice will be parallel to: X-Y, X-Z, or Y-Z. The index of
+    the slice specifies how far into the other dimension your slice will be. For example,
+    specifying an orientation of <strong>Parallel To X-Y</strong> means that your slice
+    will be somewhere in the Z axis, while <strong>Parallel to Y-Z</strong> will mean
+    your slice will be taken somewhere in the X axis.</p>
+
+    <p class="centeredImage"><a href="images/slice_3d_data.png" rel="lightbox" title=
+    "Slice 3D Data Dialog"><img src="images/slice_3d_data.png" width="346" height=
+    "304" /></a></p>
+
+    <p>If you're familiar with NumPy, here's how the slicing works. For a
+    three-dimensional data set A, a point P at position (x0, y0, z0) is given by P =
+    A[y0, x0, z0] (notice that the Y index is first - NumPy indexes data beginning with
+    row and then column). A planar slice in A is one of the following.</p>
+
+    <ul>
+      <li>A slice S in Z (parallel to the X-Y plane) at index z0 is given by S = A[:, :,
+      z0] (S is every point in A for which Z=z0)</li>
+
+      <li>A slice S in Y (parallel to the X-Z plane) at index y0 is given by S = A[y0, :,
+      :] (S is every point in A for which Y=y0)</li>
+
+      <li>A slice S in X (parallel to the Y-Z plane) at index x0 is given by S = A[:, x0,
+      :] (S is every point in A for which X=x0)</li>
+    </ul>
+
+    <h3><a name="qs_plot">Plotting Data</a></h3>
+
+    <p>To plot a data file, select it from the <strong>NDE Data</strong> panel and press
+    either the <strong>X-Y Plot</strong> button (looks like a line chart) or the
+    <strong>Image Plot</strong> button, depending on whether you want to plot a simple
+    line chart or an image plot. After reading the data NDIToolbox will open a new window
+    with the plot. You can also add/edit plot and axis titles and toggle the grid; image
+    plots additionally allow choosing different color scales and applying labels to the
+    colorbar.</p>
+
+    <p class="centeredImage"><a href="images/xyplot.png" rel="lightbox[plots]" title=
+    "X-Y Plot"><img src="images/xyplot.png" width="371" height="293" /></a> <a href=
+    "images/imgplot.png" rel="lightbox[plots]"><img src="images/imgplot.png" width="393"
+    height="304" /></a></p>
+
+    <p>To pan around the plot press the <strong>Pan</strong> button in the tool palette
+    at the bottom of the plot window, and drag the plot with the left mouse button. You
+    can also zoom in/out in horizontal and vertical scale by dragging with the right
+    mouse button. To zoom in to a particular region, press the <strong>Zoom</strong>
+    button and select a region in the plot. To reset the plot to its original bounds,
+    press the <strong>Home</strong> button.</p>
+
+    <p class="centeredImage"><a href="images/plot_toolbar.png" rel="lightbox" title=
+    "Plot Tools"><img src="images/plot_toolbar.png" width="255" height="125" /></a></p>
+
+    <h4>Exporting Plots</h4>
+
+    <p>If you&#8217;d like to export the plot as a static image, press the
+    <strong>Save</strong> button and choose a destination filename. NDIToolbox currently
+    supports the following formats for exporting plots:</p>
+
+    <ul>
+      <li>Encapsulated Postscript (EPS)</li>
+
+      <li>Enhanced Metafile (EMF)</li>
+
+      <li>JPEG</li>
+
+      <li>PDF</li>
+
+      <li>Portable Network Graphics (PNG)</li>
+
+      <li>Postscript (PS)</li>
+
+      <li>Raw RGBA Bitmap (RAW/RGBA)</li>
+
+      <li>Scalable Vector Graphics (SVG/SVGZ)</li>
+
+      <li>Tagged Image File Format (TIFF)</li>
+    </ul>
+
+    <p>For general distribution a bitmap format such as PNG or JPEG can be used, however
+    if you require higher-quality presentations (e.g., for publication) consider a vector
+    format such as EPS or SVG.</p>
+
+    <p>You can also save the data as an HDF5 file by choosing <strong>Save Current
+    Data</strong> from the <strong>File</strong> menu.</p>
+
+    <p>Plots have various operations such as rectification, window functions, etc.,
+    depending on what type of plot is shown. NDIToolbox also supports <a href=
+    "plugins.html">plugins</a> that can alter the data in a plot. To get back to the
+    original dataset after running any of these operations, choose <strong>Revert To
+    Original</strong> from the plot window&#8217;s <strong>Operations</strong> menu. This
+    will discard all the changes you&#8217;ve made to the data, and replot the original
+    dataset. You can also save a modified dataset by selecting <strong>Save Current
+    Data</strong> from the plot window&#8217;s <strong>File</strong> menu.</p>
+
+    <h4>Colormaps</h4>
+
+    <p>As mentioned above, image plots (and Megaplots, see below) support the use of
+    different color scales ("colormaps") to aid in making the most of the presentation of
+    your data. NDIToolbox's plotting library includes <a href=
+    "http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">138 colormaps</a>, but also
+    supports creating your own customized colormaps. To create a new colormap, select the
+    <strong>Create Colormap...</strong> menu item from the <strong>Colormaps</strong>
+    submenu in the <strong>Plot</strong> menu in an image plot or Megaplot presentation.
+    The Create Colormap window shown below will open. Colormaps are created and edited
+    using the controls on the left side of this window; a preview of the current colormap
+    is shown in the image plot on the right. A sample three-color colormap (black, gray,
+    white) is loaded to get you started; you can add/delete/reorder these colors or load
+    your own colormap (more detail below).</p>
+
+    <p class="centeredImage"><a href="images/create_colormap_dialog.png" rel="lightbox"
+    title="Screenshot of the Create Colormap window"><img src=
+    "images/create_colormap_dialog.png" width="458" height="307" /></a></p>
+
+    <p>A colormap consists of a list of one or more colors defined by their Red, Green,
+    and Blue components and a type. Two types of colormap are supported. A linear
+    gradient colormap linearly interpolates colors between the colors defined in the
+    colormap to create a smooth gradient of 256 colors. A straight list colormap does not
+    interpolate colors and creates a simple list of the colors defined in the
+    colormap.</p>
+
+    <p>The following screen shot illustrates the difference between the two types of
+    colormap: on the left, a dataset is shown using the 'cool_blue' colormap that ships
+    with NDIToolbox as a linear gradient. On the right, the same colormap as a simple
+    list. Both colormaps use the same four colors, but the colormap on the left creates
+    gradients between the four defined colors to generate a final colormap with 256
+    colors. The colormap on the right uses only the four colors defined in the colormap
+    itself.</p>
+
+    <p class="centeredImage"><a href="images/colormap_grad_v_list.png" rel="lightbox"
+    title="Comparing Linear Gradient and Simple List Colormaps"><img src=
+    "images/colormap_grad_v_list.png" width="423" height="212" /></a></p>
+
+    <p>Most data presentation applications use a linear gradient colormap, however for
+    edge detection and similar "go/no-go" use cases you may find a simple list colormap
+    more useful.</p>
+
+    <p>Colors in a colormap are defined as a triplet of 3 numbers that set their Red,
+    Green, and Blue components respectively; and are expressed as a decimal between 0 and
+    1. The color black is thus defined as 0,0,0; white is 1,1,1; and all other colors are
+    in between these ranges.</p>To add a new color, click the <strong>New Item</strong>
+    button in the Colors list and the standard color dialog for your operating system
+    will be displayed. Modify the color as desired and click OK; the color's components
+    are added to the colormap. Colors are listed in the colormap from low end of scale to
+    high so that the first color in the list is used to represent the smallest values in
+    the data. To reorder the colors, select a color in the list and press the up or down
+    arrow buttons in the color list to move it up or down in the colormap respectively.
+    To delete a color, select the color and press the delete button in the color list.
+
+    <p>To preview the current colormap, press the <strong>Preview Colormap</strong>
+    button at the top of the Preview pane. The sample data are replotted using your
+    current colormap. Once you're satisfied with your colormap you can save it for future
+    use by selecting the <strong>Save Colormap...</strong> item from the
+    <strong>File</strong> menu. By default NDIToolbox will store the colormap in its
+    colormaps folder but you can select any location (note that NDIToolbox will only look
+    in the default folder for colormaps to use, however). Colormaps are saved as ASCII
+    text in <a href="http://en.wikipedia.org/wiki/JSON">JSON</a> and can be edited with a
+    conventional text editor if desired. The filename you choose for the new colormap is
+    used to name the colormap for subsequent plots; as a result you'll likely want to use
+    filenames like "cool blue", "Modified_Spectral," etc. NDIToolbox copies several
+    sample colormaps to your colormaps folder on its first run, we recommend having a
+    look at them to get you started.</p>
+
+    <p>Once you've saved your colormap to your colormaps folder, NDIToolbox will now
+    include it in the list of available colormaps. To use your colormap in a plot, select
+    it from the list presented when you select the <strong>Select Colormap...</strong>
+    menu item from the <strong>Colormaps</strong> submenu under the <strong>Plot</strong>
+    menu.</p>
+
+    <h4>Megaplot</h4>NDIToolbox also has a &#8220;MegaPlot&#8221; that plots
+    three-dimensional data directly using a common presentation style for NDE data shown
+    below.
+
+    <p class="centeredImage"><a href="images/megaplot_screenshot.png" rel="lightbox"
+    title="Sample of NDIToolbox's 'MegaPlot'"><img src="images/megaplot_screenshot.png"
+    width="450" height="385" /></a></p>
+
+    <p>In this type of plot, a C-scan plot in the lower-right indicates your position in
+    the Z Axis in the 3D data. To zoom and pan in each plot, make sure the <strong>Use
+    Plot Navigation Tools</strong> checkbox at the bottom of the screen is checked to
+    enable the tool palette. When this checkbox is unchecked, the tool palette is
+    disabled and the Megaplot presentation responds to clicks inside the plot. For
+    example, when you click on a position (x0, y0) inside the C-scan, the plot will
+    update the other three panels:</p>
+
+    <ul>
+      <li>The A-scan (upper-left) is a plot of the data through Z at position (x=x0,
+      y=y0).</li>
+
+      <li>The Vertical B-scan (upper-right) is a vertical slice of the current C-scan
+      plot (x=x0, y), or a 2D slice of the data at (x=x0).</li>
+
+      <li>The Horizontal B-scan (lower-left) is a horizontal slice of the current C-scan
+      plot (x, y=y0), or a 2D slice of the data at (y=y0).</li>
+    </ul>
+
+    <p class="centeredImage"><a href="images/numpy_array_scans.png" rel="lightbox" title=
+    "NDE Scans in MegaPlot"><img src="images/numpy_array_scans.png" alt="" width="300"
+    height="226" /></a></p>
+
+    <p>By default the Megaplot uses 1D linear slices through the current Cscan for
+    displaying horizontal and vertical B-scans. To use the more conventional 2D planar
+    slices for B-scans, check the <strong>Plot Conventional B-scans</strong> item from
+    the <strong>Plot</strong> menu. NDIToolbox will now plot standard 2D B-scans in
+    Megaplot presentations until you uncheck this menu item.</p>
+
+    <p class="centeredImage"><a href="images/megaplot_screenshot2.png" rel="lightbox"
+    title="Sample of NDIToolbox's 'MegaPlot' with conventional B-scans"><img src=
+    "images/megaplot_screenshot2.png" width="455" height="400" /></a></p>
+
+    <p>Frequently in ultrasonics NDE you&#8217;d like to define a subset of the 3D data
+    to generate a C-scan rather than simply taking a slice in Z. From the
+    <strong>Operations</strong> menu, choose the <strong>Define C Scan</strong> menu
+    item. You&#8217;ll be asked to specify the range over which you&#8217;ll be
+    generating the C-scan, e.g. if you specify 222-444 the C-scan data will be generated
+    using the subset of data between Z=222 and Z=444. Next, you choose the function used
+    to generate the C-scan. Several options are available including <code>min</code>,
+    <code>max</code>, and <code>average</code>. Choose the function and click
+    <strong>Ok</strong>, and the C-scan data will now be the results of applying this
+    function against the specified subset of data. For example, the following screenshot
+    shows the results of applying the <code>min</code> function against Z=222:444 in the
+    ultrasonic immersion tank data shown above in the MegaPlot screenshot.</p>
+
+    <p class="centeredImage"><a href="images/megaplot_screenshot_slice.png" rel=
+    "lightbox" title="Sample of NDIToolbox's 'MegaPlot'"><img src=
+    "images/megaplot_screenshot_slice.png" width="450" height="385" /></a></p>
+
+    <p>Notice that when you generate a C-scan plot in this fashion that the linear B-scan
+    plots are now taking data from this C-scan and not the original data. The A-scan
+    continues to take data from the original data set, as will conventional B-scans.</p>
+
+    <p>One thing to note about MegaPlots is that although your data is presented in one
+    or two dimensions, the underlying 3D data is unchanged. Plugins that don't expect a
+    3D data set can behave strangely or run slowly. If you need to use a plugin and
+    you're not sure if it supports 3D data, consider plotting a slice of the 3D data
     instead of using the MegaPlot and running your plugin against this plot.</p>
 
-<p>Although the MegaPlot presents one definition of a B-scan, another common approach to data presentation used in
-    NDE (particularly in ultrasonics) is a 2D slice. To produce this type of B-scan plot from a 3D dataset, choose
-    the <strong>Image Plot</strong> function in NDIToolbox and as usual with 3D data, specify a plane. Going back to the
-    immersion
-    tank ultrasonic data shown in the MegaPlot figure, the following screenshot shows two B-scans taken from this
-    data by slicing in the X and Y axes.</p>
+    <p>Although the MegaPlot offers one way to present 3D data by showing A, B, and C
+    scans simultaneously, you can generate each of these plots by itself in its own
+    window. To produce a B-scan plot from a 3D dataset for example, choose the
+    <strong>Image Plot</strong> function in NDIToolbox and as usual with 3D data, specify
+    a plane. Going back to the immersion tank ultrasonic data shown in the MegaPlot
+    figure, the following screenshot shows two B-scans taken from this data by slicing in
+    the X and Y axes.</p>
 
-<p class="centeredImage"><a href="images/bscans.png" rel="lightbox" title="B-scan Plots"><img
-        src="images/bscans_s.png" width="300" height="220"/></a></p>
+    <p class="centeredImage"><a href="images/bscans.png" rel="lightbox" title=
+    "B-scan Plots"><img src="images/bscans_s.png" width="300" height="220" /></a></p>
 
-<p>Similarly, if you'd like to generate an A-scan of a 3D data set, choose the <strong>X-Y Plot</strong> function.
-    You'll be asked to
-    specify a slice similar to the slicing done for image plots, but in this case you specify two indices. A typical
-    A-scan representation in NDIToolbox is performed by specifying a point in X and Y and plotting the Z values at
-    that point, as shown in the following A-scan plot taken from the immersion tank scan data at position P(267,
-    152).</p>
+    <p>Similarly, if you'd like to generate an A-scan of a 3D data set, choose the
+    <strong>X-Y Plot</strong> function. You'll be asked to specify a slice similar to the
+    slicing done for image plots, but in this case you specify two indices. A typical
+    A-scan representation in NDIToolbox is performed by specifying a point in X and Y and
+    plotting the Z values at that point, as shown in the following A-scan plot taken from
+    the immersion tank scan data at position P(267, 152).</p>
 
-<p class="centeredImage"><a href="images/ascan.png" rel="lightbox" title="A-scan Plot"><img src="images/ascan_s.png"
-                                                                                            width="300"
-                                                                                            height="166"/></a></p>
+    <p class="centeredImage"><a href="images/ascan.png" rel="lightbox" title=
+    "A-scan Plot"><img src="images/ascan_s.png" width="300" height="166" /></a></p>
 
-<h2>Next Steps</h2>
+    <h2><a name="qs_next">Next Steps</a></h2>
 
-<p>The best way to learn your way around NDIToolbox is to experiment. Try importing your data and test out an
-    organization scheme. Plot, preview, slice. When you're familiar with the basics, the next step will be to write
-    your own <a href="plugins.html">plugins</a>...</p>
-</div>
-
-<script src="js/libs/jquery-1.7.2.min.js"></script>
-<script>window.jQuery || document.write('<script src="js/libs/jquery-1.7.2.min.js"><\/script>')</script>
-<script src="js/script.js"></script>
-<script src="js/lightbox.js"></script>
-<script src="js/bootstrap-dropdown.js"></script>
+    <p>The best way to learn your way around NDIToolbox is to experiment. Try importing
+    your data and test out an organization scheme. Plot, preview, slice. When you're
+    familiar with the basics, the next step will be to write your own <a href=
+    "plugins.html">plugins</a>...</p>
+  </div><script src="js/libs/jquery-1.7.2.min.js" type="text/javascript">
+</script><script type="text/javascript">
+//<![CDATA[
+  window.jQuery || document.write('<script src="js/libs/jquery-1.7.2.min.js"><\/script>')
+  //]]>
+  </script><script src="js/script.js" type="text/javascript">
+</script><script src="js/lightbox.js" type="text/javascript">
+</script><script src="js/bootstrap-dropdown.js" type="text/javascript">
+</script>
 </body>
 </html>
