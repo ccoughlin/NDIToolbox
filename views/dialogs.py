@@ -533,7 +533,10 @@ class TextDisplayDialog(wx.Dialog):
 
     def __init__(self, text, parent=None, wrap=True, *args, **kwargs):
         self.parent = parent
-        self.text = text
+        if isinstance(text, str):
+            self.text = text
+        else: # list of strings
+            self.text = ''.join(text)
         self.wrap_text = wrap
         wx.Dialog.__init__(self, parent, *args, **kwargs)
         if self.parent is not None:
@@ -546,13 +549,14 @@ class TextDisplayDialog(wx.Dialog):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.main_panel = wx.Panel(self)
         self.main_panel_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.textfilew_tc = wx.TextCtrl(self.main_panel, wx.ID_ANY, ''.join(self.text),
-                                        wx.DefaultPosition, wx.DefaultSize, style=wx.TE_MULTILINE)
+        self.textfilew_tc = wx.TextCtrl(self.main_panel, wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize,
+                                        style=wx.TE_MULTILINE)
+        self.textfilew_tc.SetValue(self.text)
         self.main_panel_sizer.Add(self.textfilew_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
                                   ui_defaults.widget_margin)
-        self.textfile_tc = wx.TextCtrl(self.main_panel, wx.ID_ANY, ''.join(self.text),
-                                       wx.DefaultPosition, wx.DefaultSize,
-                                       style=wx.TE_MULTILINE | wx.TE_DONTWRAP)
+        self.textfile_tc = wx.TextCtrl(self.main_panel, wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize,
+                                       style=wx.TE_MULTILINE|wx.TE_DONTWRAP)
+        self.textfile_tc.SetValue(self.text)
         self.main_panel_sizer.Add(self.textfile_tc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
                                   ui_defaults.widget_margin)
         self.set_text_wrap(self.wrap_text)
@@ -584,15 +588,19 @@ class TextDisplayDialog(wx.Dialog):
         or disable (wrap=False) text wrapping in the window.  Used
         to circumvent limitations in Windows re: changing control styles
         dynamically."""
-        if wrap:
-            self.textfilew_tc.SetSize(self.textfile_tc.GetSize())
-            self.textfile_tc.Hide()
-            self.main_panel_sizer.Show(self.textfilew_tc)
-        else:
-            self.textfile_tc.SetSize(self.textfilew_tc.GetSize())
-            self.textfilew_tc.Hide()
-            self.main_panel_sizer.Show(self.textfile_tc)
-        self.main_panel_sizer.Layout()
+        try:
+            wx.BeginBusyCursor()
+            if wrap:
+                self.textfilew_tc.SetSize(self.textfile_tc.GetSize())
+                self.textfile_tc.Hide()
+                self.main_panel_sizer.Show(self.textfilew_tc)
+            else:
+                self.textfile_tc.SetSize(self.textfilew_tc.GetSize())
+                self.textfilew_tc.Hide()
+                self.main_panel_sizer.Show(self.textfile_tc)
+            self.main_panel_sizer.Layout()
+        finally:
+            wx.EndBusyCursor()
 
     def on_ok_btn(self, evt):
         """Handles request to close the window"""
