@@ -27,10 +27,12 @@ class PreviewWindowController(object):
     def data(self, new_data):
         self.model.data = new_data
 
-    def load_data(self):
-        """Loads the instance's data file"""
+    def load_data(self, slice_idx=None):
+        """Loads the data from the instance's data file, by default returning the entire data set (slice_idx is None).
+        If slice_idx is a numpy.s_ slice operation, attempts to return a hyperslab (HDF5 feature - returns a slice
+        of the data instead without loading the complete data)."""
         try:
-            self.model.load_data()
+            self.model.load_data(slice_idx)
         except MemoryError as err: # out of memory
             module_logger.exception("Insufficient memory - {0}".format(err))
             raise MemoryError("Insufficient memory to load data")

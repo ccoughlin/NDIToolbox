@@ -5,6 +5,7 @@ __author__ = 'Chris R. Coughlin'
 import views.ui_defaults as ui_defaults
 from controllers import pathfinder
 from models.mainmodel import get_logger
+import numpy as np
 import wx
 from wx.lib.masked.numctrl import NumCtrl
 from wx.lib import statbmp, wordwrap
@@ -610,9 +611,9 @@ class TextDisplayDialog(wx.Dialog):
 class LinearSliceDialog(wx.Dialog):
     """Dialog to select a linear slice in one of the axes of an array"""
 
-    def __init__(self, data, parent=None, *args, **kwargs):
+    def __init__(self, data_shape, parent=None, *args, **kwargs):
         self.parent = parent
-        self.data = data
+        self.data_shape = data_shape
         super(LinearSliceDialog, self).__init__(parent, *args, **kwargs)
         if self.parent is not None:
             self.SetIcon(self.parent.GetIcon())
@@ -640,11 +641,12 @@ class LinearSliceDialog(wx.Dialog):
         def generate_axis_sc(axis_idx):
             """Helper function to return a SpinCtrl with minimum and maximum
             values set according to the dimensions of the data's axis"""
-            return wx.SpinCtrl(self.main_panel, wx.ID_ANY, min=-1, max=self.data.shape[axis_idx] - 1)
+            return wx.SpinCtrl(self.main_panel, wx.ID_ANY, min=-1, max=self.data_shape[axis_idx] - 1)
 
-        self.axes = {"X Axis": generate_axis_sc(0),
-                     "Y Axis": generate_axis_sc(1),
-                     "Z Axis": generate_axis_sc(2)}
+        self.axes = {"X Axis": generate_axis_sc(1),
+                     "Y Axis": generate_axis_sc(0)}
+        if len(self.data_shape) > 2:
+            self.axes["Z Axis"] = generate_axis_sc(2)
         for axis_name, axis_sc in sorted(self.axes.items()):
             axis_sizer = wx.BoxSizer(wx.HORIZONTAL)
             axis_lbl = wx.StaticText(self.main_panel, wx.ID_ANY, axis_name)
@@ -652,6 +654,7 @@ class LinearSliceDialog(wx.Dialog):
                            ui_defaults.widget_margin)
             axis_sizer.Add(axis_sc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags,
                            ui_defaults.widget_margin)
+            axis_sc.SetValue(-1)
             self.main_panel_sizer.Add(axis_sizer, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, 0)
 
     def _generate_std_buttons(self):
@@ -672,15 +675,19 @@ class LinearSliceDialog(wx.Dialog):
         """Returns a slice of the dialog's 3D NumPy array."""
         x_idx = self.axes["X Axis"].GetValue()
         y_idx = self.axes["Y Axis"].GetValue()
-        z_idx = self.axes["Z Axis"].GetValue()
-        module_logger.info("Requested slice with indices {0}, {1}, {2}.".format(x_idx, y_idx, z_idx))
         if x_idx == -1:
             x_idx = slice(None)
         if y_idx == -1:
             y_idx = slice(None)
-        if z_idx == -1:
-            z_idx = slice(None)
-        return self.data[y_idx, x_idx, z_idx]
+        if len(self.data_shape) > 2:
+            z_idx = self.axes["Z Axis"].GetValue()
+            module_logger.info("Requested slice with indices {0}, {1}, {2}.".format(x_idx, y_idx, z_idx))
+            if z_idx == -1:
+                z_idx = slice(None)
+            return np.s_[y_idx, x_idx, z_idx]
+        else:
+            module_logger.info("Requested slice with indices {0}, {1}.".format(x_idx, y_idx))
+            return np.s_[y_idx, x_idx]
 
     def on_help(self, evt):
         """Responds to request for help with the dialog
@@ -695,9 +702,9 @@ class LinearSliceDialog(wx.Dialog):
 class PlanarSliceDialog(wx.Dialog):
     """Dialog to select a plane in X, Y, or Z in 3D data"""
 
-    def __init__(self, data, parent=None, *args, **kwargs):
+    def __init__(self, data_shape, parent=None, *args, **kwargs):
         self.parent = parent
-        self.data = data
+        self.data_shape = data_shape
         super(PlanarSliceDialog, self).__init__(parent, *args, **kwargs)
         if self.parent is not None:
             self.SetIcon(self.parent.GetIcon())
@@ -780,16 +787,15 @@ class PlanarSliceDialog(wx.Dialog):
 
     def set_index_limits(self):
         """Sets appropriate maximum for index based on selected orientation"""
-        if self.data is not None:
-            data_shape = self.data.shape
+        if self.data_shape is not None:
             selected_plane_idx = self.plane_choice.GetSelection()
             max_idx = sys.float_info.max
             if selected_plane_idx == 0: # Z index
-                max_idx = data_shape[2] - 1
+                max_idx = self.data_shape[2] - 1
             elif selected_plane_idx == 1: # Y index
-                max_idx = data_shape[0] - 1
+                max_idx = self.data_shape[0] - 1
             elif selected_plane_idx == 2: # X index
-                max_idx = data_shape[1] - 1
+                max_idx = self.data_shape[1] - 1
             self.idx_sc.SetRange(0, max_idx)
 
     def get_data_slice(self):
@@ -799,8 +805,8 @@ class PlanarSliceDialog(wx.Dialog):
         selected_plane_idx = self.plane_choice.GetSelection()
         module_logger.info("Requested slice with index {0} in plane index {1}.".format(idx, selected_plane_idx))
         if selected_plane_idx == 0: # Z index
-            return self.data[:, :, idx]
+            return np.s_[:, :, idx]
         elif selected_plane_idx == 1: # Y index
-            return self.data[idx, :, :]
+            return np.s_[idx, :, :]
         elif selected_plane_idx == 2: # X index
-            return self.data[:, idx, :]
+            return np.s_[:, idx, :]

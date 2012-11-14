@@ -329,17 +329,25 @@ class PlotWindowController(BasicPlotWindowController):
                 # matplotlib forgets settings with replots -
                 # save current values to reset after the replot
                 titles = self.get_titles()
-                if 2 in data.shape: # Assume data is X, Y
-                    self.view.axes.plot(data[0], data[1])
-                elif data.ndim == 1:
+                if data.ndim == 1:
                     self.view.axes.plot(data)
+                elif data.ndim == 2:
+                    if 2 in data.shape: # Assume data is X, Y
+                        self.view.axes.plot(data[0], data[1])
+                    else:
+                        slice_dlg = dialogs.LinearSliceDialog(parent=self.view, data_shape=data.shape,
+                                                              title="Select Axis To Plot")
+                        if slice_dlg.ShowModal() == wx.ID_OK:
+                            self.model.load_data(slice_idx=slice_dlg.get_data_slice())
+                            self.plot(self.data)
+                        slice_dlg.Destroy()
                 elif data.ndim == 3:
                     # 3D data; offer to take a slice in X, Y, or Z to plot
-                    slice_dlg = dialogs.LinearSliceDialog(parent=self.view, data=data,
+                    slice_dlg = dialogs.LinearSliceDialog(parent=self.view, data_shape=data.shape,
                                                           title="Select Axis To Plot")
                     if slice_dlg.ShowModal() == wx.ID_OK:
-                        data = slice_dlg.get_data_slice()
-                        self.plot(data)
+                        self.model.load_data(slice_idx=slice_dlg.get_data_slice())
+                        self.plot(self.data)
                     slice_dlg.Destroy()
                 self.set_titles(plot=titles['plot'], x=titles['x'], y=titles['y'])
                 self.view.axes.grid(self.axes_grid)
@@ -523,11 +531,10 @@ class ImgPlotWindowController(BasicImgPlotWindowController):
         if self.data is None:
             self.load_data()
         if self.data.ndim == 3:
-            slice_dlg = dialogs.PlanarSliceDialog(parent=self.view, data=self.data,
+            slice_dlg = dialogs.PlanarSliceDialog(parent=self.view, data_shape=self.data.shape,
                                                   title="Specify 2D Plane")
             if slice_dlg.ShowModal() == wx.ID_OK:
-                self.model.data = slice_dlg.get_data_slice()
-                self.model.original_data = self.model.data
+                self.model.load_data(slice_idx=slice_dlg.get_data_slice())
             slice_dlg.Destroy()
 
     def plot(self, data):

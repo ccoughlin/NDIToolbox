@@ -193,9 +193,12 @@ class BasicPlotWindowModel(object):
         self.original_data = None
         self.data = None
 
-    def load_data(self):
-        """Loads the data from the instance's data file"""
-        self.original_data = dataio.get_data(self.data_file)
+    def load_data(self, slice_idx=None):
+        """Loads the data from the instance's data file, by default returning the entire data set (slice_idx is None).
+        If slice_idx is a numpy.s_ slice operation, attempts to return a hyperslab (HDF5 feature - returns a slice
+        of the data instead without loading the complete data).
+        """
+        self.original_data = dataio.get_data(self.data_file, slice_idx)
         self.revert_data()
 
     def revert_data(self):

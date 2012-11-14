@@ -379,7 +379,7 @@ class MegaPlotWindow(PlotWindow):
         self.ctrl_sizer.Add(info_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
         xpos_lbl = wx.StaticText(self.ctrl_panel, wx.ID_ANY, u"X Position", wx.DefaultPosition, wx.DefaultSize)
         self.ctrl_sizer.Add(xpos_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags, ui_defaults.widget_margin)
-        self.xpos_sc = wx.SpinCtrl(self.ctrl_panel, wx.ID_ANY, value="", min=0, max=self.controller.data.shape[0] - 1)
+        self.xpos_sc = wx.SpinCtrl(self.ctrl_panel, wx.ID_ANY, value="", min=0, max=self.controller.data.shape[1] - 1)
         self.Bind(wx.EVT_SPINCTRL, self.controller.on_xy_change, self.xpos_sc)
         self.ctrl_sizer.Add(self.xpos_sc, ui_defaults.ctrl_pct, ui_defaults.sizer_flags, ui_defaults.widget_margin)
         ypos_lbl = wx.StaticText(self.ctrl_panel, wx.ID_ANY, u"Y Position", wx.DefaultPosition, wx.DefaultSize)

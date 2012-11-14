@@ -59,10 +59,10 @@ class PreviewWindow(wx.Frame):
         if self.has_data():
             if self.controller.data.ndim == 3:
                 module_logger.info("Data are 3D, requesting planar slice.")
-                slice_dlg = dialogs.PlanarSliceDialog(parent=self, data=self.controller.data,
+                slice_dlg = dialogs.PlanarSliceDialog(parent=self, data_shape=self.controller.data.shape,
                                                       title="Specify 2D Plane")
                 if slice_dlg.ShowModal() == wx.ID_OK:
-                    self.controller.data = slice_dlg.get_data_slice()
+                    self.controller.load_data(slice_dlg.get_data_slice())
                 module_logger.info("User cancelled planar slice operation.")
                 slice_dlg.Destroy()
             self.controller.populate_spreadsheet()
