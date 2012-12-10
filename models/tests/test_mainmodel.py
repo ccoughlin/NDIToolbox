@@ -243,7 +243,7 @@ class TestMainModel(unittest.TestCase):
         self.assertTrue(isinstance(returned_data, dict))
         self.assertDictEqual(returned_data['config'], plugin_cfg)
         self.assertDictEqual(returned_data['kwargs'], kwargs)
-        self.assertListEqual(returned_data['data'].tolist(), plugin_data.tolist())
+        self.assertTrue(np.array_equal(returned_data['data'], plugin_data))
 
     def test_plugin_wrapper_exceptions(self):
         """Verify the plugin_wrapper function properly returns Exception info"""
@@ -267,7 +267,7 @@ class TestMainModel(unittest.TestCase):
         self.assertTrue(isinstance(plugin_process, multiprocessing.Process))
         returned_data = plugin_queue.get()
         expected_data = plugin_data / np.max(plugin_data)
-        self.assertListEqual(expected_data.tolist(), returned_data.tolist())
+        self.assertTrue(np.array_equal(expected_data, returned_data))
 
     def test_run_plugin_exceptions(self):
         """Verify run_plugin returns exception messages in Queue"""

@@ -44,7 +44,7 @@ class TestPreviewWindowModel(unittest.TestCase):
         """Verify load_data method returns numpy data array"""
         a_model = preview_window_model.PreviewWindowModel(self.mock_ctrl, self.sample_data_file)
         a_model.load_data()
-        self.assertListEqual(self.sample_data.tolist(), a_model.data.tolist())
+        self.assertTrue(np.array_equal(self.sample_data, a_model.data))
 
     def test_slice_data(self):
         """Verify a 3D array is replaced by a 2D slice"""
@@ -54,7 +54,7 @@ class TestPreviewWindowModel(unittest.TestCase):
         slice_idx = random.choice(range(three_d_array.shape[2]))
         expected_data = three_d_array[:, :, slice_idx]
         a_model.slice_data(slice_idx)
-        self.assertListEqual(expected_data.tolist(), a_model.data.tolist())
+        self.assertTrue(np.array_equal(expected_data, a_model.data))
 
     def tearDown(self):
         if os.path.exists(self.sample_data_file + ".hdf5"):

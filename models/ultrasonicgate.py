@@ -49,15 +49,26 @@ class UltrasonicGate(abstractplugin.AbstractPlugin):
         the data by the window function in the range data[self.start_idx:self.stop_idx],
         by zero elsewhere."""
         if self._data is not None:
-            # Build the gate function - a standard window function offset from origin.
-            # Left of gate - multiply by zero
-            left_of_gate = np.zeros(self.start_idx)
-            # Middle of gate - multiply by window function
-            middle_of_gate = self.get_window()
-            # Right of gate - multiply by zero
-            right_of_gate = np.zeros(self._data.shape[0] - self.stop_idx)
-            completed_gate = np.concatenate((left_of_gate, middle_of_gate, right_of_gate))
-            self._data = np.multiply(self._data, completed_gate)
+            if self._data.ndim == 1:
+                # Build the gate function - a standard window function offset from origin.
+                # Left of gate - multiply by zero
+                left_of_gate = np.zeros(self.start_idx)
+                # Middle of gate - multiply by window function
+                middle_of_gate = self.get_window()
+                # Right of gate - multiply by zero
+                right_of_gate = np.zeros(self._data.shape[0] - self.stop_idx)
+                completed_gate = np.concatenate((left_of_gate, middle_of_gate, right_of_gate))
+                self._data = np.multiply(self._data, completed_gate)
+            elif self._data.ndim == 3:
+                left_of_gate = np.zeros(self.start_idx)
+                middle_of_gate = self.get_window()
+                right_of_gate = np.zeros(self._data.shape[2] - self.stop_idx)
+                completed_gate = np.concatenate((left_of_gate, middle_of_gate, right_of_gate))
+                for xidx in range(self._data.shape[1]):
+                    for yidx in range(self._data.shape[0]):
+                        ascan = self._data[yidx, xidx, :]
+                        new_ascan = np.multiply(ascan, completed_gate)
+                        self._data[yidx, xidx, :] = new_ascan
 
     def run(self):
         """Runs the gate on the data"""

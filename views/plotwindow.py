@@ -506,16 +506,14 @@ class MegaPlotWindow(PlotWindow):
         self.Bind(wx.EVT_MENU, self.controller.on_rectify, id=self.fullrect_mnui.GetId())
         self.rect_mnu.AppendItem(self.fullrect_mnui)
         self.ops_mnu.AppendMenu(wx.ID_ANY, 'Rectify', self.rect_mnu)
-        # Aug-15 [crc] - disabled gates until a suitable approach to handling
-        # 3D data is implemented
-        #self.gate_mnu = wx.Menu() # Gates operations
-        #for gate in self.controller.gates:
-        #    gate_name = self.controller.gates[gate][0]
-        #    gate_desc = "Applies a {0} gate function to the data".format(gate_name)
-        #    gate_mnui = wx.MenuItem(self.gate_mnu, id=gate, text=gate_name, help=gate_desc)
-        #    self.gate_mnu.AppendItem(gate_mnui)
-        #    self.Bind(wx.EVT_MENU, self.controller.on_apply_gate, id=gate_mnui.GetId())
-        #self.ops_mnu.AppendMenu(wx.ID_ANY, 'Gates', self.gate_mnu)
+        self.gate_mnu = wx.Menu() # Gates operations
+        for gate in self.controller.gates:
+            gate_name = self.controller.gates[gate][0]
+            gate_desc = "Applies a {0} gate function to the data".format(gate_name)
+            gate_mnui = wx.MenuItem(self.gate_mnu, id=gate, text=gate_name, help=gate_desc)
+            self.gate_mnu.AppendItem(gate_mnui)
+            self.Bind(wx.EVT_MENU, self.controller.on_apply_gate, id=gate_mnui.GetId())
+        self.ops_mnu.AppendMenu(wx.ID_ANY, 'Gates', self.gate_mnu)
 
     def navtools_enabled(self):
         """Returns True if plot navigation bar is enabled"""

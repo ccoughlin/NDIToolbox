@@ -47,12 +47,12 @@ class TestPODWindowModel(unittest.TestCase):
     def test_load_data(self):
         """Verify load_data classmethod returns correct data"""
         read_data = self.model.load_data(self.sample_data_file)
-        self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
+        self.assertTrue(np.array_equal(self.sample_data, read_data))
 
     def test_load_csv(self):
         """Verify load_csv classmethod returns correct data"""
         read_data = self.model.load_csv(self.sample_csvdata_file)
-        self.assertListEqual(self.sample_data.tolist(), read_data.tolist())
+        self.assertTrue(np.array_equal(self.sample_data, read_data))
 
     def test_save_data(self):
         """Verify save_data classmethod correctly saves data"""
@@ -61,7 +61,7 @@ class TestPODWindowModel(unittest.TestCase):
         self.model.save_data(self.sample_data_file, self.sample_data)
         assert(os.path.exists(self.sample_data_file + ".hdf5"))
         returned_data = self.model.load_data(self.sample_data_file + ".hdf5")
-        self.assertListEqual(returned_data.tolist(), self.sample_data.tolist())
+        self.assertTrue(np.array_equal(returned_data, self.sample_data))
 
     def test_save_csv(self):
         if os.path.exists(self.sample_csvdata_file):
@@ -69,7 +69,7 @@ class TestPODWindowModel(unittest.TestCase):
         self.model.save_csv(self.sample_csvdata_file, self.sample_data)
         assert(os.path.exists(self.sample_csvdata_file))
         returned_data = self.model.load_csv(self.sample_csvdata_file)
-        self.assertListEqual(returned_data.tolist(), self.sample_data.tolist())
+        self.assertTrue(np.array_equal(returned_data, self.sample_data))
 
     def tearDown(self):
         for sample_file in [self.sample_csvdata_file, self.sample_data_file, self.sample_data_file+".hdf5"]:

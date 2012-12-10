@@ -41,9 +41,9 @@ class TestBasicPlotWindowModel(unittest.TestCase):
         self.basic_model.original_data = original_data
         self.basic_model.data = np.array(self.random_data())
         self.basic_model.revert_data()
-        self.assertListEqual(self.basic_model.original_data.tolist(), original_data.tolist())
-        self.assertListEqual(self.basic_model.original_data.tolist(),
-                             self.basic_model.data.tolist())
+        self.assertTrue(np.array_equal(self.basic_model.original_data, original_data))
+        self.assertTrue(np.array_equal(self.basic_model.original_data,
+                             self.basic_model.data))
 
     def test_get_plugins(self):
         """Verify a list of available plugins is returned"""
@@ -112,8 +112,8 @@ class TestPlotWindowModel(unittest.TestCase):
             expected_data = winder_cls.apply_window(gate_name, self.model.data,
                                                     start_idx, end_idx)
             self.model.apply_gate(gate_name, start_idx, end_idx)
-            self.assertListEqual(original_data.tolist(), self.model.original_data.tolist())
-            self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+            self.assertTrue(np.array_equal(original_data, self.model.original_data))
+            self.assertTrue(np.array_equal(expected_data, self.model.data))
 
     def test_rectify_full(self):
         """Verify full rectification of data"""
@@ -121,7 +121,7 @@ class TestPlotWindowModel(unittest.TestCase):
         self.model.original_data = original_data
         self.model.revert_data()
         self.model.rectify_full()
-        self.assertListEqual(np.absolute(original_data).tolist(), self.model.data.tolist())
+        self.assertTrue(np.array_equal(np.absolute(original_data), self.model.data))
 
 
 class TestImgPlotWindowModel(unittest.TestCase):
@@ -149,7 +149,7 @@ class TestImgPlotWindowModel(unittest.TestCase):
         self.model.revert_data()
         expected_data = scipy.signal.detrend(self.model.original_data, type='constant')
         self.model.detrend_data(0, 'constant')
-        self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+        self.assertTrue(np.array_equal(expected_data, self.model.data))
 
     def test_linear_detrend(self):
         """Verify linear detrending along an axis"""
@@ -157,7 +157,7 @@ class TestImgPlotWindowModel(unittest.TestCase):
         self.model.revert_data()
         expected_data = scipy.signal.detrend(self.model.original_data, type='linear')
         self.model.detrend_data(0, 'linear')
-        self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+        self.assertTrue(np.array_equal(expected_data, self.model.data))
 
     def test_slice_data(self):
         """Verify a 3D array is replaced by a 2D slice"""
@@ -167,7 +167,7 @@ class TestImgPlotWindowModel(unittest.TestCase):
         slice_idx = random.choice(range(three_d_array.shape[2]))
         expected_data = three_d_array[:, :, slice_idx]
         self.model.slice_data(slice_idx)
-        self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+        self.assertTrue(np.array_equal(expected_data, self.model.data))
 
     def test_flipud_data(self):
         """Verify data are flipped vertically"""
@@ -175,7 +175,7 @@ class TestImgPlotWindowModel(unittest.TestCase):
         self.model.revert_data()
         expected_data = np.flipud(self.model.data)
         self.model.flipud_data()
-        self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+        self.assertTrue(np.array_equal(expected_data, self.model.data))
 
     def test_fliplr_data(self):
         """Verify data are flipped horizontally"""
@@ -184,7 +184,7 @@ class TestImgPlotWindowModel(unittest.TestCase):
         self.model.revert_data()
         expected_data = np.fliplr(self.model.data)
         self.model.fliplr_data()
-        self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+        self.assertTrue(np.array_equal(expected_data, self.model.data))
 
     def test_rotate_data(self):
         """Verify data are rotated counter-clockwise"""
@@ -193,7 +193,7 @@ class TestImgPlotWindowModel(unittest.TestCase):
         num_rotations = random.choice((1, 2, 3))
         expected_data = np.rot90(self.model.data, k=num_rotations)
         self.model.rotate_data(num_rotations)
-        self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+        self.assertTrue(np.array_equal(expected_data, self.model.data))
 
     def test_transpose_data(self):
         """Verify data are transposed"""
@@ -201,7 +201,7 @@ class TestImgPlotWindowModel(unittest.TestCase):
         self.model.revert_data()
         expected_data = self.model.data.T
         self.model.transpose_data()
-        self.assertListEqual(expected_data.tolist(), self.model.data.tolist())
+        self.assertTrue(np.array_equal(expected_data, self.model.data))
 
     def test_get_colormaps(self):
         """Verify returning a list of colormaps"""
