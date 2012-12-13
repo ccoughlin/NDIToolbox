@@ -121,6 +121,44 @@ class TestDataIO(unittest.TestCase):
         except WindowsError: # file in use
             pass
 
+    def test_export3D_txt(self):
+        """Verify export of 3D data to delimited ASCII"""
+        x_size = 5
+        y_size = 4
+        z_size = 6
+        sample_data = np.empty((y_size, x_size, z_size))
+        for xidx in range(x_size):
+            for yidx in range(y_size):
+                for zidx in range(z_size):
+                    sample_data[yidx, xidx, zidx] = int(random.uniform(-100, 100))
+        sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'sample3d.hdf5')
+        dest_file = os.path.join(os.path.dirname(__file__), 'support_files', 'sample3d.txt')
+        with h5py.File(sample_data_file, "w") as fidout:
+            fidout.create_dataset(os.path.basename(sample_data_file), data=sample_data)
+            export_params = {'delimiter': ','}
+            dataio.export_txt(dest_file, sample_data_file, **export_params)
+            retrieved_data = np.empty(sample_data.shape)
+            with open(dest_file, "rb") as fidin:
+                zidx = 0
+                for line in fidin:
+                    if not line.startswith('#'):
+                        x, y, z = line.split(export_params['delimiter'])
+                        x = int(x)
+                        y = int(y)
+                        z = float(z.strip())
+                        retrieved_data[y, x, zidx] = z
+                        zidx += 1
+                        if zidx > sample_data.shape[2]-1:
+                            zidx = 0
+            self.assertTrue(np.array_equal(sample_data, retrieved_data))
+        try:
+            if os.path.exists(sample_data_file):
+                os.remove(sample_data_file)
+            if os.path.exists(dest_file):
+                os.remove(dest_file)
+        except WindowsError: # file in use
+            pass
+
     @skipIfModuleNotInstalled("dicom")
     def test_get_dicom_data(self):
         """Verify retrieval of DICOM / DICONDE data"""
@@ -306,6 +344,8 @@ class TestDataIO(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(self.sample_data_file + ".hdf5"):
             os.remove(self.sample_data_file + ".hdf5")
+        if os.path.exists(self.sample_data_file):
+            os.remove(self.sample_data_file)
 
 class TestUTWinCScanReader(unittest.TestCase):
     """Tests the UTWinCScanReader class"""
