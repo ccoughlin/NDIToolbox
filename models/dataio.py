@@ -63,7 +63,26 @@ def export_txt(dest, src, **export_params):
     newline = export_params.get('newline', '\n')
     fmt = export_params.get('format', '%f')
     data = get_data(src)
-    np.savetxt(dest, data, fmt=fmt, delimiter=delim_char, newline=newline)
+    if data.ndim < 3:
+        np.savetxt(dest, data, fmt=fmt, delimiter=delim_char, newline=newline)
+    elif data.ndim == 3:
+        # NumPy doesn't handle saving 3D data to text files, do it manually as X,Y,Z
+        with open(dest, "w") as fidout:
+            fidout.write("# NDIToolbox ASCII export of file '{0}'".format(os.path.basename(src)))
+            fidout.write(newline)
+            fidout.write("# File format: x index{0}y index{0}data value at (x, y)".format(delim_char))
+            fidout.write(newline)
+            if "i" in fmt:
+                dtype = np.int
+            else: # default to 64-bit float if no format provided
+                dtype = np.float
+            for xidx in range(data.shape[1]):
+                for yidx in range(data.shape[0]):
+                    for zidx in range(data.shape[2]):
+                        z = data[yidx, xidx, zidx].astype(dtype)
+                        lineout = delim_char.join([str(xidx), str(yidx), str(z)])
+                        fidout.write(lineout)
+                        fidout.write(newline)
     gc.collect()
 
 def get_dicom_data(data_file):
