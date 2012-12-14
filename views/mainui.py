@@ -197,11 +197,18 @@ class UI(wx.Frame):
                                                            shortHelp='Refresh Data',
                                                            bitmap=self.controller.get_bitmap('Refresh.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_refresh_data, self.refresh_data_tool)
+        self.toolbar.AddSeparator()
         # Add data to data folder
         self.add_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Add Data',
                                                        shortHelp='Import data to data folder (CTRL-A)',
                                                        bitmap=self.controller.get_bitmap('Plus.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_add_data, self.add_data_tool)
+        # Remove data from data folder
+        self.remove_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Remove Data',
+            shortHelp='Remove data from data folder',
+            bitmap=self.controller.get_bitmap('Minus.png'))
+        self.Bind(wx.EVT_TOOL, self.controller.on_remove_data, self.remove_data_tool)
+        self.toolbar.AddSeparator()
         # Display info about data
         self.data_info_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Information',
                                                         shortHelp='Display information about the selected data',
@@ -212,16 +219,13 @@ class UI(wx.Frame):
                                                           shortHelp="Exports selected data to text file",
                                                           bitmap=self.controller.get_bitmap('Save.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_export_text, self.export_data_tool)
-        # Remove data from data folder
-        self.remove_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Remove Data',
-                                                          shortHelp='Remove data from data folder',
-                                                          bitmap=self.controller.get_bitmap('Minus.png'))
-        self.Bind(wx.EVT_TOOL, self.controller.on_remove_data, self.remove_data_tool)
+
         # Preview data in spreadsheet
         self.preview_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Preview Data',
                                                            shortHelp='Preview data in spreadsheet',
                                                            bitmap=self.controller.get_bitmap('Table.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_preview_data, self.preview_data_tool)
+        self.toolbar.AddSeparator()
         # Plot data
         self.plot_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'X-Y Plot',
                                                         shortHelp='Generates X-Y plot of selected data',
