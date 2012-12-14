@@ -8,7 +8,9 @@ __author__ = 'Chris R. Coughlin'
 from controllers import pathfinder
 from models import abstractplugin
 from models import config
+from models import dataio
 import numpy as np
+import gc
 import imp
 import inspect
 import logging
@@ -307,11 +309,34 @@ class MainModel(object):
         config.set_app_option({"Coordinates": coordinate_list})
 
     def get_coords(self):
-        """Returns the default (x, y)
-        coordinates from the configuration file."""
+        """Returns the default (x, y) coordinates from the configuration file."""
         config = get_config()
         str_coords = config.get_app_option_list("Coordinates")
         coords = [0, 0]
         if str_coords is not None:
             coords = [int(coord) for coord in config.get_app_option_list("Coordinates")]
         return coords
+
+    def get_data_info(self, data_filename):
+        """Returns a dict of basic info about the HDF5 data file data_filename, or None if no data found.
+        Structure of dict:
+
+        'filesize': size of HDF5 file in bytes
+        'ndim': number of dimensions in data array
+        'shape': (tuple) shape of data array
+        'numpoints': number of elements in data array
+        'dtype': (str) type of data (NumPy dtype) in data array
+        """
+        data = dataio.get_data(data_filename)
+        if data is not None:
+            try:
+                data_info = {'filesize':int(os.path.getsize(data_filename)),
+                             'ndim':data.ndim,
+                             'shape':data.shape,
+                             'numpoints':data.size,
+                             'dtype':str(data.dtype)}
+                gc.collect()
+                return data_info
+            except os.error:
+                return None
+        return None

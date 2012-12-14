@@ -6,6 +6,7 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 import models.mainmodel as model
+import models.dataio as dataio
 import models.abstractplugin as abstractplugin
 import models.config as config
 import models.ultrasonicgate as ultrasonicgate
@@ -477,9 +478,29 @@ class TestMainModel(unittest.TestCase):
             is_win2k = major == 5 and minor == 0
         self.assertEqual(is_win2k, model.is_win2k())
 
+    def test_get_data_info(self):
+        """Verify get_data_info returns info about a data file"""
+        file_size = int(os.stat(self.sample_data_file).st_size)
+        data = dataio.get_data(self.sample_data_file)
+        data_info = self.model.get_data_info(self.sample_data_file)
+        ndim = data.ndim
+        shape = data.shape
+        numpoints = data.size
+        dtype = str(data.dtype)
+        self.assertEqual(file_size, data_info['filesize'])
+        self.assertEqual(ndim, data_info['ndim'])
+        self.assertEqual(shape, data_info['shape'])
+        self.assertEqual(numpoints, data_info['numpoints'])
+        self.assertEqual(dtype, data_info['dtype'])
+
     def tearDown(self):
-        if os.path.exists(self.sample_data_file + ".hdf5"):
-            os.remove(self.sample_data_file + ".hdf5")
+        try:
+            if os.path.exists(self.sample_data_file + ".hdf5"):
+                os.remove(self.sample_data_file + ".hdf5")
+            if os.path.exists(self.sample_data_file):
+                os.remove(self.sample_data_file)
+        except WindowsError: # file in use
+            pass
         model.set_loglevel(self.original_loglevel)
 
 if __name__ == "__main__":

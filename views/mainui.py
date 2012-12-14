@@ -202,6 +202,11 @@ class UI(wx.Frame):
                                                        shortHelp='Import data to data folder (CTRL-A)',
                                                        bitmap=self.controller.get_bitmap('Plus.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_add_data, self.add_data_tool)
+        # Display info about data
+        self.data_info_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Information',
+                                                        shortHelp='Display information about the selected data',
+                                                        bitmap=self.controller.get_bitmap('Info.png'))
+        self.Bind(wx.EVT_TOOL, self.controller.on_data_info, self.data_info_tool)
         # Export data to ASCII
         self.export_data_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Export Data',
                                                           shortHelp="Exports selected data to text file",
@@ -243,6 +248,7 @@ class UI(wx.Frame):
     def enable_data_tools(self, enable=True):
         """Enables toolbar buttons that operate on a selected data file,
         or disables if enable is set to False."""
+        self.toolbar.EnableTool(self.data_info_tool.GetId(), enable)
         self.toolbar.EnableTool(self.export_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.remove_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.preview_data_tool.GetId(), enable)
