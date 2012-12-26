@@ -110,6 +110,12 @@ class MainUIController(object):
                 coordinates[1] = cfg_coordinates[1]
         return coordinates
 
+    def get_window_size(self):
+        """Returns the window size of the main application window from the configuration file"""
+        window_size = [300, 600]
+        cfg_win_size = self.model.get_window_size()
+        return cfg_win_size
+
     def get_preview_state(self):
         """Returns the current enable/disable thumbnail
         previews setting from the application's config file"""
@@ -128,6 +134,7 @@ class MainUIController(object):
     def on_quit(self, evt):
         """Handles the Quit event"""
         self.model.set_coords(list(self.view.GetPosition()))
+        self.model.set_window_size(list(self.view.GetClientSizeTuple()))
         self.view._mgr.UnInit()
         self.view.Destroy()
 

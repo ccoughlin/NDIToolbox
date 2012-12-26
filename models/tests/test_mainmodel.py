@@ -346,7 +346,7 @@ class TestMainModel(unittest.TestCase):
         str_coords = cfg.get_app_option_list("Coordinates")
         expected_coords = (0, 0)
         if str_coords is not None:
-            expected_coords = [int(coord) for coord in cfg.get_app_option_list("Coordinates")]
+            expected_coords = [int(coord) for coord in str_coords]
         self.assertListEqual(expected_coords, self.model.get_coords())
 
     def test_set_coords(self):
@@ -355,7 +355,7 @@ class TestMainModel(unittest.TestCase):
         str_coords = cfg.get_app_option_list("Coordinates")
         original_coords = (0, 0)
         if str_coords is not None:
-            original_coords = [int(coord) for coord in cfg.get_app_option_list("Coordinates")]
+            original_coords = [int(coord) for coord in str_coords]
         self.assertListEqual(original_coords, self.model.get_coords())
         new_coords_int = [3, 5]
         self.model.set_coords(new_coords_int)
@@ -364,6 +364,28 @@ class TestMainModel(unittest.TestCase):
         self.model.set_coords(new_coords_str)
         self.assertListEqual([int(coord) for coord in new_coords_str], self.model.get_coords())
         self.model.set_coords(original_coords)
+
+    def test_get_size(self):
+        """Verify returning the size of the main app window set in config"""
+        cfg = config.Configure(pathfinder.config_path())
+        str_win_size = cfg.get_app_option_list("Window Size")
+        expected_win_size = [300, 600]
+        if str_win_size is not None:
+            expected_win_size = [int(dimsize) for dimsize in str_win_size]
+        self.assertListEqual(expected_win_size, self.model.get_window_size())
+
+    def test_set_size(self):
+        """Verify setting the size of the main app window in config"""
+        cfg = config.Configure(pathfinder.config_path())
+        str_win_size = cfg.get_app_option_list("Window Size")
+        original_win_size = [300, 600]
+        if str_win_size is not None:
+            original_win_size = [int(dimsize) for dimsize in str_win_size]
+        self.assertListEqual(original_win_size, self.model.get_window_size())
+        new_win_size = [800, 1024]
+        self.model.set_window_size(new_win_size)
+        self.assertListEqual(new_win_size, self.model.get_window_size())
+        self.model.set_coords(original_win_size)
 
     def test_get_loglevel(self):
         """Verify returning the log level from config"""

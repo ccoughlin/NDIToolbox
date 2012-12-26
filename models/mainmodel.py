@@ -303,8 +303,7 @@ class MainModel(object):
         return config.get_app_option_boolean("Enable Preview")
 
     def set_coords(self, coordinate_list):
-        """Writes the specified coordinate list
-        to the default configuration file."""
+        """Writes the specified coordinate list to the default configuration file."""
         config = get_config()
         config.set_app_option({"Coordinates": coordinate_list})
 
@@ -314,8 +313,22 @@ class MainModel(object):
         str_coords = config.get_app_option_list("Coordinates")
         coords = [0, 0]
         if str_coords is not None:
-            coords = [int(coord) for coord in config.get_app_option_list("Coordinates")]
+            coords = [int(coord) for coord in str_coords]
         return coords
+
+    def get_window_size(self):
+        """Returns the window size from the configuration file."""
+        config = get_config()
+        str_win_size = config.get_app_option_list("Window Size")
+        win_size = [300, 600]
+        if str_win_size is not None:
+            win_size = [int(dimsize) for dimsize in str_win_size]
+        return win_size
+
+    def set_window_size(self, window_dimensions):
+        """Writes the listed window dimensions to the default configuration file."""
+        config = get_config()
+        config.set_app_option({"Window Size": window_dimensions})
 
     def get_data_info(self, data_filename):
         """Returns a dict of basic info about the HDF5 data file data_filename, or None if no data found.

@@ -21,6 +21,7 @@ class UI(wx.Frame):
                           size=(300, 600), title='NDIToolbox')
         self.SetPosition(self.controller.get_default_position())
         self.MinSize = (300, 400)
+        self.SetSize(self.controller.get_window_size())
         self._mgr = wx.aui.AuiManager()
         self._mgr.SetManagedWindow(self)
         self.init_menu()
