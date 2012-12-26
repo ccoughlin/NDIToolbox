@@ -466,6 +466,36 @@ class MainUIController(object):
                 wx.EndBusyCursor()
             exportfmt_dlg.Destroy()
 
+    def on_slice_data(self, evt):
+        """Handles request to export a slice of data"""
+        slice_dlg = dlg.ExportSliceDialog(parent=self.view, datafile=self.view.data_panel.data)
+        if slice_dlg.ShowModal() == wx.ID_OK:
+            try:
+                wx.BeginBusyCursor()
+                sliced_data = dataio.get_data(self.view.data_panel.data, slice_dlg.get_slice())
+                sliced_data_fname = "_".join(["sliced",
+                                              os.path.basename(self.view.data_panel.data)])
+                fname_dlg = wx.TextEntryDialog(parent=self.view, message="Please specify a filename for the sliced data.",
+                    caption="Save Sliced Data", defaultValue=sliced_data_fname)
+                if fname_dlg.ShowModal() == wx.ID_OK:
+                    dest_fname = os.path.join(pathfinder.data_path(), fname_dlg.GetValue())
+                    dataio.save_data(dest_fname, sliced_data)
+                    self.view.data_panel.populate()
+            except TypeError: # bad dimensions
+                err_dlg = wx.MessageDialog(self.view, message="Specified dimensions out of range for this data.",
+                    caption="Unable To Slice Data", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+            except ValueError: # zero-length slices, etc.
+                err_dlg = wx.MessageDialog(self.view, message="Zero-length slices are not permitted.",
+                    caption="Unable To Slice Data", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+            finally:
+                wx.EndBusyCursor()
+        slice_dlg.Destroy()
+
+
     def import_dicom(self, file_name):
         """Converts and imports the specified DICOM/DICONDE data file"""
         self.import_data(dataio.import_dicom, args=(file_name,))

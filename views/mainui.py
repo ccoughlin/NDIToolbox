@@ -208,6 +208,10 @@ class UI(wx.Frame):
             shortHelp='Remove data from data folder',
             bitmap=self.controller.get_bitmap('Minus.png'))
         self.Bind(wx.EVT_TOOL, self.controller.on_remove_data, self.remove_data_tool)
+        # Export slice
+        self.export_slice_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Slice Data', shortHelp='Export a slice of data',
+            bitmap=self.controller.get_bitmap('Slice.png'))
+        self.Bind(wx.EVT_TOOL, self.controller.on_slice_data, self.export_slice_tool)
         self.toolbar.AddSeparator()
         # Display info about data
         self.data_info_tool = self.toolbar.AddLabelTool(wx.ID_ANY, 'Information',
@@ -259,6 +263,7 @@ class UI(wx.Frame):
         self.toolbar.EnableTool(self.plot_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.imageplot_data_tool.GetId(), enable)
         self.toolbar.EnableTool(self.megaplot_data_tool.GetId(), enable)
+        self.toolbar.EnableTool(self.export_slice_tool.GetId(), enable)
 
     def enable_preview_panel(self, enable=True):
         """Shows or hides the plot thumbnail panel"""
