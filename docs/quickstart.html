@@ -118,8 +118,7 @@
     preview, and manipulate the data. How you organize your data is up to you but one
     suggestion would be to organize by structure and inspection. For example, you can
     create a subfolder <code>Pennybacker Bridge</code> under your data folder to house
-    all the inspections of the <a href=
-    "http://en.wikipedia.org/wiki/Pennybacker_Bridge">Pennybacker Bridge</a>; under this
+    all the inspections of the <a href="http://en.wikipedia.org/wiki/Pennybacker_Bridge">Pennybacker Bridge</a>; under this
     subfolder place additional subfolders <code>Bridge Deck</code> and <code>Steel
     Cables</code> to house inspections of the bridge&#8217;s substructures, subfolders
     under these for particular inspections of the substructure, and so on.</p>
@@ -159,7 +158,7 @@
     affected.</p>
 
     <p class="centeredImage"><a href="images/toolbar_one.png" rel="lightbox"><img src=
-    "images/toolbar_one.png" width="230" height="150" /></a></p>
+    "images/toolbar_one.png" width="220" height="110" /></a></p>
 
     <p>The <strong>Plot</strong> panel at the bottom displays thumbnail images of your
     data as an easy way to browse large sets of data. When you select a data file in the
@@ -254,7 +253,7 @@
     contents.</p>
 
     <p class="centeredImage"><a href="images/toolbar_two.png" rel="lightbox"><img src=
-    "images/toolbar_two.png" width="145" height="140" /></a></p>
+    "images/toolbar_two.png" width="219" height="105" /></a></p>
 
     <h3><a name="qs_threed">Working With Three Dimensional Data</a></h3>
 
@@ -295,6 +294,27 @@
       <li>A slice S in X (parallel to the Y-Z plane) at index x0 is given by S = A[:, x0,
       :] (S is every point in A for which X=x0)</li>
     </ul>
+
+    <p>NDIToolbox provides a basic interface for NumPy slicing operations.  To slice an existing NDIToolbox dataset, select it in the <strong>NDE Data</strong> panel and press the <strong>Slice Data</strong> button in the toolbar (next to the <strong>Remove Data</strong> button).  The <strong>Export Slice</strong> dialog will be shown, from which you can specify how to slice the data.</p>
+
+    <p class="centeredImage"><a href="images/exportslice_dlg.png" rel="lightbox" title=
+    "Export Slice Dialog"><img src="images/exportslice_dlg.png" width="257" height=
+    "169" /></a></p>
+
+    <p>For performance reasons by default NDIToolbox doesn't check the size and shape of the data prior to slicing, since this would require reading part of the data and could be a lengthy operation for very large data files.  If you don't know the size of the data, you can have NDIToolbox look it up by pressing the <strong>Check</strong> button.  This will also reset the limits of the slice index controls below to the maximum allowable for each dimension of your data, and disable dimensions that are not in the data (e.g., a one-dimensional array will have both X and Z dimensions disabled).</p>
+
+    <p>The slice index controls specify how to take the slice in each of the data's dimensions:</p>
+
+    <ul>
+      <li>Setting both the lower and the upper limits in a given dimension slices the data in that dimension between the two values, e.g. setting the X range to 50:100 creates the slice S = A[:, 50:100, :] for a 3D array A.</li>
+      <li>Setting the lower limit in a dimension to a value and leaving the upper limit at -1 slices from the specified index to the end of the dimension, e.g. setting the Y range to 150:-1 creates the slice S = A[150:-1, :, :] for a 3D array A.</li>
+      <li>Setting both dimension indices to -1 (the default) is to leave that dimension unchanged, i.e. no slicing in this dimension is performed.</li>
+    </ul>
+
+    <p>In the current version of NDIToolbox arrays are not automatically <a href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.flatten.html">flattened</a>, which means that the dimensions of the slice are not reduced.  For example, if you have a 3D array of size (Y, X, Z) = (350, 250, 100) and take a slice in Z of length 1 you'll have created a new 3D array of size (Y, X, Z) = (350, 250, 1) rather than a 2D array of size (Y, X) = (350, 250).</p>
+
+    <p>When you've built your slice, press the <strong>Ok</strong> button to slice the original data.  NDIToolbox will read the slice from the original data and prompt you for a new name for the slice; the slice will be saved as a new HDF5 data file in your NDIToolbox data folder.  The slice interface in NDIToolbox is designed to give you a basic user interface for the most common slicing operations in NDE data; for more advanced slicing requirements we recommend a full-blown NumPy session or writing an NDIToolbox plugin.</p>
+
 
     <h3><a name="qs_plot">Plotting Data</a></h3>
 
