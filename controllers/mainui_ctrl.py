@@ -589,19 +589,27 @@ class MainUIController(object):
     def show_data_info(self):
         """Displays info about selected data"""
         if self.view.data_panel.data is not None:
-            wx.BeginBusyCursor()
-            data_info = self.model.get_data_info(self.view.data_panel.data)
-            if data_info is not None:
-                data_msg = "File Size: {0} bytes\n\nData Dimensions: {1}\nData Shape: {2}\nNumber of Points: {3} ({4} data type)".format(
-                    data_info['filesize'], data_info['ndim'], data_info['shape'], data_info['numpoints'], data_info['dtype']
-                )
-            else:
-                data_msg = "Unable to read {0}".format(self.view.data_panel.data)
-            info_dlg = wx.MessageDialog(parent=self.view, message=data_msg,
-                                        caption=os.path.basename(self.view.data_panel.data), style=wx.OK)
-            info_dlg.ShowModal()
-            info_dlg.Destroy()
-            wx.EndBusyCursor()
+            try:
+                wx.BeginBusyCursor()
+                data_info = self.model.get_data_info(self.view.data_panel.data)
+                if data_info is not None:
+                    data_msg = "File Size: {0} bytes\n\nData Dimensions: {1}\nData Shape: {2}\nNumber of Points: {3} ({4} data type)".format(
+                        data_info['filesize'], data_info['ndim'], data_info['shape'], data_info['numpoints'], data_info['dtype']
+                    )
+                else:
+                    data_msg = "Unable to read {0}".format(self.view.data_panel.data)
+                info_dlg = wx.MessageDialog(parent=self.view, message=data_msg,
+                                            caption=os.path.basename(self.view.data_panel.data), style=wx.OK)
+                info_dlg.ShowModal()
+                info_dlg.Destroy()
+            except MemoryError:
+                err_dlg = wx.MessageDialog(self.view,
+                                           message="Insufficient memory to load data.",
+                                           caption="Unable To Query Data File", style=wx.ICON_ERROR)
+                err_dlg.ShowModal()
+                err_dlg.Destroy()
+            finally:
+                wx.EndBusyCursor()
 
     def on_remove_data(self, evt):
         """Handles request to remove data from data folder"""
