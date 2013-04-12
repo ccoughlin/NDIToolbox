@@ -140,3 +140,8 @@ def gates_path():
 def colormaps_path():
     """Returns the path to user-defined colormaps"""
     return os.path.join(user_path(), "colormaps")
+
+@normalized
+def batchoutput_path():
+    """Returns the path to data files produced with batch processing mode"""
+    return os.path.join(data_path(), "batch_output")

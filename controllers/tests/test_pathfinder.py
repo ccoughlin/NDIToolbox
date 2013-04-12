@@ -121,5 +121,10 @@ class TestPathFinder(unittest.TestCase):
         colormaps_path = os.path.join(self.user_path, "colormaps")
         self.assertEqual(colormaps_path, pathfinder.colormaps_path())
 
+    def test_batchoutput_path(self):
+        """Verify returning correct path to batch processing output"""
+        batchoutput_path = os.path.join(self.user_path, "data", "batch_output")
+        self.assertEqual(batchoutput_path, pathfinder.batchoutput_path())
+
 if __name__ == "__main__":
     unittest.main()

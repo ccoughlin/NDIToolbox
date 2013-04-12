@@ -167,7 +167,7 @@ class MainUIController(object):
         """Handles the About This Program event"""
         project_logo = os.path.join(pathfinder.icons_path(), 'nditoolbox.png')
         project_msg = ' '.join(
-            ("NDIToolbox (TM) Copyright (c) 2012 TRI/Austin, Inc.  Developed under TRI Project A7117.",
+            ("NDIToolbox (TM) Copyright (c) 2013 TRI/Austin, Inc.  Developed under TRI Project A7117.",
              "\n\nUse of this software is governed by the terms outlined in the license.txt file.",
              "\n\nProject Manager:  David Forsyth",
              "\nLead Developer:  Chris Coughlin")
