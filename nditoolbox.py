@@ -35,6 +35,7 @@ if __name__ == "__main__":
         parser.add_argument('-s', '--save_output', action='store_true', default=False,
                             help="Save plugin output to new HDF5 data file")
         args = parser.parse_args()
+        mainmodel.MainModel.check_user_path()
         available_plugins = mainmodel.load_plugins()
         available_plugins_names = [plugin[0] for plugin in available_plugins]
         if args.toolkit and args.input_files:

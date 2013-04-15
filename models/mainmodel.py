@@ -221,7 +221,8 @@ class MainModel(object):
     def __init__(self, controller):
         self.controller = controller
 
-    def check_user_path(self):
+    @classmethod
+    def check_user_path(cls):
         """Verify that user data folders exist.  Creates
         any missing folders."""
         user_folder = pathfinder.user_path()
@@ -231,8 +232,9 @@ class MainModel(object):
         podmodels_folder = pathfinder.podmodels_path()
         gates_folder = pathfinder.gates_path()
         colormaps_folder = pathfinder.colormaps_path()
+        batch_folder = pathfinder.batchoutput_path()
         for fldr in (user_folder, data_folder, thumbnail_folder, plugins_folder, podmodels_folder, gates_folder,
-            colormaps_folder):
+                     colormaps_folder, batch_folder):
             if not os.path.exists(fldr):
                 os.makedirs(fldr)
 
@@ -245,24 +247,28 @@ class MainModel(object):
         self.check_user_path()
         self.copy_system_plugins()
 
-    def copy_system_plugins(self):
+    @classmethod
+    def copy_system_plugins(cls):
         """Copies plugins that ship with the application to the user's plugins folder."""
         system_plugins_folder = os.path.join(pathfinder.app_path(), 'plugins')
-        self.copy_system_files(system_plugins_folder, pathfinder.plugins_path())
+        MainModel.copy_system_files(system_plugins_folder, pathfinder.plugins_path())
 
-    def copy_system_gates(self):
+    @classmethod
+    def copy_system_gates(cls):
         """Copies ultrasonic gate plugins that ship with the application to the user's gates folder."""
         system_gates_folder = os.path.join(pathfinder.app_path(), 'gates')
-        self.copy_system_files(system_gates_folder, pathfinder.gates_path())
+        MainModel.copy_system_files(system_gates_folder, pathfinder.gates_path())
 
-    def copy_system_colormaps(self):
+    @classmethod
+    def copy_system_colormaps(cls):
         """Copies matplotlib colormaps that ship with the application to the user's colormaps folder."""
         colormaps_folder = os.path.join(pathfinder.app_path(), 'colormaps')
         colormaps = os.listdir(colormaps_folder)
         for colormap_file in colormaps:
             shutil.copy(os.path.join(colormaps_folder, colormap_file), pathfinder.colormaps_path())
 
-    def copy_system_files(self, src_folder, dest_folder):
+    @classmethod
+    def copy_system_files(cls, src_folder, dest_folder):
         """Copies the Python (.py) files in src_folder to dest_folder.
         Used to install local user-editable copies of plugins, POD Models,
         and ultrasonic gates."""
