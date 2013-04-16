@@ -13,7 +13,6 @@ import numpy as np
 import scipy.misc
 import imp
 import os
-import os.path
 import random
 
 def skipIfModuleNotInstalled(*modules):
@@ -301,6 +300,15 @@ class TestDataIO(unittest.TestCase):
         except WindowsError: # file in use
             pass
 
+    def test_get_utwin_data(self):
+        """Verify returning UTWin data"""
+        sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData.csc')
+        sample_reader = dataio.UTWinCscanReader(sample_data_file)
+        expected_data = sample_reader.get_data()
+        returned_data = dataio.get_utwin_data(sample_data_file)
+        for datatype in expected_data:
+            self.assertTrue(np.array_equal(expected_data[datatype], returned_data[datatype]))
+
     def test_get_winspect_data(self):
         """Verify retrieval of Winspect data through convenience function"""
         sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'sample_data.sdt')
@@ -471,6 +479,15 @@ class TestUTWinCScanReader(unittest.TestCase):
                 os.remove(dest_file)
         except WindowsError: # file in use
             pass
+
+    def test_get_data(self):
+        """Verify returning TOF, amp, and waveform data"""
+        expected_data = {'tof':self.cscan_reader.get_tof_data(),
+                         'amplitude':self.cscan_reader.get_amp_data(),
+                         'waveform':self.cscan_reader.get_waveform_data()}
+        returned_data = self.cscan_reader.get_data()
+        for data_type in expected_data:
+            self.assertTrue(np.array_equal(expected_data[data_type], returned_data[data_type]))
 
 class TestWinspectReader(unittest.TestCase):
     """Tests the WinspectReader class."""

@@ -157,6 +157,12 @@ def import_utwin_waveform(data_file):
     scan_reader = UTWinCscanReader(data_file)
     scan_reader.import_waveform()
 
+def get_utwin_data(data_file):
+    """Convenience function to create a UTWinCScanReader instance and return all the data from data_file.
+    Primarily intended for use in threading and multiprocessing."""
+    scan_reader = UTWinCscanReader(data_file)
+    return scan_reader.get_data()
+
 def get_winspect_data(data_file):
     """Convenience function to create a WinspectReader instance and return the waveform data from data_file.
     Primarily intended for use in threading and multiprocessing."""
@@ -277,6 +283,12 @@ class UTWinCscanReader(object):
                         'adv_scale':adv_scale,
                         'adv_offset':adv_offset}
         return None
+
+    def get_data(self):
+        """Returns a dict of the data from the file"""
+        return {'tof':self.get_tof_data(),
+                'amplitude':self.get_amp_data(),
+                'waveform':self.get_waveform_data()}
 
     def get_tof_data(self):
         """Returns a NumPy array of the Time Of Flight data from the UTWin Cscan file file_name, or None if data could
