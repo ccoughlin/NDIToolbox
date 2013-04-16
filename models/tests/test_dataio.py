@@ -318,9 +318,9 @@ class TestDataIO(unittest.TestCase):
         assert(os.path.exists(sample_data_file))
         output_basename, ext = os.path.splitext(sample_data_file)
         amp_dest_file = os.path.join(pathfinder.data_path(),
-                                     os.path.basename(output_basename) + "_ampdata" + ext + ".hdf5")
+                                     os.path.basename(output_basename) + "_ampdata0" + ext + ".hdf5")
         waveform_dest_file = os.path.join(pathfinder.data_path(),
-                                          os.path.basename(output_basename) + "_waveformdata" + ext + ".hdf5")
+                                          os.path.basename(output_basename) + "_waveformdata0" + ext + ".hdf5")
         dataio.import_winspect(sample_data_file)
         expected_data_list = dataio.get_winspect_data(sample_data_file)
         for dataset in expected_data_list:
@@ -504,9 +504,9 @@ class TestWinspectReader(unittest.TestCase):
         """Verify importing datasets"""
         output_basename, ext = os.path.splitext(self.sample_data_file)
         amp_dest_file = os.path.join(pathfinder.data_path(),
-                                 os.path.basename(output_basename) + "_ampdata" + ext + ".hdf5")
+                                 os.path.basename(output_basename) + "_ampdata0" + ext + ".hdf5")
         waveform_dest_file = os.path.join(pathfinder.data_path(),
-                                          os.path.basename(output_basename) + "_waveformdata" + ext + ".hdf5")
+                                          os.path.basename(output_basename) + "_waveformdata0" + ext + ".hdf5")
         self.scan_reader.import_winspect()
         data_reader = dataio.WinspectDataFile(self.sample_data_file)
         data_reader.read_data()

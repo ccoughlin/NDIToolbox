@@ -362,7 +362,8 @@ class UTWinCscanReader(object):
         return is_cscan
 
 class WinspectReader(object):
-    """Handles reading Winspect 6, 7 data files. Currenly only unidirectional scans are supported."""
+    """Handles reading Winspect 6, 7 data files. Currently only unidirectional scans are supported.
+    """
 
     # Types of data stored
     data_types = ["waveform", "amplitude"]
@@ -398,13 +399,18 @@ class WinspectReader(object):
     def import_winspect(self):
         """Reads and imports the Winspect data into the default data folder"""
         output_basename, ext = os.path.splitext(self.data_file.file_name)
-        amp_output_fname = os.path.join(pathfinder.data_path(), os.path.basename(output_basename)+"_ampdata"+ext)
-        waveform_output_fname = os.path.join(pathfinder.data_path(), os.path.basename(output_basename)+"_waveformdata"+ext)
-        for dataset in self.get_winspect_data():
+        datasets = self.get_winspect_data()
+        amp_output_counter = 0
+        waveform_output_counter = 0
+        for dataset in datasets:
             if "amplitude" in dataset.data_type:
-                output_fname = amp_output_fname
+                output_fname = os.path.join(pathfinder.data_path(), os.path.basename(output_basename) + "_ampdata" +
+                                                                    str(amp_output_counter) + ext)
+                amp_output_counter += 1
             elif "waveform" in dataset.data_type:
-                output_fname = waveform_output_fname
+                output_fname = os.path.join(pathfinder.data_path(), os.path.basename(output_basename) + "_waveformdata"
+                                                                    + str(waveform_output_counter) + ext)
+                waveform_output_counter += 1
             if dataset.data is not None and dataset.data.size > 0:
                 save_data(output_fname, dataset.data)
 
