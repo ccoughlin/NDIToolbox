@@ -89,26 +89,27 @@ class TestBatchPluginAdapter(unittest.TestCase):
         # Verify Winspect 6/7 retrieval
         sample_winspect_file = os.path.join(sample_data_folder, 'sample_data.sdt')
         winspect_adapter = self.create_adapter(sample_winspect_file)
+        winspect_adapter.read_data()
         returned_winspect_data = dataio.get_winspect_data(sample_winspect_file)
         for dataset in returned_winspect_data:
-            if dataset.data_type == 'waveform':
-                # BatchPluginAdapter returns the waveform data for ultrasonic file formats
-                expected_winspect_data = dataset.data
-                retrieved_winspect_data = winspect_adapter.read_data()
-                self.assertTrue(np.array_equal(expected_winspect_data, retrieved_winspect_data))
-                break
+            expected_winspect_data = dataset.data
+            retrieved_winspect_data = winspect_adapter.data[dataset.data_type + "0"]
+            self.assertTrue(np.array_equal(expected_winspect_data, retrieved_winspect_data))
         # Verify bitmap retrieval
         sample_img_file = os.path.join(sample_data_folder, 'austin_sky320x240.jpg')
         expected_img_data = dataio.get_img_data(sample_img_file)
         img_adapter = self.create_adapter(sample_img_file)
-        retrieved_img_data = img_adapter.read_data()
+        img_adapter.read_data()
+        retrieved_img_data = img_adapter.data
         self.assertTrue(np.array_equal(expected_img_data, retrieved_img_data))
         # Verify UTWin retrieval
         sample_utwin_file = os.path.join(sample_data_folder, 'CScanData.csc')
         utwin_adapter = self.create_adapter(sample_utwin_file)
-        expected_utwin_data = dataio.get_utwin_waveform_data(sample_utwin_file)
-        retrieved_utwin_data = utwin_adapter.read_data()
-        self.assertTrue(np.array_equal(expected_utwin_data, retrieved_utwin_data))
+        expected_utwin_data = dataio.get_utwin_data(sample_utwin_file)
+        utwin_adapter.read_data()
+        retrieved_utwin_data = utwin_adapter.data
+        for dataset in expected_utwin_data:
+            self.assertTrue(np.array_equal(expected_utwin_data[dataset], retrieved_utwin_data[dataset]))
 
     def test_run(self):
         """Verify correctly executing NDIToolbox plugins"""
@@ -118,9 +119,9 @@ class TestBatchPluginAdapter(unittest.TestCase):
         for idx in range(len(plugin_names)):
             adapter = batchui_ctrl.BatchPluginAdapter(plugin_names[idx], self.datafile)
             plugin_cls_inst = plugin_classes[idx]()
-            plugin_cls_inst.data = dataio.get_data(self.datafile)
+            plugin_cls_inst._data = dataio.get_data(self.datafile)
             plugin_cls_inst.run()
-            expected_data = plugin_cls_inst.data
+            expected_data = plugin_cls_inst._data
             adapter.run()
             returned_data = adapter.data
             self.assertTrue(np.array_equal(expected_data, returned_data))

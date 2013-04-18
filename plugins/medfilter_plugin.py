@@ -39,5 +39,19 @@ class MedianFilterPlugin(TRIPlugin):
             if kernel_size % 2 == 0:
                 # medfilt function requires odd number for kernel size
                 kernel_size += 1
-            self._data = scipy.signal.medfilt(self._data,
-                                              kernel_size)
+            # Some types of NDE data (e.g. ultrasonics) frequently package multiple
+            # datasets into a single file - TOF, amplitude, and waveform for example.
+            # To determine if the plugin has been sent multiple datasets, check for
+            # a "keys" attribute to the self._data member, which would indicate a
+            # dict has been sent rather than a single array of data
+            if hasattr(self._data, "keys"):
+                for dataset in self._data:
+                    # Execute plugin on every dataset
+                    self._data[dataset] = scipy.signal.medfilt(self._data[dataset], kernel_size)
+                # You could alternatively execute on one particular type of data
+                # e.g.
+                # if dataset == "waveform":
+                #   self._data = scipy.signal.medfilt(self._data[dataset], kernel_size)
+            else:
+                # A single dataset was provided
+                self._data = scipy.signal.medfilt(self._data, kernel_size)

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-    <title>NDIToolbox Plugins</title>
+    <title>NDIToolbox Plugins For Developers</title>
     <meta name="description" content="">
     <meta name="author" content="">
 
@@ -120,6 +120,22 @@
     re-reads the instance's <code>data</code> attribute and sets the active plot window's <code>data</code> as this
     (possibly) new NumPy array. The plot is refreshed to show the new data to the user.</p>
 
+<p>NDIToolbox also supports a "batch mode" of operation, in which a user specifies a list of files to analyze with your plugin.  In this mode, a plugin can be handed multiple datasets in a Python <code>dict</code>, e.g. a single ultrasonic NDE datafile can contain Time Of Flight (TOF), amplitude, and waveform datasets.  Some file formats allow multiple datasets of each type.  To support batch mode in your plugin, your analysis code should check to see if it was passed a <code>dict</code> or if it was passed a single NumPy array.  There are several ways to accomplish this but one of the most straightforward is to simply check to see if the <code>_data</code> member has a <code>keys</code> attribute:</p>
+
+<pre class="pre-scrollable">
+    if hasattr(self._data, "keys"):
+        for dataset in self._data:
+            # Execute plugin on every dataset
+            self._data[dataset] = your_analysis_function(self._data[dataset])
+        # You could alternatively execute on one particular type of data
+        # e.g.
+        # if dataset == "waveform":
+        #   self._data = your_analysis_function(self._data[dataset])
+    else:
+        # A single dataset was provided
+        self._data = your_analysis_function(self._data)
+</pre>
+
 <p>NDIToolbox plugins must be installed in the user's <code>plugins</code> folder. Plugins can simply be copied over, or
     if you're working with a plugin archive (see below), NDIToolbox can do it for you.</p>
 
@@ -192,8 +208,20 @@ class NormalizePlugin(TRIPlugin):
         """Executes the plugin - if data are not None they are normalized
         against the largest single element in the array."""
         if self._data is not None:
-            max_el = np.max(self._data)
-            self._data = self._data / max_el
+            # Some types of NDE data (e.g. ultrasonics) frequently package multiple
+            # datasets into a single file - TOF, amplitude, and waveform for example.
+            # To determine if the plugin has been sent multiple datasets, check for
+            # a "keys" attribute to the self._data member, which would indicate a
+            # dict has been sent rather than a single array of data
+            if hasattr(self._data, "keys"):
+                for dataset in self._data:
+                    # Execute plugin on every dataset
+                    max_el = np.max(self._data[dataset])
+                    self._data[dataset] /= max_el
+            else:
+                # A single dataset was provided
+                max_el = np.max(self._data)
+                self._data /= max_el
     </pre>
 
 <p>In addition, if you define a dict named <code>config</code> in your plugin, NDIToolbox will show the user a
@@ -243,8 +271,14 @@ class MedianFilterPlugin(TRIPlugin):
             if kernel_size % 2 == 0:
                 # medfilt function requires odd number for kernel size
                 kernel_size += 1
-            self._data = scipy.signal.medfilt(self._data,
-                kernel_size)
+            if hasattr(self._data, "keys"):
+                for dataset in self._data:
+                    # Execute plugin on every dataset
+                    self._data[dataset] = scipy.signal.medfilt(self._data[dataset], 
+                                                               kernel_size)
+            else:
+                # A single dataset was provided
+                self._data = scipy.signal.medfilt(self._data, kernel_size)
 
     </pre>
 
@@ -254,6 +288,8 @@ class MedianFilterPlugin(TRIPlugin):
 <p class="centeredImage"><a href="images/medfilter_config.png" rel="lightbox"
                             title="Median Filter Configuration Window"><img src="images/medfilter_config.png"
                                                                             width="205" height="287"/></a></p>
+
+<p>NDIToolbox's batch mode allows the user to specify a configuration file for your plugin.  If the configuration file is supplied, NDIToolbox will update your plugin's <code>config</code> dict with the configuration from this file.  In addition, your <code>config</code> will be updated with a new key <code>datafile</code> with the full pathname to the input file source of the data.  If your plugin requires more information from the input file other than its data contents (such as a sampling rate or threshold level), you can use this filename to query the file contents in your code.</p>
 
 <p>There are few restrictions on what your plugin does or how you organize your code. The only hard restriction is that
     the <code>run()</code> method can't spawn subprocesses (threads are ok however) because NDIToolbox runs the plugin

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-    <title>NDIToolbox Plugins</title>
+    <title>NDIToolbox Plugins - Examples</title>
     <meta name="description" content="">
     <meta name="author" content="">
 
@@ -83,7 +83,7 @@
     slightly more complicated because scikits-image requires compiling some C code on installation; this can be
     problematic for Windows users that don't have Visual Studio installed. We've therefore decided to keep most of the
     code on a server we control so we can operate in a well-controlled environment, and have the plugin phone in for
-    calculations. </p>
+    calculations. This also gives some protection for any intellectual property we might develop as the toolkit evolves.  It's also a path to commercialization by e.g. selling subscriptions to the toolkit's calculations and requiring an active login in our toolkit's <code>config</code> for access.</p>
 
 <p>After looking at JSON and XML-RPC, we've decided to go with Python's <a
         href="http://docs.python.org/library/simplexmlrpcserver.html#module-SimpleXMLRPCServer">SimpleXMLRPCServer</a>.
@@ -181,7 +181,7 @@ class SobelPlugin(TRIPlugin):
 
     def __init__(self):
         super(SobelPlugin, self).__init__(self.name, self.description,
-                                              self.authors, self.url, self.copyright)
+                                          self.authors, self.url, self.copyright)
         self.config = {'server_url':'http://172.16.100.2:8000/edge_detector'}
         self.srvr = xmlrpclib.ServerProxy(self.config['server_url'])
 
@@ -189,7 +189,16 @@ class SobelPlugin(TRIPlugin):
         """Executes the plugin - returns a new NumPy array with
         edges detected in original data"""
         if self._data is not None:
-            self._data = self.srvr.sobel_edges(self._data.astype(np.float64).tolist())
+            # Support "batch mode" - may be passed multiple datasets as a dict
+            if hasattr(self._data, "keys"):
+                for dataset in self._data:
+                    # Execute plugin on every dataset
+                    current_data = self._data[dataset].astype(np.float64).tolist()
+                    self._data[dataset] = self.srvr.sobel_edges(current_data)
+            else:
+                # Passed a single dataset
+                dataset = self._data.astype(np.float64).tolist()
+                self._data = self.srvr.sobel_edges(dataset)
 </pre>
 
 <p>The only configuration option we require in this case is a pointer to the edge detection server's URL; you could
@@ -234,7 +243,7 @@ class CannyPlugin(TRIPlugin):
 
     def __init__(self):
         super(CannyPlugin, self).__init__(self.name, self.description,
-                                              self.authors, self.url, self.copyright)
+                                          self.authors, self.url, self.copyright)
         self.config = {'sigmas':1,
             'low_threshold':0.1,
             'high_threshold':0.2,
@@ -245,9 +254,19 @@ class CannyPlugin(TRIPlugin):
         """Executes the plugin - returns a new NumPy array with
         edges detected in original data"""
         if self._data is not None:
-            self._data = self.srvr.canny_edges(self._data.astype(np.float64).tolist(),
-                self.config['sigmas'], self.config['low_threshold'],
-                self.config['high_threshold'])
+            # Support "batch mode" - may be passed multiple datasets as a dict
+            if hasattr(self._data, "keys"):
+                for dataset in self._data:
+                    self.srvr.canny_edges(self._data[dataset].astype(np.float64).tolist(),
+                                          self.config['sigmas'], 
+                                          self.config['low_threshold'],
+                                          self.config['high_threshold'])
+            else:
+                # Passed a single dataset
+                self._data = self.srvr.canny_edges(self._data.astype(np.float64).tolist(),
+                                                   self.config['sigmas'], 
+                                                   self.config['low_threshold'],
+                                                   self.config['high_threshold'])
 </pre>
 
 <p class="centeredImage"><a href="images/canny_edge_one.png" rel="lightbox[canny]"
@@ -479,7 +498,7 @@ class JythonNormalizePlugin(TRIPlugin):
 
     def __init__(self):
         super(JythonNormalizePlugin, self).__init__(self.name, self.description,
-                                              self.authors, self.url, self.copyright)
+                                                    self.authors, self.url, self.copyright)
         self.config = {'server_url':'http://127.0.0.1:8000/basic_stats'}
         self.srvr = xmlrpclib.ServerProxy(self.config['server_url'])
 
@@ -487,10 +506,21 @@ class JythonNormalizePlugin(TRIPlugin):
         """Executes the plugin - if data are not None they are normalized
         against the largest single element in the array."""
         if self._data is not None:
-            if self._data.ndim == 1:
-                self._data = np.array(self.srvr.normalize(self._data.tolist()))
-            elif self._data.ndim == 2:
-                self._data = np.array(self.srvr.normalize2d(self._data.tolist()))
+            # Support "batch mode" - may be passed multiple datasets as a dict
+            if hasattr(self._data, "keys"):
+                for dataset in self._data:
+                    current_data = self._data[dataset].tolist()
+                    if self._data[dataset].ndim == 1:
+                        self._data[dataset] = np.array(self.srvr.normalize(current_data))
+                    elif self._data.ndim == 2:
+                        self._data[dataset] = np.array(self.srvr.normalize2d(current_data))
+            else:
+                # Passed a single dataset
+                current_data = self._data.tolist()
+                if self._data.ndim == 1:
+                    self._data = np.array(self.srvr.normalize(current_data))
+                elif self._data.ndim == 2:
+                    self._data = np.array(self.srvr.normalize2d(current_data))
 </pre>
 
 <p>The only major difference in this plugin compared to the previous XML-RPC example is that in this case the plugin
@@ -547,7 +577,9 @@ public:
 
 double BasicStats::calcMin(const std::vector&lt;double&gt;& dataList) {
     double minVal = dataList[0];
-    for (std::vector&lt;double&gt;::const_iterator iter=dataList.begin(); iter!=dataList.end(); ++iter) {
+    for (std::vector&lt;double&gt;::const_iterator iter=dataList.begin(); 
+         iter!=dataList.end(); 
+         ++iter) {
         if (*iter &lt; minVal) {
             minVal = *iter;
         }
@@ -557,7 +589,9 @@ double BasicStats::calcMin(const std::vector&lt;double&gt;& dataList) {
 
 double BasicStats::calcMax(const std::vector&lt;double&gt;& dataList) {
     double maxVal = dataList[0];
-    for (std::vector&lt;double&gt;::const_iterator iter=dataList.begin(); iter!=dataList.end(); ++iter) {
+    for (std::vector&lt;double&gt;::const_iterator iter=dataList.begin(); 
+         iter!=dataList.end(); 
+         ++iter) {
         if (*iter &gt; maxVal) {
             maxVal = *iter;
         }
@@ -565,18 +599,22 @@ double BasicStats::calcMax(const std::vector&lt;double&gt;& dataList) {
     return maxVal;
 }
 
-std::vector&lt;double&gt; BasicStats::normalizedData(const std::vector&lt;double&gt; &dataList) {
+std::vector&lt;double&gt; BasicStats::normalizedData(const std::vector&lt;double&gt; &amp;dataList) {
     double maxValue = calcMax(dataList);
     std::vector&lt;double&gt; normData;
-    for (std::vector&lt;double&gt;::const_iterator iter=dataList.begin(); iter!=dataList.end(); ++iter) {
+    for (std::vector&lt;double&gt;::const_iterator iter=dataList.begin(); 
+         iter!=dataList.end(); 
+         ++iter) {
         normData.push_back(*iter/maxValue);
     }
     return normData;
 }
 
-std::vector&lt;std::vector&lt;double&gt;&gt; BasicStats::normalizedData(const std::vector&lt;std::vector&lt;double&gt;&gt; &dataList) {
+std::vector&lt;std::vector&lt;double&gt;&gt; BasicStats::normalizedData(const std::vector&lt;std::vector&lt;double&gt;&gt; &amp;dataList) {
     std::vector&lt;std::vector&lt;double&gt;&gt; normData;
-    for (std::vector&lt;std::vector&lt;double&gt;&gt;::const_iterator iter=dataList.begin(); iter!=dataList.end(); ++iter) {
+    for (std::vector&lt;std::vector&lt;double&gt;&gt;::const_iterator iter=dataList.begin(); 
+         iter!=dataList.end(); 
+         ++iter) {
         std::vector&lt;double&gt; normalizedRow = normalizedData(*iter);
         normData.push_back(normalizedRow);
     }
@@ -906,11 +944,21 @@ class CPPNormalizePlugin(TRIPlugin):
         against the largest single element in the array."""
         if self._data is not None:
             calculator = basicstats_ext.BasicStats()
-            raw_data = self._data.astype(np.float).tolist()
-            if self._data.ndim == 1:
-                self._data = np.array(calculator.normalize(raw_data))
-            elif self._data.ndim == 2:
-                self._data = np.array(calculator.normalize2d(raw_data))
+            # Support "batch mode" - may be passed multiple datasets as a dict
+            if hasattr(self._data, "keys"):
+                for dataset in self._data:
+                    raw_data = self._data[dataset].astype(np.float).tolist()
+                    if self._data[dataset].ndim == 1:
+                        self._data[dataset] = np.array(calculator.normalize(raw_data))
+                    elif self._data[dataset].ndim == 2:
+                        self._data[dataset] = np.array(calculator.normalize2d(raw_data))
+            else:
+                # Passed a single dataset
+                raw_data = self._data.astype(np.float).tolist()
+                if self._data.ndim == 1:
+                    self._data = np.array(calculator.normalize(raw_data))
+                elif self._data.ndim == 2:
+                    self._data = np.array(calculator.normalize2d(raw_data))
 </pre>
 
 <p>If you plan on <a href="file:///home/ccoughlin/PycharmProjects/Bane/docs/plugins.html#dev_distribution">distributing

@@ -75,6 +75,8 @@
 
         <li><a href="#qs_plot">Plotting Data</a></li>
 
+        <li><a href="#qs_batchmode">Batch Mode</a></li>
+
         <li><a href="#qs_next">Next Steps</a></li>
       </ul>
     </div><!--/.well -->
@@ -435,7 +437,7 @@
     high so that the first color in the list is used to represent the smallest values in
     the data. To reorder the colors, select a color in the list and press the up or down
     arrow buttons in the color list to move it up or down in the colormap respectively.
-    To delete a color, select the color and press the delete button in the color list.
+    To delete a color, select the color and press the delete button in the color list.</p>
 
     <p>To preview the current colormap, press the <strong>Preview Colormap</strong>
     button at the top of the Preview pane. The sample data are replotted using your
@@ -545,6 +547,66 @@
 
     <p class="centeredImage"><a href="images/ascan.png" rel="lightbox" title=
     "A-scan Plot"><img src="images/ascan_s.png" width="300" height="166" /></a></p>
+
+    <h2><a name="qs_batchmode">Batch Mode</a></h2>
+    <p>If you have multiple data files to analyze it can prove time-consuming to import each dataset, plot, execute your analysis, and save the output.  NDIToolbox "batch mode" can streamline this procedure by allowing you to specify a plugin to run and a set of files to analyze without user interaction.  To use batch mode, open your operating system's console in the NDIToolbox program folder, and run <code>python nditoolbox.py -h</code> to print the basic usage instructions.  You'll see something like the following.</p>
+
+    <pre class="pre-scrollable">
+      NDIToolbox Batch Mode
+      usage: nditoolbox.py [-h] [-t TOOLKIT] [-c TOOLKIT_CONFIG] [-f FILETYPE]
+                           [-i ...] [-s]
+
+      Run NDIToolbox toolkit in batch mode
+
+      optional arguments:
+        -h, --help            show this help message and exit
+        -t TOOLKIT, --toolkit TOOLKIT
+                              Name of toolkit to run
+        -c TOOLKIT_CONFIG, --toolkit_config TOOLKIT_CONFIG
+                              Config file for toolkit
+        -f FILETYPE, --filetype FILETYPE
+                              Specify type of input file (default: guess from file
+                              extension)
+        -i ..., --input_files ...
+                              Specify input file or files
+        -s, --save_output     Save plugin output to new HDF5 data file
+    </pre>
+
+    <p>At a minimum, you'll need to specify the toolkit to run and the file(s) to run it on.  Use <code>-t TOOLKIT</code> to specify the toolkit name - note that you specify the <em>actual name of the toolkit</em> and not its filename, e.g. <code>-t MedianFilterPlugin</code> and <strong>not</strong> <code>-t medfilterplugin.py</code>.  To specify the file(s) to analyze, use <code>-i</code> followed by a wildcard pattern, e.g. <code>-i data/ut_tests/*.csc</code> to run the plugin against all files found in the <code>data/ut_tests</code> folder with the <code>.csc</code> extension (commonly used for UTWin data files).  For each file that matches your list of specified files, the data will be read, fed to your chosen toolkit, and (optionally) saving the resultant data to a new HDF5 data file in your local data folder.</p>
+
+    <p>When specifying input files, if you use automatic file format detection (more below), you don't have to run batch mode separately for every file format you have.  Just specify the folder with the data - for each file in the folder, if its format is supported by NDIToolbox and recognized, it will be read successfully.</p>
+
+    <p>Normally, NDIToolbox attempts to load data files based on their file extension rather than asking you about the file format.  If you need to override this feature, you can specify the file import format to use with the <code>-f</code> switch.  As of this writing, the following file format specifiers are supported.</p>
+
+    <ul>
+      <li>nditoolbox (HDF5 files)</li>
+      <li>image (JPEG, GIF, PNG, BMP, etc. files)</li>
+      <li>csv (Comma-delimited ASCII files)</li>
+      <li>dicom (DICOM/DICONDE files)</li>
+      <li>winspect (Winspect 6/7 files)</li>
+      <li>utwin (UTWin Cscan files)</li>
+    </ul>
+
+    <p>It's important to remember that in using the <code>-f</code> switch, you are overriding NDIToolbox's attempts to choose the file format automatically.  If you use it, be sure that <strong>all</strong> your input files are of the format you specify!  Any files that don't match the format you specify will not be read successfully.  Unless you really need it, we recommend letting NDIToolbox make the determination on file format.</p>
+
+    <p>If your toolkit requires configuration, you can specify a configuration file to use with the <code>-c</code> switch.  This file should be a JSON file that lists the configuration required for the toolkit.  Finally, to save the results of each analysis, add the <code>-s</code> switch.  Unless your toolkit saves its own results you'll likely want to specify this switch as otherwise no data are saved!</p>
+
+    <p>For some types of input file (UTWin and Winspect as of this writing), it's not uncommon to have several datasets in each file.  If multiple datasets are found in a file, NDIToolbox will attempt to read all of them and pass them to the toolkit.  Output files will be named using the base name of the current input file with an appended string indicating the dataset, e.g. a file <code>scan1.sdt</code> containing one Time Of Flight, one amplitude, and two waveform datasets would produce output files named <code>scan1_tof0.hdf5</code>, <code>scan1_amplitude0.hdf5</code>, <code>scan1_waveform0.hdf5</code>, and <code>scan1_waveform1.hdf5</code>.  However, your toolkit needs to have been written to support this feature - contact the toolkit's developer for details.  The MedianFilterPlugin and the NormalizePlugin that ship with NDIToolbox both support multiple datasets.</p>
+
+    <h3>Example</h3>
+    <pre>python nditoolbox.py -t MedianFilterPlugin -c ~/tmp/bane_batch_tests/medfiltercfg.json -s -i ~/tmp/bane_batch_tests/*.csc</code></pre>
+
+    <p>Runs the <code>MedianFilterPlugin</code> on all files in the <code>~/tmp/bane_batch_tests/</code> folder with the <code>.csc</code> file extension (note that this is case sensitive).  The median filter is using the JSON file <code>~/tmp/bane_batch_tests/medfiltercfg.json</code> as its configuration file; the contents of which specify a rank 5 filtration:</p>
+
+    <pre class="pre-scrollable">
+    # medfiltercfg.json
+    # JSON configuration for Median Filter NDIToolbox toolkit
+    # Accepted parameters:
+    #     "kernel size"  :  rank of median filter (defaults to 3)
+    {"kernel size":5}
+    </pre>
+
+    <p>As no file format was specified, NDIToolbox will assume the files are UTWin CScan files based on their file extension of <code>.csc</code>; output of the median filtration will be saved to the <code>batch_output</code> folder in your local data folder.</p>
 
     <h2><a name="qs_next">Next Steps</a></h2>
 

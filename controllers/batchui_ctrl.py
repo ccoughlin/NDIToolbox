@@ -44,19 +44,12 @@ class BatchPluginAdapter(object):
         if filetype is None:
             filetype = get_file_type(datafname)
         self.filetype = filetype
+        self._data = {}
 
     @property
     def data(self):
         """Returns the toolkit's current data, or None if no data"""
-        if hasattr(self, 'toolkit_instance'):
-            return self.toolkit_instance.data
-        return None
-
-    @data.setter
-    def data(self, new_data):
-        """Sets the toolkit's data"""
-        if hasattr(self, 'toolkit_instance'):
-            self.toolkit_instance.data = new_data
+        return self._data
 
     def get_plugin_class(self):
         """Returns the plugin class with the specified name, or None if not found."""
@@ -72,7 +65,6 @@ class BatchPluginAdapter(object):
         plugin_cls = self.get_plugin_class()
         self.toolkit_instance = plugin_cls()
         cfg_dict = {'datafile':self.datafile}
-        self.toolkit_instance.data = self.read_data()
         if self.toolkit_cfg is not None:
             with open(self.toolkit_cfg, "rb") as fidin:
                 cfg_dict.update(json.load(fidin))
@@ -83,35 +75,45 @@ class BatchPluginAdapter(object):
 
     def read_data(self):
         """Reads the supplied data file based on the supplied/assumed filetype.  If filetype was
-        not specified, assumes file format based on file's extension.  Returns None if no data found
-        or returns a NumPy array - for ultrasonic file formats that store multiple datasets in a
-        single file, returns the waveform array.  To retrieve the remaining datasets, use the plugin
-        instance's self.config['datafile'] to retrieve the data file's full path, and use the dataio
-        module."""
-        data = None
+        not specified, assumes file format based on file's extension."""
+        tof_counter = 0
+        amp_counter = 0
+        waveform_counter = 0
         if self.filetype is not None and self.filetype in available_file_types():
             if self.filetype == 'nditoolbox':
-                data = dataio.get_data(self.datafile)
+                self._data = dataio.get_data(self.datafile)
             if self.filetype == 'winspect':
                 raw_data = dataio.get_winspect_data(self.datafile)
+                # Handle any files that may have stored multiple datasets of
+                # a given type(s)
                 for dataset in raw_data:
+                    dataset_key = os.path.basename(self.datafile)
                     if dataset.data_type == 'waveform':
-                        data = dataset.data
-                        break
+                        dataset_key = 'waveform' + str(waveform_counter)
+                        waveform_counter +=1
+                    elif dataset.data_type == 'amplitude':
+                        dataset_key = 'amplitude' + str(amp_counter)
+                        amp_counter += 1
+                    elif dataset.data_type == 'tof': #TODO -confirm SDT files use tof
+                        dataset_key = 'tof' + str(tof_counter)
+                        tof_counter += 1
+                    self._data[dataset_key] = dataset.data
             if self.filetype == 'csv':
-                data = dataio.get_txt_data(self.datafile)
+                self._data = dataio.get_txt_data(self.datafile)
             if self.filetype == 'image':
-                data = dataio.get_img_data(self.datafile, flatten=True)
+                self._data = dataio.get_img_data(self.datafile, flatten=True)
             if self.filetype == 'dicom':
-                data = dataio.get_dicom_data(self.datafile)
+                self._data = dataio.get_dicom_data(self.datafile)
             if self.filetype == 'utwin':
-                data = dataio.get_utwin_waveform_data(self.datafile)
-        return data
+                self._data = dataio.get_utwin_data(self.datafile)
 
     def run(self):
         """Executes the toolkit"""
         self.init_toolkit()
+        self.read_data()
+        self.toolkit_instance.data = self._data
         self.toolkit_instance.run()
+        self._data = self.toolkit_instance.data
 
 
 def run_plugin(toolkit, input_file, toolkit_config=None, file_type=None, save_data=True):
@@ -138,5 +140,12 @@ def run_plugin(toolkit, input_file, toolkit_config=None, file_type=None, save_da
     batch_runner = BatchPluginAdapter(toolkit, input_file, toolkit_cfg=toolkit_config, filetype=file_type)
     batch_runner.run()
     if save_data:
-        output_fname = os.path.join(pathfinder.batchoutput_path(), os.path.basename(input_file)+".hdf5")
-        dataio.save_data(output_fname, batch_runner.data)
+        if hasattr(batch_runner.data, "keys"):
+            # Handle multiple datasets
+            for dataset in batch_runner.data:
+                output_fname = os.path.join(pathfinder.batchoutput_path(), os.path.basename(input_file) + dataset + ".hdf5")
+                dataio.save_data(output_fname, batch_runner._data)
+        else:
+            # Handle single dataset
+            output_fname = os.path.join(pathfinder.batchoutput_path(), os.path.basename(input_file) + ".hdf5")
+            dataio.save_data(output_fname, batch_runner._data)
