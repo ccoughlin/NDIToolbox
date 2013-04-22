@@ -34,21 +34,39 @@ if __name__ == "__main__":
         parser.add_argument('-i', '--input_files', nargs=argparse.REMAINDER, help='Specify input file or files')
         parser.add_argument('-s', '--save_output', action='store_true', default=False,
                             help="Save plugin output to new HDF5 data file")
+        parser.add_argument('-m', '--multiprocess', action='store_true', default=False,
+                            help="Use multiple simultaneous processes for analysis")
         args = parser.parse_args()
         mainmodel.MainModel.check_user_path()
         available_plugins = mainmodel.load_plugins()
         available_plugins_names = [plugin[0] for plugin in available_plugins]
+        workers = multiprocessing.Pool()
+        if args.multiprocess:
+            print("Using multiprocessing mode, {0} simultaneous processes".format(multiprocessing.cpu_count()))
         if args.toolkit and args.input_files:
             if args.toolkit in available_plugins_names:
                 # TODO - more elegant way to handle specifying files whether the shell expands the wildcard or not - ?
                 for _f in args.input_files:
                     paths = glob.glob(_f)
                     for _p in paths:
-                        print("\tProcessing {0}...".format(_p))
-                        # TODO - consider adding support for multiprocessing Pools - e.g. make default except if
-                        # MemoryErrors encountered - files too large for multiprocessing, drop back to single process
-                        batchui_ctrl.run_plugin(toolkit=args.toolkit, input_file=_p, toolkit_config=args.toolkit_config,
-                                                file_type=args.filetype, save_data=args.save_output)
+                        if not args.multiprocess:
+                            print("\tProcessing {0}...".format(_p))
+                            batchui_ctrl.run_plugin(toolkit=args.toolkit,
+                                                    input_file=_p,
+                                                    toolkit_config=args.toolkit_config,
+                                                    file_type=args.filetype,
+                                                    save_data=args.save_output)
+                        else:
+                            print("\tAdding {0} to job list...".format(_p))
+                            workers.apply_async(batchui_ctrl.run_plugin,
+                                                kwds={'toolkit':args.toolkit,
+                                                      'input_file':_p,
+                                                      'toolkit_config':args.toolkit_config,
+                                                      'file_type':args.filetype,
+                                                      'save_data':args.save_output})
+                workers.close()
+                workers.join()
+                print("Analysis complete.")
             else:
                 print("** Unable to locate plugin '{0}'.  Available plugins:".format(args.toolkit))
                 for plugin_name in available_plugins_names:

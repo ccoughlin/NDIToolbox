@@ -62,6 +62,15 @@ class TestBatchPluginAdapter(unittest.TestCase):
         and filetype."""
         return batchui_ctrl.BatchPluginAdapter(self.toolkit_class, datafile, cfg, ftype)
 
+    def get_available_plugins(self):
+        """Returns a tuple of available NDIToolbox plugins:
+        (plugin_names, plugin_classes)
+        """
+        available_plugins = mainmodel.load_plugins()
+        plugin_names = [plugin[0] for plugin in available_plugins]
+        plugin_classes = [plugin[1] for plugin in available_plugins]
+        return plugin_names, plugin_classes
+
     def test_init_toolkit(self):
         """Verify initialization of a toolkit"""
         adapter = self.create_adapter(self.datafile)
@@ -73,9 +82,7 @@ class TestBatchPluginAdapter(unittest.TestCase):
 
     def test_get_plugin_class(self):
         """Verify returning the correct plugin class based on name"""
-        available_plugins = mainmodel.load_plugins()
-        plugin_names = [plugin[0] for plugin in available_plugins]
-        plugin_classes = [plugin[1] for plugin in available_plugins]
+        plugin_names, plugin_classes = self.get_available_plugins()
         for idx in range(len(plugin_names)):
             adapter = batchui_ctrl.BatchPluginAdapter(plugin_names[idx], self.datafile)
             retrieved_plugin_cls = adapter.get_plugin_class()
@@ -113,9 +120,7 @@ class TestBatchPluginAdapter(unittest.TestCase):
 
     def test_run(self):
         """Verify correctly executing NDIToolbox plugins"""
-        available_plugins = mainmodel.load_plugins()
-        plugin_names = [plugin[0] for plugin in available_plugins]
-        plugin_classes = [plugin[1] for plugin in available_plugins]
+        plugin_names, plugin_classes = self.get_available_plugins()
         for idx in range(len(plugin_names)):
             adapter = batchui_ctrl.BatchPluginAdapter(plugin_names[idx], self.datafile)
             plugin_cls_inst = plugin_classes[idx]()
@@ -125,6 +130,31 @@ class TestBatchPluginAdapter(unittest.TestCase):
             adapter.run()
             returned_data = adapter.data
             self.assertTrue(np.array_equal(expected_data, returned_data))
+
+    def test_run_plugin(self):
+        """Verify run_plugin convenience function correctly executes"""
+        output_fname = os.path.join(pathfinder.batchoutput_path(), os.path.basename(self.datafile) + ".hdf5")
+        batchui_ctrl.run_plugin(self.toolkit_class, self.datafile, save_data=False)
+        self.assertFalse(os.path.exists(output_fname))
+        batchui_ctrl.run_plugin(self.toolkit_class, self.datafile, save_data=True)
+        self.assertTrue(os.path.exists(output_fname))
+        plugin_names, plugin_classes = self.get_available_plugins()
+        for idx in range(len(plugin_names)):
+            if plugin_names[idx] == self.toolkit_class:
+                plugin_instance = plugin_classes[idx]()
+                plugin_instance.data = dataio.get_data(self.datafile)
+                plugin_instance.run()
+                expected_data = plugin_instance.data
+                stored_data = dataio.get_data(output_fname)
+                self.assertTrue(np.array_equal(expected_data, stored_data))
+                break
+        if os.path.exists(output_fname):
+            try:
+                os.remove(output_fname)
+            except WindowsError: # file in use (Windows)
+                pass
+            except OSError: # other OS error
+                pass
 
 if __name__ == "__main__":
     random.seed()
