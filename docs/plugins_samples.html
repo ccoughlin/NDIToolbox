@@ -1,16 +1,9 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html>
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-
     <title>NDIToolbox Plugins - Examples</title>
-    <meta name="description" content="">
-    <meta name="author" content="">
-
     <meta name="viewport" content="width=device-width">
-
-
     <link rel="stylesheet" href="css/bootstrap.css">
     <style type="text/css">
         body {
@@ -72,31 +65,43 @@
 
     <p>Examples of NDIToolbox plugins</p>
 </div>
-<p>Now that you've read the <a href="plugins_developers.html">basics on developing plugins</a> for NDIToolbox, it's time
-    to see some basic examples.</p>
+<p>
+    Now that you've read the <a href="plugins_developers.html">basics on developing plugins</a> for NDIToolbox, it's
+    time
+    to see some basic examples.
+</p>
+
 <a name="dev_sample_server"><h3>Example Plugin 1: Server-Based</h3></a>
 
-<p>We've already seen example code for local plugins, now let's look at one way to keep code on the server. Consider a
+<p>
+    We've already seen example code for local plugins, now let's look at one way to keep code on the server. Consider a
     plugin designed to <a href="http://en.wikipedia.org/wiki/Edge_detection">detect edges</a> in a 2D image plot. SciPy
-    has several routines of interest for edge detection, but suppose we've decided to use the excellent <a
-            href="http://scikits-image.org/">scikits-image</a> image processing add-on for SciPy. This makes things
-    slightly more complicated because scikits-image requires compiling some C code on installation; this can be
-    problematic for Windows users that don't have Visual Studio installed. We've therefore decided to keep most of the
-    code on a server we control so we can operate in a well-controlled environment, and have the plugin phone in for
-    calculations. This also gives some protection for any intellectual property we might develop as the toolkit evolves.  It's also a path to commercialization by e.g. selling subscriptions to the toolkit's calculations and requiring an active login in our toolkit's <code>config</code> for access.</p>
+    has several routines of interest for edge detection, but suppose we've decided to use the excellent
+    <a href="http://scikits-image.org/">scikits-image</a> image processing add-on for SciPy. This makes things slightly
+    more complicated because scikits-image requires compiling some C code on installation; this can be problematic for
+    Windows users that don't have Visual Studio installed. We've therefore decided to keep most of the code on a server
+    we control so we can operate in a well-controlled environment, and have the plugin phone in for calculations. This
+    also gives some protection for any intellectual property we might develop as the toolkit evolves. It's also a path
+    to commercialization by e.g. selling subscriptions to the toolkit's calculations and requiring an active login in
+    our toolkit's <code>config</code> for access.
+</p>
 
-<p>After looking at JSON and XML-RPC, we've decided to go with Python's <a
+<p>
+    After looking at JSON and XML-RPC, we've decided to go with Python's <a
         href="http://docs.python.org/library/simplexmlrpcserver.html#module-SimpleXMLRPCServer">SimpleXMLRPCServer</a>.
     There are several different edge detection algorithms we could employ, and since they'd all be run on the server
     anyway we've decided to just run one edge detector server that can provide all the algorithms we implement. The idea
     will be to expose an API that offers several different edge detection algorithms; we could write a single NDIToolbox
     plugin that allows the user to select the algorithm on the fly but for the purposes of this demonstration we'll
-    write one plugin per algorithm. In this case, we'll implement the <a
-            href="http://en.wikipedia.org/wiki/Sobel_operator">Sobel</a> and
-    <a href="http://en.wikipedia.org/wiki/Canny_edge_detector">Canny</a> methods.</p>
+    write one plugin per algorithm. In this case, we'll implement the
+    <a href="http://en.wikipedia.org/wiki/Sobel_operator">Sobel</a> and
+    <a href="http://en.wikipedia.org/wiki/Canny_edge_detector">Canny</a> methods.
+</p>
 
-<p>On the server side, we simply need to tweak the example code shown in SimpleXMLRPCServer to provide the methods we
-    need:</p>
+<p>
+    On the server side, we simply need to tweak the example code shown in SimpleXMLRPCServer to provide the methods we
+    need:
+</p>
 
 <pre class="pre-scrollable">
 #!/usr/bin/env python
@@ -146,14 +151,18 @@ server.register_function(canny_edges, 'canny_edges')
 server.serve_forever()
 </pre>
 
-<p>The server starts up and stays running; listening for client connections on port 8000. A client sends a NumPy array
+<p>
+    The server starts up and stays running; listening for client connections on port 8000. A client sends a NumPy array
     (the current data set in the image plot) converted to a standard Python list; the server converts back to a NumPy
     array and returns the edges. On the client side, the plugin will then re-convert from the Python list to a NumPy
-    array and NDIToolbox refreshes the image plot with the results.</p>
+    array and NDIToolbox refreshes the image plot with the results.
+</p>
 
-<p>Looking at the scikits-image <a href="http://scikits-image.org/docs/0.6/api/skimage.filter.html#sobel">Sobel
+<p>
+    Looking at the scikits-image <a href="http://scikits-image.org/docs/0.6/api/skimage.filter.html#sobel">Sobel
     documentation</a>, no parameters are necessary to run the filter. So a simple Sobel Edge Detection plugin for
-    NDIToolbox might look like this:</p>
+    NDIToolbox might look like this:
+</p>
 
 <pre class="pre-scrollable">
 """sobel_edge_detection_plugin.py - simple A7117 plugin that demonstrates
@@ -201,20 +210,26 @@ class SobelPlugin(TRIPlugin):
                 self._data = self.srvr.sobel_edges(dataset)
 </pre>
 
-<p>The only configuration option we require in this case is a pointer to the edge detection server's URL; you could
+<p>
+    The only configuration option we require in this case is a pointer to the edge detection server's URL; you could
     hard-wire this into the plugin to streamline the plugin's operation if desired. Here's an example of the Sobel
-    plugin - before and after execution:</p>
+    plugin - before and after execution:
+</p>
 
-<p class="centeredImage"><a href="images/sobel_edge_one.png" rel="lightbox[sobel]"
-                            title="Original C-scan"><img src="images/sobel_edge_one.png" width="313"
-                                                         height="246"/></a><a href="images/sobel_edge_two.png"
-                                                                              rel="lightbox[sobel]"
-                                                                              title="Sobel Edge Detection"><img
-        src="images/sobel_edge_two.png" width="257" height="230"/></a></p>
+<p class="centeredImage">
+    <a href="images/sobel_edge_one.png" rel="lightbox[sobel]" title="Original C-scan">
+        <img src="images/sobel_edge_one.png" width="313" height="246"/>
+    </a>
+    <a href="images/sobel_edge_two.png" rel="lightbox[sobel]" title="Sobel Edge Detection">
+        <img src="images/sobel_edge_two.png" width="257" height="230"/>
+    </a>
+</p>
 
-<p>Looking at the <a href="http://scikits-image.org/docs/dev/auto_examples/plot_canny.html">Canny edge detector API</a>,
+<p>
+    Looking at the <a href="http://scikits-image.org/docs/dev/auto_examples/plot_canny.html">Canny edge detector API</a>,
     we can specify thresholds and a number of standard deviations. In this case, we'll add each of these parameters to
-    the plugin's <code>config</code> dict so that the user can provide arguments to the server:</p>
+    the plugin's <code>config</code> dict so that the user can provide arguments to the server:
+</p>
 
 <pre class="pre-scrollable">
 """canny_edge_detection_plugin.py - simple A7117 plugin that demonstrates
@@ -269,23 +284,29 @@ class CannyPlugin(TRIPlugin):
                                                    self.config['high_threshold'])
 </pre>
 
-<p class="centeredImage"><a href="images/canny_edge_one.png" rel="lightbox[canny]"
-                            title="Original C-scan"><img src="images/canny_edge_one.png" width="267"
-                                                         height="248"/></a><a href="images/canny_edge_two.png"
-                                                                              rel="lightbox[canny]"
-                                                                              title="Canny Edge Detection"><img
-        src="images/canny_edge_two.png" width="210" height="207"/></a></p>
+<p class="centeredImage">
+    <a href="images/canny_edge_one.png" rel="lightbox[canny]" title="Original C-scan">
+        <img src="images/canny_edge_one.png" width="267" height="248"/>
+    </a>
+    <a href="images/canny_edge_two.png" rel="lightbox[canny]" title="Canny Edge Detection">
+        <img src="images/canny_edge_two.png" width="210" height="207"/>
+    </a>
+</p>
 
-<p>In this case the results of the Canny edge detection aren't as nice as the Sobel; but of course the user can revert
-    to their original data and try experimenting with the Canny parameters to optimize the results.</p>
+<p>
+    In this case the results of the Canny edge detection aren't as nice as the Sobel; but of course the user can revert
+    to their original data and try experimenting with the Canny parameters to optimize the results.
+</p>
 
-<p>Once we've set up an edge detection server, we'd update the source code for both plugins to change the <code>server_url</code>
-    key in the <code>config</code> dict to point to the server. Since both plugins consist of a single file,
-    installation is as simple as asking the user to copy both <code>.py</code> files to their plugins folder. Assuming
-    you'd prefer to make things easier for your users however, you'd probably want to make a proper NDIToolbox plugin
-    archive so that NDIToolbox can perform the plugin installation automatically. To do that for the Sobel plugin for
-    example, create a new ZIP <code>sobel_edge_detection_plugin.zip</code> and add
-    <code>sobel_edge_detection_plugin.py</code> and a README to the archive such as the following.</p>
+<p>
+    Once we've set up an edge detection server, we'd update the source code for both plugins to change the
+    <code>server_url</code> key in the <code>config</code> dict to point to the server. Since both plugins consist of a
+    single file, installation is as simple as asking the user to copy both <code>.py</code> files to their plugins
+    folder. Assuming you'd prefer to make things easier for your users however, you'd probably want to make a proper
+    NDIToolbox plugin archive so that NDIToolbox can perform the plugin installation automatically. To do that for the
+    Sobel plugin for example, create a new ZIP <code>sobel_edge_detection_plugin.zip</code> and add
+    <code>sobel_edge_detection_plugin.py</code> and a README to the archive such as the following.
+</p>
 
 <pre class="pre-scrollable">
 # README Contents
@@ -295,23 +316,30 @@ www.tri-austin.com
 Uses the Sobel operation (http://en.wikipedia.org/wiki/Sobel_operator) to detect edges in 2D data.
 </pre>
 
-<p>Once we've created the <code>sobel_edge_detection_plugin.zip</code> file, we can directly provide the archive to the
+<p>
+    Once we've created the <code>sobel_edge_detection_plugin.zip</code> file, we can directly provide the archive to the
     user and have them perform a local installation. The other option is to host the archive on a server and allow the
-    user to perform a remote installation such as the Linux user shown below.</p>
+    user to perform a remote installation such as the Linux user shown below.
+</p>
 
-<p class="centeredImage"><a href="images/fetch_sobel_plugin.png" rel="lightbox"><img src="images/fetch_sobel_plugin.png"
-                                                                                     width="429" height="344"
-                                                                                     title="Remote installation of Sobel plugin"></a>
+<p class="centeredImage">
+    <a href="images/fetch_sobel_plugin.png" rel="lightbox">
+        <img src="images/fetch_sobel_plugin.png" width="429" height="344" title="Remote installation of Sobel plugin">
+    </a>
 </p>
 
 <a name="dev_sample_java"><h3>Example Plugin 2: Java</h3></a>
 
-<p>As the first example of using other programming languages in NDIToolbox plugins, consider the case that you have
+<p>
+    As the first example of using other programming languages in NDIToolbox plugins, consider the case that you have
     pre-existing data analysis code written in Java and rather than attempt to port to Python you'd like a relatively
-    easy way to re-use your existing Java code.</p>
+    easy way to re-use your existing Java code.
+</p>
 
-<p>Suppose that we have written a standard Java library <code>ToolboxDemoLib.jar</code> with a <code>BasicStats</code>
-    class that we'd like to call from Python:</p>
+<p>
+    Suppose that we have written a standard Java library <code>ToolboxDemoLib.jar</code> with a <code>BasicStats</code>
+    class that we'd like to call from Python:
+</p>
 
 <b>BasicStats.java</b>
 <pre class="pre-scrollable">
@@ -357,25 +385,32 @@ public class BasicStats {
 }
 </pre>
 
-<p>The primary difficulty in using other programming languages with NDIToolbox is in dealing with NumPy arrays. Although
+<p>
+    The primary difficulty in using other programming languages with NDIToolbox is in dealing with NumPy arrays.
+    Although
     numerous bridges between Python and other languages exist, for the most part NumPy arrays are not directly
     supported. The most straightforward way to deal with the <code>data</code> arrays your plugin will receive and send
-    is to convert to and from standard Python <code>lists</code>, which are well supported.</p>
+    is to convert to and from standard Python <code>lists</code>, which are well supported.
+</p>
 
-<p>Going back to our scenario, there are several ways to connect Python and Java code. We've decided to go with <a
-        href="http://www.jython.org">Jython</a> in this case as it is an active and fairly well-supported project.
+<p>
+    Going back to our scenario, there are several ways to connect Python and Java code. We've decided to go with
+    <a href="http://www.jython.org">Jython</a> in this case as it is an active and fairly well-supported project.
     Jython also allows us to make more use of existing NDIToolbox plugin code: as a nearly-compatible Python
     implementation running on the JVM, we can use large portions of the existing <code>.py</code> we've used elsewhere
-    in this document.</p>
+    in this document.
+</p>
 
-<p>There are two basic ways to use Jython in this scenario: embed Python code in an existing Java application, or load
+<p>
+    There are two basic ways to use Jython in this scenario: embed Python code in an existing Java application, or load
     Java code into a Python application. If your Java code is a full-blown application, you would probably want to embed
     Jython in the application to have it interact with the plugin front-end. In this case however, our Java code is
     simple enough that it's more convenient to call it from a Jython instance. To do this, build the project as usual to
-    get <code>ToolboxDemoLib.jar</code>. Following the <a
-            href="http://wiki.python.org/jython/InstallationInstructions#standalone-mode">Jython installation
+    get <code>ToolboxDemoLib.jar</code>. Following the
+    <a href="http://wiki.python.org/jython/InstallationInstructions#standalone-mode">Jython installation
         instructions</a>, build a self-contained <code>jython.jar</code> and copy <code>ToolboxDemoLib.jar</code> to
-    this folder. The Jython interpreter will then be able to import your Java library with the following:</p>
+    this folder. The Jython interpreter will then be able to import your Java library with the following:
+</p>
 
 <pre class="pre-scrollable">
 import sys
@@ -383,11 +418,13 @@ sys.path.append("ToolboxDemoLib.jar")
 from stats import BasicStats
 </pre>
 
-<p>As it stands, running the above code in Jython would make our Java code available to any subsequent code, but we
+<p>
+    As it stands, running the above code in Jython would make our Java code available to any subsequent code, but we
     still need to connect Jython with Python. Again, there are several ways to accomplish this but one way is to recycle
     the XML-RPC code we used earlier: if we create a <code>server.py</code> file to run in Jython, it can then respond
     to <code>client.py</code> XML-RPC requests from Python. Since Jython is mostly compatible with Python this code will
-    look very similar to the code we used previously to demonstrate plugin communications with a server backend.</p>
+    look very similar to the code we used previously to demonstrate plugin communications with a server backend.
+</p>
 
 <pre class="pre-scrollable">
 """server.py - example of hosting Java functions on a server via XML-RPC
@@ -465,11 +502,13 @@ server.register_function(normalize2d, 'normalize2d')
 server.serve_forever()
 </pre>
 
-<p>To run this code we simply run <code>jython.jar</code> as a standard Java JAR, and provide it with the name of the
+<p>
+    To run this code we simply run <code>jython.jar</code> as a standard Java JAR, and provide it with the name of the
     script, e.g. <code>java -jar jython.jar server.py</code>. Note that Jython does a lot of the work for us in
     conversion, e.g. automatically handling the conversion between Python's <code>lists</code> and our Java code's
     <code>ArrayList</code>. We have had to make a few adjustments to our original server code since NumPy does not run
-    on Jython, most notably that we now have to convert to and from NumPy arrays on a row-by-row basis.</p>
+    on Jython, most notably that we now have to convert to and from NumPy arrays on a row-by-row basis.
+</p>
 
 <p>Similarly, the plugin's frontend code will look familiar:</p>
 
@@ -523,35 +562,41 @@ class JythonNormalizePlugin(TRIPlugin):
                     self._data = np.array(self.srvr.normalize2d(current_data))
 </pre>
 
-<p>The only major difference in this plugin compared to the previous XML-RPC example is that in this case the plugin
+<p>
+    The only major difference in this plugin compared to the previous XML-RPC example is that in this case the plugin
     defaults to assuming the Jython XML-RPC server is running on the local machine. You can of course run the Jython
     server on a different machine, and in fact this may be preferable if you would prefer to work in a known good
-    environment and/or don't want to require users to have Java installed on their machine.</p>
+    environment and/or don't want to require users to have Java installed on their machine.
+</p>
 
 <a name="dev_sample_cpp"><h3>Example Plugin 3: Extending With C++</h3></a>
 
-<p>As an example of how to write extensions in C++ for Python, let's suppose that the <a href="#dev_sample_java">Java
+<p>
+    As an example of how to write extensions in C++ for Python, let's suppose that the <a href="#dev_sample_java">Java
     library</a> shown above was instead a C++ library, and we would like to use it from Python. Rather than going the
     XML-RPC route, we'd like to compile a C++ extension that Python can call directly. Extending Python with C or C++
     code is relatively straightforward on POSIX (OS X, Linux, FreeBSD, etc.) platforms, but can be tricky on Windows
     machines. Quoting from the
     <a href="http://docs.python.org/extending/windows.html#differences-between-unix-and-windows">official Python
-        documentation on the process</a>:</p>
+        documentation on the process</a>:
+</p>
 
 <div class="well">
     <em>"Windows Python is built in Microsoft Visual C++; using other compilers may or may not work."</em>
 </div>
 
-<p>In general, you should use the same compiler and version of compiler to build your extension as was used to build
+<p>
+    In general, you should use the same compiler and version of compiler to build your extension as was used to build
     Python itself. If you are using a different compiler, you may need to build Python from source in order for your
-    extension to function properly. In this example, we will demonstrate using <a
-            href="http://www.boost.org/doc/libs/1_50_0/libs/python/doc/">Boost.Python</a> to build a C++ extension for
+    extension to function properly. In this example, we will demonstrate using
+    <a href="http://www.boost.org/doc/libs/1_50_0/libs/python/doc/">Boost.Python</a> to build a C++ extension for
     Windows machines using Visual Studio 2008 and Python 2.7. If you expect your C++ extension to be used on other
-    operating systems, you will need to become familiar with the C/C++ compiler used on that OS (e.g. <a
-            href="http://gcc.gnu.org/">GCC</a> or <a href="http://llvm.org/">LLVM</a>). For an example of how to use <a
-            href="http://www.swig.org/">SWIG</a> to build a C++ extension on Linux machines with GCC, NDIToolbox's
+    operating systems, you will need to become familiar with the C/C++ compiler used on that OS (e.g.
+    <a href="http://gcc.gnu.org/">GCC</a> or <a href="http://llvm.org/">LLVM</a>). For an example of how to use
+    <a href="http://www.swig.org/">SWIG</a> to build a C++ extension on Linux machines with GCC, NDIToolbox's
     developer has <a href="http://www.chriscoughlin.com/2011/08/swig-and-python/">provided an example on his website</a>
-    that isn't specific to NDIToolbox but may still prove useful.</p>
+    that isn't specific to NDIToolbox but may still prove useful.
+</p>
 
 <b>basicstats.h</b>
 <pre class="pre-scrollable">
@@ -622,50 +667,62 @@ std::vector&lt;std::vector&lt;double&gt;&gt; BasicStats::normalizedData(const st
 }
 </pre>
 
-<p>One slight difference here from the previous Java code - we've included a method that handles 2D data. In the Java
+<p>
+    One slight difference here from the previous Java code - we've included a method that handles 2D data. In the Java
     example we handled this in the Python code-you can use either approach based on personal preferences, benchmarking,
-    etc.</p>
+    etc.
+</p>
 
-<p>Although you can use Boost.Python from within the Visual Studio IDE, it's actually easier to compile the extension
+<p>
+    Although you can use Boost.Python from within the Visual Studio IDE, it's actually easier to compile the extension
     using <a href="http://www.boost.org/doc/libs/1_50_0/tools/build/index.html">Boost.Build</a> from the command line,
-    so that's the approach we'll use here. <a
-            href="http://www.boost.org/doc/libs/1_50_0/libs/python/doc/tutorial/doc/html/python/hello.html">Quoting from
-        the Boost.Python documentation</a>:</p>
+    so that's the approach we'll use here.
+    <a href="http://www.boost.org/doc/libs/1_50_0/libs/python/doc/tutorial/doc/html/python/hello.html">Quoting from the
+        Boost.Python documentation</a>:
+</p>
 
 <div class="well">
     <em>"Besides bjam, there are of course other ways to get your module built. What's written here should not be taken
-        as
-        'the one and only way'. There are of course other build tools apart from bjam."<br/>
+        as 'the one and only way'. There are of course other build tools apart from bjam."
+        <br/>
         <br/>
         "Take note however that the preferred build tool for Boost.Python is bjam. There are so many ways to set up the
-        build
-        incorrectly. Experience shows that 90% of the 'I can't build Boost.Python' problems come from people who had to
-        use
-        a different tool."</em>
+        build incorrectly. Experience shows that 90% of the 'I can't build Boost.Python' problems come from people who
+        had to
+        use a different tool."
+    </em>
 </div>
 
-<p>Begin by <a href="http://www.boost.org/users/download/">downloading</a> the latest version of Boost, and extract it
-    to a folder of your choice. Following the <a
-            href="http://www.boost.org/doc/libs/1_50_0/more/getting_started/windows.html">Getting Started On Windows</a>
+<p>
+    Begin by <a href="http://www.boost.org/users/download/">downloading</a> the latest version of Boost, and extract it
+    to a folder of your choice. Following the
+    <a href="http://www.boost.org/doc/libs/1_50_0/more/getting_started/windows.html">Getting Started On Windows</a>
     guide, start by building the Boost lib by opening a command prompt in the folder you've extracted the Boost source
-    to and issue the following commands:</p>
+    to and issue the following commands:
+</p>
 
 <pre class="pre-scrollable">
 bootstrap
 .\b2
 </pre>
 
-<p>Strictly speaking this step isn't necessary since it builds all the components of Boost that require compilation
+<p>
+    Strictly speaking this step isn't necessary since it builds all the components of Boost that require compilation
     (i.e., not just Boost.Python), but it doesn't take very long and it's a good test to ensure that your compiler and
-    Boost download are set up properly.</p>
+    Boost download are set up properly.
+</p>
 
-<p>Looking at the <a href="http://www.boost.org/doc/libs/1_50_0/libs/python/doc/tutorial/doc/html/python/hello.html">Boost.Python
-    documentation</a>, the next step is in creating a config file that configures the Boost <a
-        href="http://www.boost.org/boost-build2/doc/html/bbv2/jam.html">bjam</a> tool's compilation for your setup. This
-    file is a simple text file and in our case we really only need it to a) configure our compiler and b) set
-    the version of Python we're using. In our <code>$HOME</code> folder (e.g.
-    <code>c:\users\chris</code> in Windows 7 or <code>/home/chris</code> under Linux), we'd create a file named <code>user-config.jam</code>
-    that looks like the following:</p>
+<p>
+    Looking at the
+    <a href="http://www.boost.org/doc/libs/1_50_0/libs/python/doc/tutorial/doc/html/python/hello.html">Boost.Python
+        documentation</a>,
+    the next step is in creating a config file that configures the Boost
+    <a href="http://www.boost.org/boost-build2/doc/html/bbv2/jam.html">bjam</a> tool's compilation for your setup. This
+    file is a simple text file and in our case we really only need it to a) configure our compiler and b) set the
+    version of Python we're using. In our <code>$HOME</code> folder (e.g. <code>c:\users\chris</code> in Windows 7 or
+    <code>/home/chris</code> under Linux), we'd create a file named <code>user-config.jam</code> that looks like the
+    following:
+</p>
 
 <b>user-config.jam - config file for building Python 2.7 extensions using Visual Studio 2008</b>
 <pre class="pre-scrollable">
@@ -676,13 +733,15 @@ using msvc : 9.0 ;
 using python : 2.7 : C:/Python27 ;
 </pre>
 
-<p>Although the Boost.Python documentation recommends putting the bjam tool somewhere in your <code>$PATH</code> so it
+<p>
+    Although the Boost.Python documentation recommends putting the bjam tool somewhere in your <code>$PATH</code> so it
     can be found on the command-line, it's just as easy to create a batch file <code>bjam.bat</code> that points to the
-    bjam executable. A batch file is also a good choice because we need to set an environment variable <code>BOOST_BUILD_PATH</code>
-    prior to compilation; putting it in the batch file saves trying to remember to set it every time we want to
-    recompile. Set <code>BOOST_BUILD_PATH</code> to the folder that you've extracted Boost to; the <code>bjam</code>
-    tool is normally in the root of this folder. For example, if you have extracted the Boost source code to <code>C:\Users\CRC\src\cxx\boost_1_50_0</code>,
-    your <code>bjam.bat</code> file would look like this:</p>
+    bjam executable. A batch file is also a good choice because we need to set an environment variable
+    <code>BOOST_BUILD_PATH</code> prior to compilation; putting it in the batch file saves trying to remember to set it
+    every time we want to recompile. Set <code>BOOST_BUILD_PATH</code> to the folder that you've extracted Boost to; the
+    <code>bjam</code> tool is normally in the root of this folder. For example, if you have extracted the Boost source
+    code to <code>C:\Users\CRC\src\cxx\boost_1_50_0</code>, your <code>bjam.bat</code> file would look like this:
+</p>
 
 <b>bjam.bat</b>
 <pre class="pre-scrollable">
@@ -691,10 +750,12 @@ set BOOST_BUILD_PATH=C:\Users\CRC\src\cxx\boost_1_50_0\
 C:\Users\CRC\src\cxx\boost_1_50_0\bjam
 </pre>
 
-<p>Save the <code>bjam.bat</code> file to the folder you're using for your toolbox source code (i.e., where your C++
+<p>
+    Save the <code>bjam.bat</code> file to the folder you're using for your toolbox source code (i.e., where your C++
     extension files are located). Next, we create a Jamroot file (similar to a Makefile) that details how our project is
     built. This file is also stored in the toolbox source code root folder; an example for this particular project
-    <code>basicstats</code> is shown below.</p>
+    <code>basicstats</code> is shown below.
+</p>
 
 <pre class="pre-scrollable">
 # Copyright David Abrahams 2006. Distributed under the Boost
@@ -745,16 +806,20 @@ project
             run-test basicstats : basicstats_ext basicstats.py ;
 </pre>
 
-<p>If you're just building a basic C++ extension, you can copy-paste this example as-is with a few modifications. In
+<p>
+    If you're just building a basic C++ extension, you can copy-paste this example as-is with a few modifications. In
     particular, we're calling our module <code>basicstats</code> so you'll want to edit your Jamroot if you're using a
-    different name (e.g. replace "basicstats" in the above with your project name).</p>
+    different name (e.g. replace "basicstats" in the above with your project name).
+</p>
 
-<p>That's it for defining the basic project; you can find another example of setting up a project from Boost.Python's <a
-        href="http://www.boost.org/doc/libs/1_50_0/libs/python/doc/tutorial/doc/html/python/hello.html">Hello,
-    World!</a> example. Next, our original C++ code needs to be modified slightly - as it stands right now it expects to
-    be dealing with conventional C++ <code>std::vector&lt;double&gt;</code> containers, but our code will need to handle
-    Python <code>lists</code> instead. The most straightforward way of dealing with this change is by changing the C++
-    code to use Boost.Python's <code>boost::python::list</code> container. Here's the updated version.</p>
+<p>
+    That's it for defining the basic project; you can find another example of setting up a project from Boost.Python's
+    <a href="http://www.boost.org/doc/libs/1_50_0/libs/python/doc/tutorial/doc/html/python/hello.html">Hello, World!</a>
+    example. Next, our original C++ code needs to be modified slightly - as it stands right now it expects to be dealing
+    with conventional C++ <code>std::vector&lt;double&gt;</code> containers, but our code will need to handle Python
+    <code>lists</code> instead. The most straightforward way of dealing with this change is by changing the C++ code to
+    use Boost.Python's <code>boost::python::list</code> container. Here's the updated version.
+</p>
 
 <b>basicstats.h</b>
 <pre class="pre-scrollable">
@@ -822,18 +887,24 @@ boost::python::list BasicStats::normalized2DData(boost::python::list& dataList) 
 }
 </pre>
 
-<p>One thing to note in this code is the <code>normalized2DData</code> method we're using to normalize 2D arrays, in
+<p>
+    One thing to note in this code is the <code>normalized2DData</code> method we're using to normalize 2D arrays, in
     particular the creation of a <code>boost::python::list</code> to send to the 1D <code>normalizedData</code> method.
     To handle Python's dynamic nature, Boost.Python treats everything as a generic Python object so our code needs to
-    create a Python <code>list</code> to pass to <code>normalizedData</code>.</p>
+    create a Python <code>list</code> to pass to <code>normalizedData</code>.
+</p>
 
-<p>If you'd prefer not to convert your code to use lists (e.g. if you expect to continue using it in other
+<p>
+    If you'd prefer not to convert your code to use lists (e.g. if you expect to continue using it in other
     applications), you can of course write an <a href="http://en.wikipedia.org/wiki/Adapter_pattern">adapter class</a>
     to convert to and from your code. Consult the Boost.Python documentation for details on converting between C++ and
-    Python.</p>
+    Python.
+</p>
 
-<p>Now that the C++ data analysis library has been modified to work with Python, the only thing left to do is to define
-    our library's Python API. Add the following to <code>basicstats.cpp</code>:</p>
+<p>
+    Now that the C++ data analysis library has been modified to work with Python, the only thing left to do is to define
+    our library's Python API. Add the following to <code>basicstats.cpp</code>:
+</p>
 
 <pre class="pre-scrollable">
 // Demo of exposed function
@@ -855,13 +926,15 @@ BOOST_PYTHON_MODULE(basicstats_ext)
 }
 </pre>
 
-<p>This addition creates the API that Python will see from our extension library: a class <code>BasicStats</code> with
+<p>
+    This addition creates the API that Python will see from our extension library: a class <code>BasicStats</code> with
     methods <code>calcMin</code>, <code>calcMax</code>, <code>normalizedData</code>, and <code>normalized2DData</code>;
-    and a function
-    <code>version</code> that we've added to illustrate how to expose standalone C++ functions in the API. This
-    completes the project so the only thing left to do is run <code>bjam</code> in our toolkit's source code folder to
-    compile our new Python module <code>basicstats_ext.pyd</code> (basically a renamed .DLL). You should see output
-    similar to the following if all goes well.</p>
+    and a function <code>version</code> that we've added to illustrate how to expose standalone C++ functions in the
+    API.
+    This completes the project so the only thing left to do is run <code>bjam</code> in our toolkit's source code folder
+    to compile our new Python module <code>basicstats_ext.pyd</code> (basically a renamed .DLL). You should see output
+    similar to the following if all goes well.
+</p>
 
 <pre class="pre-scrollable">
 C:\Users\CRC\src\cxx\toolbox_demo>bjam
@@ -906,10 +979,12 @@ normalized_data = calculator.normalize(demo_data)
 print(normalized_data)
 </pre>
 
-<p>To create an NDIToolbox plugin from this new C++ extension, copy <code>basicstats_ext.pyd</code> and the
+<p>
+    To create an NDIToolbox plugin from this new C++ extension, copy <code>basicstats_ext.pyd</code> and the
     newly-created Boost.Python support DLL <code>boost_python-vc90-mt-gd-1_50.dll</code> (remembering that the names of
     your extension files may be different) to the NDIToolbox plugins folder along with your plugin's Python front-end.
-    Here's a sample plugin that uses the BasicStats extension to normalize NumPy arrays.</p>
+    Here's a sample plugin that uses the BasicStats extension to normalize NumPy arrays.
+</p>
 
 <pre class="pre-scrollable">
 """cpp_normalize_plugin.py - simple A7117 plugin that demonstrates
@@ -961,29 +1036,32 @@ class CPPNormalizePlugin(TRIPlugin):
                     self._data = np.array(calculator.normalize2d(raw_data))
 </pre>
 
-<p>If you plan on <a href="file:///home/ccoughlin/PycharmProjects/Bane/docs/plugins.html#dev_distribution">distributing
-    your plugin as an archive</a>, you'll need to create a sub-folder to place the DLL and .PYD file. Note that you may
-    then also have to adjust your paths to compensate. Remember also that since you are distributing compiled code you
-    may also need to consider your users' operating system, Python version, etc. and ship multiple versions of your
-    extension. You may also wish to collect some basic information about the system your plugin is running on-
-    <a href="sys.platform">operating system</a> and <a href="sys.version_info">version of Python</a> in particular-and
-    use this information to tailor your plugin's imports. NDIToolbox's <code>mainmodel.py</code> module also contains
-    some convenience functions that help to narrow down which version of Windows is being used:
+<p>
+    If you plan on <a href="docs/plugins.html#dev_distribution">distributing your plugin as an archive</a>, you'll need
+    to create a sub-folder to place the DLL and .PYD file. Note that you may then also have to adjust your paths to
+    compensate. Remember also that since you are distributing compiled code you may also need to consider your users'
+    operating system, Python version, etc. and ship multiple versions of your extension. You may also wish to collect
+    some basic information about the system your plugin is running on-<a href="sys.platform">operating system</a> and
+    <a href="sys.version_info">version of Python</a> in particular-and use this information to tailor your plugin's
+    imports. NDIToolbox's <code>mainmodel.py</code> module also contains some convenience functions that help to narrow
+    down which version of Windows is being used:
 </p>
 
 <b>mainmodel.py functions to report Windows version</b>
 <pre class="pre-scrollable">
-    is_win7()
-    is_winvista()
-    is_winxp()
-    is_winxp64()
-    is_win2k()
+is_win7()
+is_winvista()
+is_winxp()
+is_winxp64()
+is_win2k()
 </pre>
 
-<p>The <a href="http://docs.python.org/library/platform.html">platform</a> module in the Python Standard Library can
+<p>
+    The <a href="http://docs.python.org/library/platform.html">platform</a> module in the Python Standard Library can
     provide additional details, e.g. <code>platform.python_compiler()</code> will identify the compiler used to build
     the Python interpreter. If you need to ship multiple compiled extensions, you can then use this information to
-    determine which extension to import, for example:</p>
+    determine which extension to import, for example:
+</p>
 
 <pre class="pre-scrollable">
 import platform

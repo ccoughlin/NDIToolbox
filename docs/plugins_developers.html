@@ -1,16 +1,9 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html>
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-
     <title>NDIToolbox Plugins For Developers</title>
-    <meta name="description" content="">
-    <meta name="author" content="">
-
     <meta name="viewport" content="width=device-width">
-
-
     <link rel="stylesheet" href="css/bootstrap.css">
     <style type="text/css">
         body {
@@ -73,22 +66,28 @@
 
     <p>Writing and distributing code for NDIToolbox</p>
 </div>
-<p><i>Note - this section assumes some familiarity with Python and software development</i></p>
+<p>
+    <i>Note - this section assumes some familiarity with Python and software development</i>
+</p>
 
-<p>This section is for the prospective NDIToolbox plugin developer. Whether you're looking to write a plugin to
+<p>
+    This section is for the prospective NDIToolbox plugin developer. Whether you're looking to write a plugin to
     satisfy your own needs or interested in sharing with others, this section will give you a quick rundown on how
-    to structure and deploy your plugin.</p>
+    to structure and deploy your plugin.
+</p>
 
-<p>Plugins in NDIToolbox are typically written in <a href="http://www.python.org">Python</a>, specifically Python
+<p>
+    Plugins in NDIToolbox are typically written in <a href="http://www.python.org">Python</a>, specifically Python
     2.7. Provided you stick with the required structure of an NDIToolbox plugin (detailed below), you can write the
     majority of your application in <a href="#dev_languages">any programming language</a> you like as long as the plugin
-    wrapper conforms to the
-    <a href="#dev_structure">NDIToolbox plugin standard</a>. You may require additional steps to ensure that any
-    ancillary distributables
-    (runtime engines, DLLs, etc.) are installed and available.</p>
+    wrapper conforms to the <a href="#dev_structure">NDIToolbox plugin standard</a>. You may require additional steps to
+    ensure that any ancillary distributables (runtime engines, DLLs, etc.) are installed and available.
+</p>
 
-<p>If you stick to Python for your plugin, you have access to a variety of third-party libraries that are guaranteed
-    to be installed if NDIToolbox is installed. At the time of writing, these libraries include:</p>
+<p>
+    If you stick to Python for your plugin, you have access to a variety of third-party libraries that are guaranteed
+    to be installed if NDIToolbox is installed. At the time of writing, these libraries include:
+</p>
 
 <p>
 <ul>
@@ -96,8 +95,14 @@
     <li><a href="http://matplotlib.sf.net">matplotlib</a></li>
     <li><a href="http://code.google.com/p/h5py/">HDF5 for Python</a> (read/write HDF5 data files)</li>
 </ul>
-<p>Some libraries are likely to be installed if NDIToolbox is installed, however as these are optional your code should
-    check for them before assuming they're available:</p>
+</p>
+
+<p>
+    Some libraries are likely to be installed if NDIToolbox is installed, however as these are optional your code should
+    check for them before assuming they're available:
+</p>
+
+<p>
 <ul>
     <li><a href="http://code.google.com/p/pydicom">pydicom</a> (read/write DICOM / DICONDE data files)</li>
     <li><a href="http://www.pythonware.com/products/pil/">Python Imaging
@@ -106,21 +111,33 @@
 </ul>
 </p>
 
-<p>When a user plots a data file, NDIToolbox scans the user's <code>plugins</code> folder looking for valid plugins and
+<p>
+    When a user plots a data file, NDIToolbox scans the user's <code>plugins</code> folder looking for valid plugins and
     automatically adds them to the <strong>Plugins</strong> submenu (under <strong>Tools</strong>) in the plot window.
     When a user selects your plugin to run, NDIToolbox starts your code and configures it if necessary, then passes your
     program a copy of the data to analyze. Your plugin does its work and makes a copy of the data to pass back to
-    NDIToolbox, which updates the plot with the results.</p>
+    NDIToolbox, which updates the plot with the results.
+</p>
 
-<p>The main entry point for a plugin (other than the plugin's <code>__init__</code> method) is its <code>run()</code>
+<p>
+    The main entry point for a plugin (other than the plugin's <code>__init__</code> method) is its <code>run()</code>
     method. With a few restrictions (see below) you are generally free to structure your plugin as desired, but
     NDIToolbox will only call your plugin's <code>run()</code> method. On execution, NDIToolbox spawns a new process and
     instantiates your plugin. This instance's <code>data</code> attribute is set to the NumPy array currently in memory
     in the active plot window, and the <code>run()</code> method is called. After this method returns, NDIToolbox
     re-reads the instance's <code>data</code> attribute and sets the active plot window's <code>data</code> as this
-    (possibly) new NumPy array. The plot is refreshed to show the new data to the user.</p>
+    (possibly) new NumPy array. The plot is refreshed to show the new data to the user.
+</p>
 
-<p>NDIToolbox also supports a "batch mode" of operation, in which a user specifies a list of files to analyze with your plugin.  In this mode, a plugin can be handed multiple datasets in a Python <code>dict</code>, e.g. a single ultrasonic NDE datafile can contain Time Of Flight (TOF), amplitude, and waveform datasets.  Some file formats allow multiple datasets of each type.  To support batch mode in your plugin, your analysis code should check to see if it was passed a <code>dict</code> or if it was passed a single NumPy array.  There are several ways to accomplish this but one of the most straightforward is to simply check to see if the <code>_data</code> member has a <code>keys</code> attribute:</p>
+<p>
+    NDIToolbox also supports a "batch mode" of operation, in which a user specifies a list of files to analyze with your
+    plugin. In this mode, a plugin can be handed multiple datasets in a Python <code>dict</code>, e.g. a single
+    ultrasonic NDE datafile can contain Time Of Flight (TOF), amplitude, and waveform datasets. Some file formats allow
+    multiple datasets of each type. To support batch mode in your plugin, your analysis code should check to see if it
+    was passed a <code>dict</code> or if it was passed a single NumPy array. There are several ways to accomplish this
+    but one of the most straightforward is to simply check to see if the <code>_data</code> member has a
+    <code>keys</code> attribute:
+</p>
 
 <pre class="pre-scrollable">
     if hasattr(self._data, "keys"):
@@ -136,20 +153,27 @@
         self._data = your_analysis_function(self._data)
 </pre>
 
-<p>NDIToolbox plugins must be installed in the user's <code>plugins</code> folder. Plugins can simply be copied over, or
-    if you're working with a plugin archive (see below), NDIToolbox can do it for you.</p>
+<p>
+    NDIToolbox plugins must be installed in the user's <code>plugins</code> folder. Plugins can simply be copied over,
+    or if you're working with a plugin archive (<a href="#dev_distribution">see below</a>), NDIToolbox can do it for
+    you.
+</p>
 
 <a name="dev_structure"><h3>Structure Of A Plugin</h3></a>
 
-<p>All NDIToolbox plugins must be a subclass of <code>AbstractPlugin</code> (<code>models/abstractplugin.py</code>), and
-    must define a few key fields. For convenience
-    you can subclass <code>CompanyPlugin</code> (itself a subclass of <code>AbstractPlugin</code>) instead to get
-    generic entries for these fields if you don't want to set them yourself. If nothing else you should at least set the
-    <code>name</code> field to something unique as this is the label your plugin is given in the
-    <strong>Plugin</strong> menu.</p>
+<p>
+    All NDIToolbox plugins must be a subclass of <code>AbstractPlugin</code> (<code>models/abstractplugin.py</code>),
+    and must define a few key fields. For convenience you can subclass <code>CompanyPlugin</code> (itself a subclass of
+    <code>AbstractPlugin</code>) instead to get generic entries for these fields if you don't want to set them yourself.
+    If nothing else you should at least set the <code>name</code> field to something unique as this is the label your
+    plugin is given in the <strong>Plugin</strong> menu. The <code>description</code> field is useful as well since
+    this is shown to the user during runtime configuration or when prospective users ask for more information about your
+    plugin. It's one of your first opportunities to interact with the user, use it!
+</p>
 
 <ul>
-    <li><code>data</code> property (get and set): NumPy array. NDIToolbox sets the <code>data</code> property on your
+    <li>
+        <code>data</code> property (get and set): NumPy array. NDIToolbox sets the <code>data</code> property on your
         plugin on creation, and reads it back to plot the results.
     </li>
     <li><code>description</code>
@@ -170,7 +194,7 @@
 
 <p>Here's an example of a plugin that ships with NDIToolbox to normalize data.</p>
 
-    <pre class="pre-scrollable">
+<pre class="pre-scrollable">
 """normalize_plugin.py - simple A7117 plugin that normalizes the current
 data, used to demonstrate the plugin architecture
 
@@ -222,14 +246,16 @@ class NormalizePlugin(TRIPlugin):
                 # A single dataset was provided
                 max_el = np.max(self._data)
                 self._data /= max_el
-    </pre>
+</pre>
 
-<p>In addition, if you define a dict named <code>config</code> in your plugin, NDIToolbox will show the user a
+<p>
+    In addition, if you define a dict named <code>config</code> in your plugin, NDIToolbox will show the user a
     configuration dialog with each option and allow the user to make changes to the defaults you set in your code. For
     example, here's the code for the Median Filter plugin that ships with NDIToolbox. By default, the Median Filter will
-    apply a median filter of rank 3 to the current data set, but the user is free to specify any other size.</p>
+    apply a median filter of rank 3 to the current data set, but the user is free to specify any other size.
+</p>
 
-    <pre class="pre-scrollable">
+<pre class="pre-scrollable">
 """medfilter_plugin.py - applies a median filter to the current data set,
 used to demonstrate incorporating configuration options in an A7117 plugin
 
@@ -280,56 +306,80 @@ class MedianFilterPlugin(TRIPlugin):
                 # A single dataset was provided
                 self._data = scipy.signal.medfilt(self._data, kernel_size)
 
-    </pre>
+</pre>
 
-<p>When this plugin is run, NDIToolbox displays a window that allows the end user to change the filter size.
-    The <code>name</code> and <code>description</code> attributes you specify are also displayed in this window.</p>
+<p>
+    When this plugin is run, NDIToolbox displays a window that allows the end user to change the filter size.
+    The <code>name</code> and <code>description</code> attributes you specify are also displayed in this window.
+</p>
 
-<p class="centeredImage"><a href="images/medfilter_config.png" rel="lightbox"
-                            title="Median Filter Configuration Window"><img src="images/medfilter_config.png"
-                                                                            width="205" height="287"/></a></p>
+<p class="centeredImage">
+    <a href="images/medfilter_config.png" rel="lightbox" title="Median Filter Configuration Window">
+        <img src="images/medfilter_config.png" width="205" height="287"/>
+    </a>
+</p>
 
-<p>NDIToolbox's batch mode allows the user to specify a configuration file for your plugin.  If the configuration file is supplied, NDIToolbox will update your plugin's <code>config</code> dict with the configuration from this file.  In addition, your <code>config</code> will be updated with a new key <code>datafile</code> with the full pathname to the input file source of the data.  If your plugin requires more information from the input file other than its data contents (such as a sampling rate or threshold level), you can use this filename to query the file contents in your code.</p>
+<p>
+    NDIToolbox's batch mode allows the user to specify a configuration file for your plugin. If the configuration file
+    is supplied, NDIToolbox will update your plugin's <code>config</code> dict with the configuration from this file.
+    In addition, your <code>config</code> will be updated with a new key <code>datafile</code> with the full pathname to
+    the input file source of the data. If your plugin requires more information from the input file other than its data
+    contents (such as a sampling rate or threshold level), you can use this filename to query the file contents in your
+    code.
+</p>
 
-<p>There are few restrictions on what your plugin does or how you organize your code. The only hard restriction is that
+<p>
+    There are few restrictions on what your plugin does or how you organize your code. The only hard restriction is that
     the <code>run()</code> method can't spawn subprocesses (threads are ok however) because NDIToolbox runs the plugin
     in a separate process. You might also find it tough to build a full GUI for a plugin because of this restriction.
     Generally you should think of a plugin as a fairly small application; if you need more functionality a better home
     might be under the main UI's <strong>Tools</strong> menu (as we've done with the <strong>POD Toolkit</strong>
-    for example).</p>
+    for example).
+</p>
 
 <a name="dev_distribution"><h3>Distributing Plugins</h3></a>
 
-<p>If you'd like to share your plugin with others you can simply send them the files, or if you have access to a server
+<p>
+    If you'd like to share your plugin with others you can simply send them the files, or if you have access to a server
     you can host a plugin archive and have NDIToolbox download and install it for them automatically. To host a plugin
-    you'll need to make a ZIP archive of all its files, and the ZIP has to follow a few rules.</p>
+    you'll need to make a ZIP archive of all its files, and the ZIP has to follow a few rules.
+</p>
 
-<ol>
-    <li>The ZIP has to have the same basename as your plugin's main Python source file, e.g. if your plugin is named
-        <code>super_filter_plugin.py</code>, the ZIP must be named <code>super_filter_plugin.zip</code>.
-    </li>
-    <li>The plugin's main Python source file must be in the root folder of the ZIP.
-    </li>
-    <li>The ZIP must also contain an ASCII <code>readme</code> (or <code>README</code>, <code>readme.txt</code>,
-        <code>README.TXT</code>) file in the root folder of the ZIP. If the user asks for more information about the
-        plugin before installing, this is the file that's displayed to them. You should summarize what it does, who
-        wrote it, changelog, etc.
-    </li>
-    <li>All other files you need to ship with your plugin must be in a subfolder, and the subfolder must have the same
-        basename as the ZIP and the plugin's main source file. So for example if your plugin's Python file is
-        <code>MyFantasticPlugin.py</code> all ancillary files must be in the <code>MyFantasticPlugin</code> folder in
-        the <code>MyFantasticPlugin.zip</code>
-        archive.
-    </li>
-    <li>If you want to password-protect your plugin's ZIP file, you must use a global password rather than set passwords
-        for individual files inside the ZIP.
-    </li>
-    <li>If you want to require a username and password to access the plugin archive on your server, NDIToolbox only
-        supports basic access authentication via HTTP/HTTPS. Note that this feature has not been extensively tested and
-        should be considered experimental.
-    </li>
-</ol>
-<p>There's an example of the proper plugin archive structure available in the NDIToolbox source code at
+<p>
+    <ol>
+        <li>
+            The ZIP has to have the same basename as your plugin's main Python source file, e.g. if your plugin is named
+            <code>super_filter_plugin.py</code>, the ZIP must be named <code>super_filter_plugin.zip</code>.
+        </li>
+        <li>The plugin's main Python source file must be in the root folder of the ZIP.
+        </li>
+        <li>
+            The ZIP must also contain an ASCII <code>readme</code> (or <code>README</code>, <code>readme.txt</code>,
+            <code>README.TXT</code>) file in the root folder of the ZIP. If the user asks for more information about the
+            plugin before installing, this is the file that's displayed to them. You should summarize what it does, who
+            wrote it, changelog, etc.
+        </li>
+        <li>
+            All other files you need to ship with your plugin must be in a subfolder, and the subfolder must have the same
+            basename as the ZIP and the plugin's main source file. So for example if your plugin's Python file is
+            <code>MyFantasticPlugin.py</code> all ancillary files must be in the <code>MyFantasticPlugin</code> folder in
+            the <code>MyFantasticPlugin.zip</code>
+            archive.
+        </li>
+        <li>
+            If you want to password-protect your plugin's ZIP file, you must use a global password rather than set passwords
+            for individual files inside the ZIP.
+        </li>
+        <li>
+            If you want to require a username and password to access the plugin archive on your server, NDIToolbox only
+            supports basic access authentication via HTTP/HTTPS. Note that this feature has not been extensively tested and
+            should be considered experimental.
+        </li>
+    </ol>
+</p>
+
+<p>
+    There's an example of the proper plugin archive structure available in the NDIToolbox source code at
     <code>models/tests/support_files/good_medfilter_plugin.zip</code>. Remember that if your plugin uses Python
     libraries that aren't part of the default NDIToolbox installation, you are responsible for ensuring these
     dependencies are installed and available. Consider building a full-fledged installer or using standard Python tools
@@ -340,100 +390,124 @@ class MedianFilterPlugin(TRIPlugin):
 
 <a name="dev_languages"><h3>Plugins In Other Languages</h3></a>
 
-<p>Once you've written a basic plugin subclassing <code>AbstractPlugin</code> and provided a <code>run()</code> method,
-    you're free to use any other programming languages to write your toolkit. When using Python as a "wrapper" over
-    other languages, it's worth considering how your external code will interact with Python and NDIToolbox.</p>
-
-<p>The Python community has developed many projects to assist interaction between Python and another programming
-    language, some of the more popular languages and their associated projects include:
-
 <p>
-<ul>
-    <li>C</li>
-    <ul>
-        <li><a href="http://docs.python.org/c-api/">Python’s C API</a></li>
-        <li><a href="http://www.scipy.org/Weave">Weave</a></li>
-        <li><a href="http://www.swig.org">SWIG</a></li>
-    </ul>
-    <li>C++</li>
-    <ul>
-        <li><a href="http://www.boost.org">Boost Python</a></li>
-        <li><a href="http://www.scipy.org/Weave">Weave</a></li>
-        <li><a href="http://www.swig.org">SWIG</a> (<a href="http://www.chriscoughlin.com/2011/08/swig-and-python/">Example
-            of using SWIG, C++ and Python from a previous version of NDIToolbox</a>)
-        </li>
-        <li><a href="http://docs.python.org/c-api/">Python’s C API</a></li>
-    </ul>
-    <li>Objective C</li>
-    <ul>
-        <li><a href="http://pyobjc.sourceforge.net/">PyObjC</a></li>
-        <li><a href="http://docs.python.org/c-api/">Python’s C API</a></li>
-    </ul>
-    <li><a href="http://dlang.org/">D</a></li>
-    <ul>
-        <li><a href="http://pyd.dsource.org/">Pyd</a></li>
-        <li><a href="http://docs.python.org/c-api/">Python’s C API</a></li>
-    </ul>
-    <li>Java</li>
-    <ul>
-        <li><a href="http://jepp.sourceforge.net/">Jepp</a></li>
-        <li><a href="http://www.jython.org">Jython</a></li>
-    </ul>
-    <li>C#</li>
-    <ul>
-        <li><a href="http://pythonnet.sourceforge.net/">Python For .NET</a></li>
-        <li><a href="http://ironpython.codeplex.com/">IronPython</a></li>
-    </ul>
-    <li>MATLAB</li>
-    <ul>
-        <li><a href="http://pymat.sourceforge.net/">PyMat</a></li>
-    </ul>
-    <li><a href="http://www.r-project.org/">R</a></li>
-    <ul>
-        <li><a href="http://rpy.sourceforge.net/">RPy</a></li>
-    </ul>
-</ul>
+    Once you've written a basic plugin subclassing <code>AbstractPlugin</code> and provided a <code>run()</code> method,
+    you're free to use any other programming languages to write your toolkit. When using Python as a "wrapper" over
+    other languages, it's worth considering how your external code will interact with Python and NDIToolbox.
 </p>
 
-<p>If you are unable to find a project that connects your language of choice to Python, consider alternative
-    communication mechanisms like <a href="http://www.json.org/">JSON</a> or <a
-            href="http://www.xmlrpc.com/">XML-RPC</a>. Python has built-in library support for both communication
-    protocols (<a href="http://docs.python.org/library/json.html">docs.python.org/library/json.html</a> and <a
-            href="http://docs.python.org/library/xmlrpclib.html">docs.python.org/library/xmlrpclib.html</a>
-    respectively). Although this will require more Python development in your application, the bulk of your code can
-    still be in the language of your choice.</p>
+<p>
+    The Python community has developed many projects to assist interaction between Python and another programming
+    language, some of the more popular languages and their associated projects include:
+</p>
 
-<p>Building on the concept of JSON and similar communications mechanisms, you can also develop your plugin as a <a
-        href="http://en.wikipedia.org/wiki/Software_as_a_Service">Software As A Service</a> application, in which the
+<p>
+    <ul>
+        <li>C
+            <ul>
+                <li><a href="http://docs.python.org/c-api/">Python’s C API</a></li>
+                <li><a href="http://www.scipy.org/Weave">Weave</a></li>
+                <li><a href="http://www.swig.org">SWIG</a></li>
+            </ul>
+        </li>
+        <li>C++
+            <ul>
+                <li><a href="http://www.boost.org">Boost Python</a></li>
+                <li><a href="http://www.scipy.org/Weave">Weave</a></li>
+                <li>
+                    <a href="http://www.swig.org">SWIG</a>
+                    (<a href="http://www.chriscoughlin.com/2011/08/swig-and-python/">Example of using SWIG, C++ and Python from a previous version of NDIToolbox</a>)
+                </li>
+                <li><a href="http://docs.python.org/c-api/">Python’s C API</a></li>
+            </ul>
+        </li>
+        <li>Objective C
+            <ul>
+                <li><a href="http://pyobjc.sourceforge.net/">PyObjC</a></li>
+                <li><a href="http://docs.python.org/c-api/">Python’s C API</a></li>
+            </ul>
+            <li><a href="http://dlang.org/">D</a></li>
+            <ul>
+                <li><a href="http://pyd.dsource.org/">Pyd</a></li>
+                <li><a href="http://docs.python.org/c-api/">Python’s C API</a></li>
+            </ul>
+        </li>
+        <li>Java
+            <ul>
+                <li><a href="http://jepp.sourceforge.net/">Jepp</a></li>
+                <li><a href="http://www.jython.org">Jython</a></li>
+            </ul>
+        </li>
+        <li>C#
+            <ul>
+                <li><a href="http://pythonnet.sourceforge.net/">Python For .NET</a></li>
+                <li><a href="http://ironpython.codeplex.com/">IronPython</a></li>
+            </ul>
+        </li>
+        <li>MATLAB
+            <ul>
+                <li><a href="http://pymat.sourceforge.net/">PyMat</a></li>
+            </ul>
+        </li>
+        <li><a href="http://www.r-project.org/">R</a>
+            <ul>
+                <li><a href="http://rpy.sourceforge.net/">RPy</a></li>
+            </ul>
+        </li>
+    </ul>
+</p>
+
+<p>
+    If you are unable to find a project that connects your language of choice to Python, consider alternative
+    communication mechanisms like <a href="http://www.json.org/">JSON</a> or
+    <a href="http://www.xmlrpc.com/">XML-RPC</a>. Python has built-in library support for both communication protocols
+    (<a href="http://docs.python.org/library/json.html">docs.python.org/library/json.html</a> and
+    <a href="http://docs.python.org/library/xmlrpclib.html">docs.python.org/library/xmlrpclib.html</a> respectively).
+    Although this will require more Python development in your application, the bulk of your code can still be in the
+    language of your choice.
+</p>
+
+<p>
+    Building on the concept of JSON and similar communications mechanisms, you can also develop your plugin as a
+    <a href="http://en.wikipedia.org/wiki/Software_as_a_Service">Software As A Service</a> application, in which the
     bulk of your code is hosted on a server and the local plugin communicates with this server to provide functionality.
     Not only does this approach streamline the installation process if your plugin relies on external dependencies, it
-    also provides an additional layer of security if you are concerned about protecting intellectual property (IP).</p>
+    also provides an additional layer of security if you are concerned about protecting intellectual property (IP).
+</p>
 
 <a name="dev_ip"><h3>Intellectual Property Considerations</h3></a>
 
-<p>In general we recommend staying as open as possible with your toolkit. NDIToolbox is primarily an open source
+<p>
+    In general we recommend staying as open as possible with your toolkit. NDIToolbox is primarily an open source
     application in keeping with our goal to encourage collaboration in the field of NDI data analysis. No code
     protection or obfuscation system is 100% effective. However, we also recognize that some code must have some level
-    of protection, such as third-party commercial libraries with restrictive licensing.</p>
+    of protection, such as third-party commercial libraries with restrictive licensing.
+</p>
 
-<p>If you do need to protect intellectual property in your application, your first line of defense is to ship only
+<p>
+    If you do need to protect intellectual property in your application, your first line of defense is to ship only
     byte-compiled Python code (i.e. the <code>.pyc</code> files rather than the <code>.py</code> source code files).
     This offers some level of protection against casual observation, however the code can be disassembled to recover the
     original source code. The situation is much the same as the one developers face in shipping Java or .NET code, save
     that both Java and .NET have a number of code protection products available and as of this writing we have been
-    unable to locate analogous Python products.</p>
+    unable to locate analogous Python products.
+</p>
 
-<p>If possible, consider also factoring out your IP into C, C++, D, or Objective C; compiling; and then calling from
+<p>
+    If possible, consider also factoring out your IP into C, C++, D, or Objective C; compiling; and then calling from
     your Python code with the Python C API or another suitable bridge. These languages create final products that are
     one level up in terms of the difficulty in disassembling since they create machine code rather than bytecode.
     Disassembled machine code normally creates assembly language, which is more difficult to parse for the average
     person. The C and C++ languages also have a number of code protection and obfuscation tools available to the
-    commercial developer.</p>
+    commercial developer.
+</p>
 
-<p>For an extra level of protection, consider implementing your IP as a Software as a Service (SaaS) application in
+<p>
+    For an extra level of protection, consider implementing your IP as a Software as a Service (SaaS) application in
     which your IP is on a server under your control and the toolkit is essentially a client. As mentioned earlier Python
     has built-in support for remote procedure protocols such as JSON or XML-RPC, or you could implement a standard
-    HTTP/HTTPS interface in much the same manner.</p>
+    HTTP/HTTPS interface in much the same manner.
+</p>
 </div>
 
 <script src="js/libs/jquery-1.7.2.min.js"></script>
