@@ -7,6 +7,7 @@ __author__ = 'Chris R. Coughlin'
 
 from controllers import pathfinder
 import models.thumbnailpanel_model as model
+from utils.skiptest import skipIfModuleNotInstalled
 import h5py
 from matplotlib.figure import Figure
 import numpy as np
@@ -17,6 +18,7 @@ import os
 import unittest
 import random
 import StringIO
+
 
 class TestThumbnailPanelModel(unittest.TestCase):
     """Tests the thumbnailpanel model functions"""
@@ -43,7 +45,7 @@ class TestThumbnailPanelModel(unittest.TestCase):
                                                      title="Plot Title",
                                                      width=5, height=5),
                                    StringIO.StringIO))
-
+    @skipIfModuleNotInstalled("tcunittest")
     def test_plot_pipe(self):
         """Verify plot_pipe function writes a StringIO instance of the
         plot to a specified multiprocess Pipe.
@@ -57,6 +59,7 @@ class TestThumbnailPanelModel(unittest.TestCase):
         plot_proc.join()
         self.assertTrue(isinstance(img_stream, StringIO.StringIO))
 
+    @skipIfModuleNotInstalled("tcunittest")
     def test_multiprocess_plot(self):
         """Verify multiprocess_plot function returns a wx Bitmap instance"""
         app = wx.PySimpleApp()

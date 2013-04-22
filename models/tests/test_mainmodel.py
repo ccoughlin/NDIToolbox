@@ -11,9 +11,9 @@ import models.abstractplugin as abstractplugin
 import models.config as config
 import models.ultrasonicgate as ultrasonicgate
 import controllers.pathfinder as pathfinder
+from utils.skiptest import skipIfModuleNotInstalled
 import h5py
 import numpy as np
-import imp
 import logging
 import multiprocessing
 import os
@@ -22,16 +22,6 @@ import shutil
 import sys
 import tempfile
 import unittest
-
-def skipIfModuleNotInstalled(*modules):
-    """Skipping test decorator - skips test if import of module
-    fails."""
-    try:
-        for module in modules:
-            imp.find_module(module)
-        return lambda func: func
-    except ImportError:
-        return unittest.skip("Required module(s) not installed.")
 
 
 def deleted_user_path():
@@ -53,6 +43,7 @@ def deleted_user_path():
     if deleted_folders:
         return deleted_folders
     return None
+
 
 # Define a mock plugin to inspect results of calling plugin classes
 class MockPlugin(abstractplugin.TRIPlugin):
@@ -258,6 +249,7 @@ class TestMainModel(unittest.TestCase):
         exc_type, exc = plugin_exception_queue.get(block=True)
         self.assertTrue(isinstance(exc, Exception))
 
+    @skipIfModuleNotInstalled("tcunittest")
     def test_run_plugin(self):
         """Verify the main model can run a loaded plugin"""
         plugin_data = np.array(self.random_data())
@@ -270,6 +262,7 @@ class TestMainModel(unittest.TestCase):
         expected_data = plugin_data / np.max(plugin_data)
         self.assertTrue(np.array_equal(expected_data, returned_data))
 
+    @skipIfModuleNotInstalled("tcunittest")
     def test_run_plugin_exceptions(self):
         """Verify run_plugin returns exception messages in Queue"""
         plugin_data = np.zeros(5) # Use division by zero exception in NormalizePlugin

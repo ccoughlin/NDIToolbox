@@ -8,21 +8,13 @@ __author__ = 'Chris R. Coughlin'
 import unittest
 from models import dataio
 from controllers import pathfinder
+from utils.skiptest import skipIfModuleNotInstalled
 import h5py
 import numpy as np
 import scipy.misc
-import imp
 import os
 import random
 
-def skipIfModuleNotInstalled(*modules):
-    """Skipping test decorator - skips test if import of module fails."""
-    try:
-        for module in modules:
-            imp.find_module(module)
-        return lambda func: func
-    except ImportError:
-        return unittest.skip("Required module(s) not installed.")
 
 class TestDataIO(unittest.TestCase):
     """Tests Data IO functions"""
