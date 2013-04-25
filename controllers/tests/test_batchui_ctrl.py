@@ -116,7 +116,8 @@ class TestBatchPluginAdapter(unittest.TestCase):
         utwin_adapter.read_data()
         retrieved_utwin_data = utwin_adapter.data
         for dataset in expected_utwin_data:
-            self.assertTrue(np.array_equal(expected_utwin_data[dataset], retrieved_utwin_data[dataset]))
+            if expected_utwin_data[dataset] is not None:
+                self.assertTrue(np.array_equal(expected_utwin_data[dataset], retrieved_utwin_data[dataset]))
 
     def test_run(self):
         """Verify correctly executing NDIToolbox plugins"""
@@ -133,7 +134,8 @@ class TestBatchPluginAdapter(unittest.TestCase):
 
     def test_run_plugin(self):
         """Verify run_plugin convenience function correctly executes"""
-        output_fname = os.path.join(pathfinder.batchoutput_path(), os.path.basename(self.datafile) + ".hdf5")
+        root, ext = os.path.splitext(os.path.basename(self.datafile))
+        output_fname = os.path.join(pathfinder.batchoutput_path(), root + ".hdf5")
         batchui_ctrl.run_plugin(self.toolkit_class, self.datafile, save_data=False)
         self.assertFalse(os.path.exists(output_fname))
         batchui_ctrl.run_plugin(self.toolkit_class, self.datafile, save_data=True)
@@ -151,6 +153,45 @@ class TestBatchPluginAdapter(unittest.TestCase):
         if os.path.exists(output_fname):
             try:
                 os.remove(output_fname)
+            except WindowsError: # file in use (Windows)
+                pass
+            except OSError: # other OS error
+                pass
+
+    def test_run_plugin_multi_datasets(self):
+        """Verify run_plugin convenience function correctly handles datafiles with
+        multiple datasets"""
+        sample_data_folder = os.path.join(pathfinder.app_path(), 'models', 'tests', 'support_files')
+        sample_utwin_file = os.path.join(sample_data_folder, 'CScanData.csc')
+        expected_utwin_data = dataio.get_utwin_data(sample_utwin_file)
+        output_fnames = []
+        root, ext = os.path.splitext(os.path.basename(sample_utwin_file))
+        for dataset in expected_utwin_data:
+            output_fnames.append(os.path.join(pathfinder.batchoutput_path(), root + "_" + dataset + ".hdf5"))
+        # Verify no output saved
+        batchui_ctrl.run_plugin(self.toolkit_class, sample_utwin_file, save_data=False)
+        for fname in output_fnames:
+            self.assertFalse(os.path.exists(fname))
+        # Verify output saved
+        batchui_ctrl.run_plugin(self.toolkit_class, sample_utwin_file, save_data=True)
+        for dataset in expected_utwin_data:
+            if expected_utwin_data[dataset] is not None:
+                fname = os.path.join(pathfinder.batchoutput_path(), root + "_" + dataset + ".hdf5")
+                self.assertTrue(os.path.exists(fname))
+                plugin_names, plugin_classes = self.get_available_plugins()
+                for idx in range(len(plugin_names)):
+                    if plugin_names[idx] == self.toolkit_class:
+                        plugin_instance = plugin_classes[idx]()
+                        plugin_instance.data = expected_utwin_data[dataset]
+                        plugin_instance.run()
+                        expected_data = plugin_instance.data
+                        returned_data = dataio.get_data(fname)
+                        self.assertTrue(np.array_equal(expected_data, returned_data))
+                        break
+        for fname in output_fnames:
+            try:
+                if os.path.exists(fname):
+                    os.remove(fname)
             except WindowsError: # file in use (Windows)
                 pass
             except OSError: # other OS error

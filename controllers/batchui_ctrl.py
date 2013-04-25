@@ -105,7 +105,8 @@ class BatchPluginAdapter(object):
             if self.filetype == 'dicom':
                 self._data = dataio.get_dicom_data(self.datafile)
             if self.filetype == 'utwin':
-                self._data = dataio.get_utwin_data(self.datafile)
+                utwin_data = dataio.get_utwin_data(self.datafile)
+                self._data = {k:utwin_data[k] for k in utwin_data if utwin_data[k] is not None}
 
     def run(self):
         """Executes the toolkit"""
@@ -143,9 +144,11 @@ def run_plugin(toolkit, input_file, toolkit_config=None, file_type=None, save_da
         if hasattr(batch_runner.data, "keys"):
             # Handle multiple datasets
             for dataset in batch_runner.data:
-                output_fname = os.path.join(pathfinder.batchoutput_path(), os.path.basename(input_file) + dataset + ".hdf5")
-                dataio.save_data(output_fname, batch_runner._data)
+                root, ext = os.path.splitext(os.path.basename(input_file))
+                output_fname = os.path.join(pathfinder.batchoutput_path(), root + "_" + dataset + ".hdf5")
+                dataio.save_data(output_fname, batch_runner.data[dataset])
         else:
             # Handle single dataset
-            output_fname = os.path.join(pathfinder.batchoutput_path(), os.path.basename(input_file) + ".hdf5")
+            root, ext = os.path.splitext(os.path.basename(input_file))
+            output_fname = os.path.join(pathfinder.batchoutput_path(), root + ".hdf5")
             dataio.save_data(output_fname, batch_runner._data)
