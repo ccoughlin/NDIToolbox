@@ -482,7 +482,11 @@ class MegaPlotWindow(PlotWindow):
         self.colormaps_mnu.AppendItem(self.create_cmap_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_create_cmap, id=self.create_cmap_mnui.GetId())
         self.plot_mnu.AppendMenu(wx.ID_ANY, "Colormaps", self.colormaps_mnu)
-
+        self.show_colorbar_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Show Colorbar",
+                                              help="Show color scale in image plot", kind=wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.controller.on_toggle_colorbar, id=self.show_colorbar_mnui.GetId())
+        self.plot_mnu.AppendItem(self.show_colorbar_mnui)
+        self.show_colorbar_mnui.Check(self.controller.get_colorbar_config())
         self.plot_conventional_bscans_mnui = wx.MenuItem(self.plot_mnu, wx.ID_ANY, text="Plot Conventional B-scans",
                                                          help="Plot conventional 2D B-scans", kind=wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.controller.on_change_bscans, id=self.plot_conventional_bscans_mnui.GetId())

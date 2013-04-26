@@ -645,6 +645,7 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
             self.conventional_bscans = cfg.get_boolean("MegaPlot", "conventional bscans")
         else:
             self.conventional_bscans = False
+        self.use_colorbar = self.get_colorbar_config()
 
     def plot(self, data):
         """Plots the dataset"""
@@ -710,6 +711,14 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
         self.view.cscan_img = self.view.cscan_axes.imshow(cscan_data, aspect='auto',
                                                           origin='lower', cmap=self.colormap,
                                                           interpolation='nearest')
+        if self.use_colorbar:
+            if self.colorbar:
+                # In MegaPlot the colorbar is the fifth AxesSubplot if present -
+                # need to delete to avoid cascading colorbars in replots
+                if len(self.view.figure.axes) == 5:
+                    self.view.figure.delaxes(self.view.figure.axes[4])
+                    self.view.figure.subplots_adjust(right=0.90)
+            self.colorbar = self.view.figure.colorbar(self.view.cscan_img)
         self.view.cscan_axes.set_title("C Scan z={0}".format(slice_idx))
 
     def get_plot_choice(self):
@@ -757,6 +766,16 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
             if label_dlg.ShowModal() == wx.ID_OK:
                 self.set_titles(axis, plot=label_dlg.GetValue())
             label_dlg.Destroy()
+
+    def on_set_cbarlbl(self, evt):
+        """Sets the label for the imgplot's colorbar"""
+        if self.use_colorbar and self.colorbar is not None:
+            label_dlg = wx.TextEntryDialog(parent=self.view.parent,
+                                           message="Enter a new label for the colorbar",
+                                           caption="Set Colorbar Label",
+                                           defaultValue=self.colorbar._label)
+            if label_dlg.ShowModal() == wx.ID_OK:
+                super(MegaPlotWindowController, self).set_titles(colorbar=label_dlg.GetValue())
 
     def get_titles(self, axes_inst):
         """Returns the current titles for the specified AxesSubplot instance's
@@ -821,6 +840,25 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
             return cfg.get_boolean("MegaPlot", "enable navtools")
         return True
 
+    def on_toggle_colorbar(self, evt):
+        """Handles toggle of enable/disable colorbar display"""
+        use_colorbar = not self.get_colorbar_config()
+        self.set_colorbar_config(use_colorbar)
+        self.update_plot()
+
+    def set_colorbar_config(self, colorbar_enabled):
+        """Sets the enable colorbar option in the config"""
+        cfg = mainmodel.get_config()
+        cfg.set("MegaPlot", {"show_colorbar":colorbar_enabled})
+        self.use_colorbar = colorbar_enabled
+
+    def get_colorbar_config(self):
+        """Returns the enable colorbar setting from config."""
+        cfg = mainmodel.get_config()
+        if cfg.has_option("MegaPlot", "show_colorbar"):
+            return cfg.get_boolean("MegaPlot", "show_colorbar")
+        return False
+
     def on_sliceidx_change(self, evt):
         """Responds to changes in the z position spin control"""
         self.update_plot(self.view.xpos_sc.GetValue(), self.view.ypos_sc.GetValue(),
@@ -857,6 +895,13 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
             self.slice_idx = slice_idx
             if self.view.slice_cb.IsChecked():
                 self.plot_cscan(self.scnr.cscan_data(self.slice_idx), self.slice_idx)
+        if not self.use_colorbar:
+            if self.colorbar:
+                # In MegaPlot the colorbar is the fifth AxesSubplot if present -
+                # need to delete to avoid cascading colorbars in replots
+                if len(self.view.figure.axes) == 5:
+                    self.view.figure.delaxes(self.view.figure.axes[4])
+                    self.view.figure.subplots_adjust(right=0.90)
         if self.gate_coords != [None, None]:
             self.view.ascan_axes.axvline(x=self.gate_coords[0], color='r', linestyle='--')
             self.view.ascan_axes.axvline(x=self.gate_coords[1], color='r', linestyle='--')
@@ -880,7 +925,7 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
                 cfg.set("ImgPlot", {"colormap":colormap})
             if self.view.cscan_img is not None:
                 self.view.cscan_img.set_cmap(self.colormap)
-                self.refresh_plot()
+                self.update_plot()
 
     @replace_plot
     def on_toggle_grid(self, evt):
