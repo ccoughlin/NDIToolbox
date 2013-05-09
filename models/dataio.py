@@ -182,14 +182,17 @@ class UTWinCscanReader(object):
 
     # Identities of message IDs we're interested in
     message_ids = {'CSCAN_DATA':2300,
-                   'WAVEFORM':2013,
+                   'WAVEFORM_pre240':2013,
+                   'WAVEFORM_post240':2303,
                    'UTSAVE_UTCD0':2010,
                    'UTSAVE_UTCD1':2011,
                    'UTSAVE_UTCD2':2012,
                    'UTSAVE_UTCD3':2013,
                    'UTSAVE_UTCD4':2014,
                    'UTSAVE_UTPro0':253,
-                   'PROJECT':301}
+                   'PROJECT':301,
+                   'UTSAVE_UTHead_ID':100,
+                   'UTSAVE_UTCScan0_ID':750}
 
     def __init__(self, cscan_file):
         self.file_name = cscan_file
@@ -284,6 +287,98 @@ class UTWinCscanReader(object):
                         'adv_offset':adv_offset}
         return None
 
+    def read_utsave_uthead_id(self):
+        """Returns a dict of the parameters read for the UTSAVE_UTHead_ID message block, used to store general
+        information.  Returns None if unable to read file.
+
+        Keynames and explanations:
+
+        scan_version : version number
+        total_scans : total number of scan settings
+        scan_num : current scanning settings index
+        distance_unit : one of 'in' or 'mm' for inches or millimeters, respectively
+        b_chain_scan : automatic chain scan
+        """
+        start_pos = self.find_message(self.message_ids['UTSAVE_UTHead_ID'])
+        if start_pos != -1:
+            with open(self.file_name, "rb") as fidin:
+                fidin.seek(start_pos)
+                scan_version = np.fromfile(fidin, np.uint16, 1)[0]
+                total_scans = np.fromfile(fidin, np.uint16, 1)[0]
+                scan_num = np.fromfile(fidin, np.uint16, 1)[0]
+                dist_val = np.fromfile(fidin, np.int16, 1)[0]
+                distance_unit = ''
+                if dist_val == 0:
+                    distance_unit = 'in'
+                elif dist_val == 1:
+                    distance_unit = 'mm'
+                b_scan_chain = np.fromfile(fidin, np.int16, 1)[0]
+                return {'scan_version':scan_version,
+                        'total_scans':total_scans,
+                        'scan_num':scan_num,
+                        'distance_unit':distance_unit,
+                        'b_chain_scan':b_scan_chain}
+        return None
+
+    def read_utsave_utcscan0(self):
+        """Returns the scan settings stored in message block UTSave_UTCScan0_ID"""
+        start_pos = self.find_message(self.message_ids['UTSAVE_UTCScan0_ID'])
+        if start_pos != -1:
+            with open(self.file_name, "rb") as fidin:
+                fidin.seek(start_pos)
+                scan_mode = np.fromfile(fidin, np.uint16, 1)[0]
+                zscan_mode = np.fromfile(fidin, np.uint16, 1)[0]
+                zindex_mode = np.fromfile(fidin, np.uint16, 1)[0]
+                scan_len = np.fromfile(fidin, np.float64, 1)[0]
+                scan_res = np.fromfile(fidin, np.float64, 1)[0]
+                scan_speed = np.fromfile(fidin, np.float64, 1)[0]
+                index_len = np.fromfile(fidin, np.float64, 1)[0]
+                index_res = np.fromfile(fidin, np.float64, 1)[0]
+                index_speed = np.fromfile(fidin, np.float64, 1)[0]
+                jog_len = np.fromfile(fidin, np.float64, 1)[0]
+                jog_res = np.fromfile(fidin, np.float64, 1)[0]
+                jog_speed = np.fromfile(fidin, np.float64, 1)[0]
+                num_axes = np.fromfile(fidin, np.uint16, 1)[0]
+                start_positions = []
+                start_sequences = []
+                for i in range(num_axes):
+                    start_positions.append(np.fromfile(fidin, np.float64, 1)[0])
+                    start_sequences.append(np.fromfile(fidin, np.uint16, 1)[0])
+                num_channels = np.fromfile(fidin, np.int32, 1)[0]
+                active_channels = {}
+                for i in range(num_channels):
+                    active_flag = np.fromfile(fidin, np.uint16, 1)[0]
+                    if active_flag == 1:
+                        active = True
+                    else:
+                        active = False
+                    active_channels[i] = active
+                return {'scan_mode':scan_mode,
+                        'zscan_mode':zscan_mode,
+                        'zindex_mode':zindex_mode,
+                        'scan_len':scan_len,
+                        'scan_res':scan_res,
+                        'scan_speed':scan_speed,
+                        'index_len':index_len,
+                        'index_res':index_res,
+                        'index_speed':index_speed,
+                        'jog_len':jog_len,
+                        'jog_res':jog_res,
+                        'jog_speed':jog_speed,
+                        'num_axes':num_axes,
+                        'start_positions':start_positions,
+                        'start_sequences':start_sequences,
+                        'num_channels':num_channels,
+                        'active_channels':active_channels}
+        return None
+
+    def get_scan_version(self):
+        """Returns the scan version of the file, or -1 if unable to retrieve."""
+        info_blk = self.read_utsave_uthead_id()
+        if info_blk is not None:
+            return info_blk['scan_version']
+        return -1
+
     def get_data(self):
         """Returns a dict of the data from the file"""
         return {'tof':self.get_tof_data(),
@@ -340,8 +435,15 @@ class UTWinCscanReader(object):
     def get_waveform_data(self):
         """Returns a NumPy array of the waveform data from the UTWin Cscan file file_name, or None if data could not
         be read."""
+        if self.get_scan_version() < 240:
+            return self.get_waveform_data_pre240()
+        else:
+            return self.get_waveform_data_post240()
+
+    def get_waveform_data_pre240(self):
+        """Returns a NumPy array of the waveform data from versions of UTWin prior to 2.40"""
         waveform_data = None
-        start_pos = self.find_message(self.message_ids['WAVEFORM'])
+        start_pos = self.find_message(self.message_ids['WAVEFORM_pre240'])
         scan_params = self.read_utcd0()
         if start_pos != -1 and scan_params is not None:
             with open(self.file_name, "rb") as file_hdl:
@@ -353,6 +455,13 @@ class UTWinCscanReader(object):
                 assert rf_size==(width*height*length)
                 waveform_data = np.fromfile(file_hdl, np.int16, count=rf_size)
                 waveform_data = np.reshape(waveform_data, (width, height, length))
+        return waveform_data
+
+    def get_waveform_data_post240(self):
+        """Returns a NumPy array of the waveform data from versions of UTWin post 2.40"""
+        waveform_data = None
+        start_pos = self.find_message(self.message_ids['WAVEFORM_post240'])
+
         return waveform_data
 
     def import_waveform(self):

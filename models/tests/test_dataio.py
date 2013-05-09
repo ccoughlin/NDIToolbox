@@ -362,14 +362,17 @@ class TestUTWinCScanReader(unittest.TestCase):
         """Verify the basic parameters of the CSC file format are correct"""
         self.assertEqual(self.cscan_reader.header_string_length, 15)
         expected_message_ids = {'CSCAN_DATA':2300,
-                                'WAVEFORM':2013,
+                                'WAVEFORM_pre240':2013,
+                                'WAVEFORM_post240':2303,
                                 'UTSAVE_UTCD0':2010,
                                 'UTSAVE_UTCD1':2011,
                                 'UTSAVE_UTCD2':2012,
                                 'UTSAVE_UTCD3':2013,
                                 'UTSAVE_UTCD4':2014,
                                 'UTSAVE_UTPro0':253,
-                                'PROJECT':301}
+                                'PROJECT':301,
+                                'UTSAVE_UTHead_ID':100,
+                                'UTSAVE_UTCScan0_ID':750}
         self.assertDictEqual(expected_message_ids, self.cscan_reader.message_ids)
 
     def test_is_cscanfile(self):
@@ -413,6 +416,42 @@ class TestUTWinCScanReader(unittest.TestCase):
         returned_parameters = self.cscan_reader.read_utcd4()
         for parameter, value in expected_parameters.items():
             self.assertAlmostEqual(value, returned_parameters[parameter], delta=value*.01)
+
+    def test_read_utsave_utcscan0(self):
+        """Verify read_utsave_utcscan0 correctly returns parameters from UTSAVE_UTCScan0_ID"""
+        expected_parameters = {'active_channels': {0: True,
+                                                   1: False,
+                                                   2: False,
+                                                   3: False,
+                                                   4: False,
+                                                   5: False,
+                                                   6: False,
+                                                   7: False},
+                               'scan_res': 0.25,
+                               'jog_speed': 76.200000000000003,
+                               'jog_res': 0.254,
+                               'index_len': 80.0,
+                               'scan_mode': 0,
+                               'scan_len': 150.0,
+                               'scan_speed': 200.0,
+                               'jog_len': 25.399999999999999,
+                               'start_positions': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                               'start_sequences': [0, 0, 1, 0, 0, 0, 0, 0],
+                               'index_res': 0.25,
+                               'index_speed': 150.0,
+                               'num_axes': 8,
+                               'zindex_mode': 0,
+                               'num_channels': 8,
+                               'zscan_mode': 0}
+        read_parameters = self.cscan_reader.read_utsave_utcscan0()
+        for param in expected_parameters.keys():
+            if isinstance(expected_parameters[param], float) or isinstance(expected_parameters[param], int):
+                self.assertAlmostEqual(expected_parameters[param], read_parameters[param])
+            elif isinstance(expected_parameters[param], list):
+                for idx in range(len(expected_parameters[param])):
+                    self.assertAlmostEqual(expected_parameters[param][idx], read_parameters[param][idx])
+            elif isinstance(expected_parameters[param], dict):
+                self.assertDictEqual(expected_parameters[param], read_parameters[param])
 
     def test_get_tof_data(self):
         """Verify get_tof_data returns the Time Of Flight data"""
@@ -480,6 +519,19 @@ class TestUTWinCScanReader(unittest.TestCase):
         returned_data = self.cscan_reader.get_data()
         for data_type in expected_data:
             self.assertTrue(np.array_equal(expected_data[data_type], returned_data[data_type]))
+
+    def test_read_utsave_uthead_id(self):
+        """Verify reading UTSave_UTHead_ID (Block 100)"""
+        expected_parameters = {'scan_version': 117, 'total_scans': 1, 'scan_num': 0, 'distance_unit': 'mm',
+                               'b_chain_scan':0}
+        returned_parameters = self.cscan_reader.read_utsave_uthead_id()
+        self.assertDictEqual(expected_parameters, returned_parameters)
+
+    def test_get_scan_version(self):
+        """Verify returning the scan version of the file"""
+        expected_version = 117
+        returned_version = self.cscan_reader.get_scan_version()
+        self.assertEqual(expected_version, returned_version)
 
 class TestWinspectReader(unittest.TestCase):
     """Tests the WinspectReader class."""
