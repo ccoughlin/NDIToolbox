@@ -238,7 +238,7 @@ class TestDataIO(unittest.TestCase):
         tof_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData_tofdata.npy')
         assert(os.path.exists(tof_data_file))
         expected_tof_data = np.load(tof_data_file)
-        self.assertTrue(np.array_equal(expected_tof_data, dataio.get_utwin_tof_data(sample_data_file)))
+        self.assertTrue(np.array_equal(expected_tof_data, dataio.get_utwin_tof_data(sample_data_file)[0]))
 
     def test_import_utwin_tof(self):
         """Verify import of UTWin Time Of Flight data through convenience function"""
@@ -247,7 +247,7 @@ class TestDataIO(unittest.TestCase):
         expected_tof_data = np.load(tof_data_file)
         root, ext = os.path.splitext(os.path.basename(sample_data_file))
         dest_file = os.path.join(pathfinder.data_path(),
-                                 os.path.basename(root) + "_tofdata.csc.hdf5")
+                                 os.path.basename(root) + "_tofdata0.csc.hdf5")
         dataio.import_utwin_tof(sample_data_file)
         self.assertTrue(os.path.exists(dest_file))
         with h5py.File(dest_file, "r") as fidin:
@@ -268,7 +268,7 @@ class TestDataIO(unittest.TestCase):
         amp_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData_ampdata.npy')
         assert(os.path.exists(amp_data_file))
         expected_tof_data = np.load(amp_data_file)
-        self.assertTrue(np.array_equal(expected_tof_data, dataio.get_utwin_amp_data(sample_data_file)))
+        self.assertTrue(np.array_equal(expected_tof_data, dataio.get_utwin_amp_data(sample_data_file)[0]))
 
     def test_import_utwin_amp(self):
         """Verify import of UTWin amplitude data through convenience function"""
@@ -277,7 +277,7 @@ class TestDataIO(unittest.TestCase):
         expected_amp_data = np.load(amp_data_file)
         root, ext = os.path.splitext(os.path.basename(sample_data_file))
         dest_file = os.path.join(pathfinder.data_path(),
-                                 os.path.basename(root) + "_ampdata.csc.hdf5")
+                                 os.path.basename(root) + "_ampdata0.csc.hdf5")
         dataio.import_utwin_amp(sample_data_file)
         self.assertTrue(os.path.exists(dest_file))
         with h5py.File(dest_file, "r") as fidin:
@@ -295,8 +295,9 @@ class TestDataIO(unittest.TestCase):
     def test_get_utwin_data(self):
         """Verify returning UTWin data"""
         sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData.csc')
-        sample_reader = dataio.UTWinCscanReader(sample_data_file)
-        expected_data = sample_reader.get_data()
+        sample_reader = dataio.UTWinCScanDataFile(sample_data_file)
+        sample_reader.read_data()
+        expected_data = sample_reader.data
         returned_data = dataio.get_utwin_data(sample_data_file)
         for datatype in expected_data:
             self.assertTrue(np.array_equal(expected_data[datatype], returned_data[datatype]))
@@ -340,36 +341,37 @@ class TestDataIO(unittest.TestCase):
             except WindowsError: # file in use
                 pass
 
-
     def tearDown(self):
         if os.path.exists(self.sample_data_file + ".hdf5"):
             os.remove(self.sample_data_file + ".hdf5")
         if os.path.exists(self.sample_data_file):
             os.remove(self.sample_data_file)
 
+
 class TestUTWinCScanReader(unittest.TestCase):
     """Tests the UTWinCScanReader class"""
 
-    # TODO - acquire UTWin Cscan file with waveform data - write get_waveformdata test
-
     def setUp(self):
-        self.sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files',
-                                        'CScanData.csc')
+        self.sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData.csc')
         assert(os.path.exists(self.sample_data_file))
-        self.cscan_reader = dataio.UTWinCscanReader(self.sample_data_file)
+        self.cscan_reader = dataio.UTWinCscanReader()
 
     def test_basicfile_parameters(self):
         """Verify the basic parameters of the CSC file format are correct"""
         self.assertEqual(self.cscan_reader.header_string_length, 15)
-        expected_message_ids = {'CSCAN_DATA':2300,
-                                'WAVEFORM':2013,
-                                'UTSAVE_UTCD0':2010,
-                                'UTSAVE_UTCD1':2011,
-                                'UTSAVE_UTCD2':2012,
-                                'UTSAVE_UTCD3':2013,
-                                'UTSAVE_UTCD4':2014,
-                                'UTSAVE_UTPro0':253,
-                                'PROJECT':301}
+        expected_message_ids = {'CSCAN_DATA': 2300,
+                                'WAVEFORM_pre240': 2013,
+                                'WAVEFORM_post240': 2303,
+                                'UTSAVE_UTCD0': 2010,
+                                'UTSAVE_UTCD1': 2011,
+                                'UTSAVE_UTCD2': 2012,
+                                'UTSAVE_UTCD4': 2014,
+                                'UTSAVE_UTPro0': 253,
+                                'PROJECT': 301,
+                                'UTSAVE_UTHead': 100,
+                                'UTSAVE_UTCScan0': 750,
+                                'UTSAVE_UTCD10': 2020,
+                                'UTSAVE_UTCScan3': 753}
         self.assertDictEqual(expected_message_ids, self.cscan_reader.message_ids)
 
     def test_is_cscanfile(self):
@@ -378,7 +380,7 @@ class TestUTWinCScanReader(unittest.TestCase):
 
     def test_msg_info(self):
         """Verify reader correctly returns message ID and length"""
-        with open(self.cscan_reader.file_name, "rb") as fidin:
+        with open(self.sample_data_file, "rb") as fidin:
             fidin.seek(self.cscan_reader.header_string_length)
             first_message = (100, 14)
             self.assertTupleEqual(first_message, self.cscan_reader.msg_info(fidin))
@@ -392,34 +394,93 @@ class TestUTWinCScanReader(unittest.TestCase):
                                    (2010, 38003),
                                    (2010, 38003))
         for message_id, expected_pos in expected_file_positions:
-            self.assertEqual(self.cscan_reader.find_message(message_id), expected_pos)
+            self.assertEqual(self.cscan_reader.find_message(self.sample_data_file, message_id), expected_pos)
 
-    def test_read_utcd0(self):
-        """Verify read_utcd0 method correctly returns the parameters from UTSAVE_UTCD0"""
-        expected_parameters = {'rf_end': 91.630394,
-                               'rf_start': 61.686943,
-                               'n_height': 320,
-                               'rf_dt': 0.0099999998,
-                               'rf_len': 2994,
-                               'n_width': 600,
-                               'tof_res': 0.0099999998}
-        returned_parameters = self.cscan_reader.read_utcd0()
-        for parameter, value in expected_parameters.items():
-            self.assertAlmostEqual(value, returned_parameters[parameter], delta=value*.01)
+    def test_find_blocks(self):
+        """Verify find_blocks returns the file positions for the specified message ID"""
+        # Search for UTSave_UTAD0 (Message ID 950) - contains A/D settings for each channel
+        expected_filed_positions = [173, 920, 1667, 2414, 3161, 3908, 4655, 5402]
+        self.assertListEqual(expected_filed_positions, self.cscan_reader.find_blocks(self.sample_data_file, 950))
 
-    def test_read_utcd4(self):
-        """Verify read_utcd4 method correctly returns the parameters from UTSAVE_UTCD4"""
-        expected_parameters = {'amp_scale': 2047.0, 'adv_scale': 1.0, 'amp_offset': 0.0, 'adv_offset': 0.0}
-        returned_parameters = self.cscan_reader.read_utcd4()
-        for parameter, value in expected_parameters.items():
-            self.assertAlmostEqual(value, returned_parameters[parameter], delta=value*.01)
+    def test_read_field(self):
+        """Verify read_field correctly parses the specified message block"""
+        start_pos = self.cscan_reader.find_message(self.sample_data_file, 950)
+        self.assertTrue(start_pos != -1)
+        with open(self.sample_data_file, "rb") as fidin:
+            fidin.seek(start_pos)
+            # Read a sample of A/D settings for the first channel
+            expected_ad_delay = np.fromfile(fidin, self.cscan_reader.field_sizes['float'], 1)[0]
+            expected_ad_width = np.fromfile(fidin, self.cscan_reader.field_sizes['float'], 1)[0]
+            expected_ad_blanking_width = np.fromfile(fidin, self.cscan_reader.field_sizes['float'], 1)[0]
+            expected_ad_gain = np.fromfile(fidin, self.cscan_reader.field_sizes['float'], 1)[0]
+            expected_ad_offset = np.fromfile(fidin, self.cscan_reader.field_sizes['float'], 1)[0]
+            expected_ad_trigger_level = np.fromfile(fidin, self.cscan_reader.field_sizes['float'], 1)[0]
+            expected_ad_trigger_rate = np.fromfile(fidin, self.cscan_reader.field_sizes['float'], 1)[0]
+        with open(self.sample_data_file, "rb") as fidin:
+            fidin.seek(start_pos)
+            ad_delay = self.cscan_reader.read_field(fidin, self.cscan_reader.field_sizes['float'])
+            ad_width = self.cscan_reader.read_field(fidin, self.cscan_reader.field_sizes['float'])
+            ad_blanking_width = self.cscan_reader.read_field(fidin, self.cscan_reader.field_sizes['float'])
+            ad_gain = self.cscan_reader.read_field(fidin, self.cscan_reader.field_sizes['float'])
+            ad_offset = self.cscan_reader.read_field(fidin, self.cscan_reader.field_sizes['float'])
+            ad_trigger_level = self.cscan_reader.read_field(fidin, self.cscan_reader.field_sizes['float'])
+            ad_trigger_rate = self.cscan_reader.read_field(fidin, self.cscan_reader.field_sizes['float'])
+        self.assertAlmostEqual(expected_ad_delay, ad_delay)
+        self.assertAlmostEqual(expected_ad_width, ad_width)
+        self.assertAlmostEqual(expected_ad_blanking_width, ad_blanking_width)
+        self.assertAlmostEqual(expected_ad_gain, ad_gain)
+        self.assertAlmostEqual(expected_ad_offset, ad_offset)
+        self.assertAlmostEqual(expected_ad_trigger_level, ad_trigger_level)
+        self.assertAlmostEqual(expected_ad_trigger_rate, ad_trigger_rate)
 
-    def test_get_tof_data(self):
-        """Verify get_tof_data returns the Time Of Flight data"""
+
+class TestUTWinCScanDataFile(unittest.TestCase):
+    """Tests the UTWinCScanDataFile class.
+
+    Note:  the sample UTWin data files available to TRI as of May 2013 are export-controlled and can't be
+    distributed, which in turn limits the tests that can be performed.  The UTWinCScanDataFile class has been
+    tested against real inspection data, however without additional sample files you should consider the code
+    experimental.  For more details, contact TRI.
+    """
+
+    def setUp(self):
+        self.sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData.csc')
+        self.cscan_datafile = dataio.UTWinCScanDataFile(self.sample_data_file)
+
+    def test_get_scan_version(self):
+        """Verify get_scan_version returns the correct scan version"""
+        self.assertEqual(self.cscan_datafile.get_scan_version(), 117)
+
+    def test_read_scan_properties(self):
+        """Verify read_scan_properties correctly compiles required scan settings"""
+        # Read a sample of the most important properties, verify read
+        important_scan_properties = {'n_height':320,
+                                     'n_width':600,
+                                     'rf_length':2994,
+                                     'channel_active':[1, 0, 0, 0, 0, 0, 0, 0]}
+        for idx in important_scan_properties.keys():
+            prop = important_scan_properties[idx]
+            if not isinstance(prop, list):
+                self.assertEqual(prop, self.cscan_datafile.scan_properties[idx])
+            else:
+                self.assertListEqual(prop, self.cscan_datafile.scan_properties[idx])
+
+    def test_read_tof_data(self):
+        """Verify read_tof_data correctly reads Time Of Flight data"""
+        # Verify one TOF dataset
         tof_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData_tofdata.npy')
         assert(os.path.exists(tof_data_file))
         expected_tof_data = np.load(tof_data_file)
-        self.assertTrue(np.array_equal(expected_tof_data, self.cscan_reader.get_tof_data()))
+        self.cscan_datafile.read_tof_data()
+        self.assertTrue(np.array_equal(expected_tof_data, self.cscan_datafile.data['tof'][0]))
+
+    def test_read_amplitude_data(self):
+        """Verify read_amplitude_data correctly reads amplitude data"""
+        amp_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData_ampdata.npy')
+        assert(os.path.exists(amp_data_file))
+        expected_amp_data = np.load(amp_data_file)
+        self.cscan_datafile.read_amplitude_data()
+        self.assertTrue(np.array_equal(expected_amp_data, self.cscan_datafile.data['amplitude'][0]))
 
     def test_import_tof(self):
         """Verify import of Time Of Flight data"""
@@ -428,8 +489,8 @@ class TestUTWinCScanReader(unittest.TestCase):
         assert(os.path.exists(tof_data_file))
         expected_tof_data = np.load(tof_data_file)
         dest_file = os.path.join(pathfinder.data_path(),
-                                 os.path.basename(csc_data_file) + "_tofdata.csc.hdf5")
-        self.cscan_reader.import_tof()
+                                 os.path.basename(csc_data_file) + "_tofdata0.csc.hdf5")
+        self.cscan_datafile.import_tof_data()
         self.assertTrue(os.path.exists(dest_file))
         with h5py.File(dest_file, "r") as fidin:
             root, ext = os.path.splitext(os.path.basename(dest_file))
@@ -443,13 +504,6 @@ class TestUTWinCScanReader(unittest.TestCase):
         except WindowsError: # file in use
             pass
 
-    def test_get_amp_data(self):
-        """Verify get_amp_data returns the Amplitude data"""
-        amp_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData_ampdata.npy')
-        assert(os.path.exists(amp_data_file))
-        expected_amp_data = np.load(amp_data_file)
-        self.assertTrue(np.array_equal(expected_amp_data, self.cscan_reader.get_amp_data()))
-
     def test_import_amp(self):
         """Verify import of amplitude data"""
         amp_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData_ampdata.npy')
@@ -457,8 +511,8 @@ class TestUTWinCScanReader(unittest.TestCase):
         assert(os.path.exists(amp_data_file))
         expected_amp_data = np.load(amp_data_file)
         dest_file = os.path.join(pathfinder.data_path(),
-                                 os.path.basename(csc_data_file) + "_ampdata.csc.hdf5")
-        self.cscan_reader.import_amp()
+                                 os.path.basename(csc_data_file) + "_ampdata0.csc.hdf5")
+        self.cscan_datafile.import_amplitude_data()
         self.assertTrue(os.path.exists(dest_file))
         with h5py.File(dest_file, "r") as fidin:
             root, ext = os.path.splitext(os.path.basename(dest_file))
@@ -472,14 +526,6 @@ class TestUTWinCScanReader(unittest.TestCase):
         except WindowsError: # file in use
             pass
 
-    def test_get_data(self):
-        """Verify returning TOF, amp, and waveform data"""
-        expected_data = {'tof':self.cscan_reader.get_tof_data(),
-                         'amplitude':self.cscan_reader.get_amp_data(),
-                         'waveform':self.cscan_reader.get_waveform_data()}
-        returned_data = self.cscan_reader.get_data()
-        for data_type in expected_data:
-            self.assertTrue(np.array_equal(expected_data[data_type], returned_data[data_type]))
 
 class TestWinspectReader(unittest.TestCase):
     """Tests the WinspectReader class."""

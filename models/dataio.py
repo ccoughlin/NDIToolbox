@@ -116,52 +116,54 @@ def import_img(data_file, flatten=True):
 def get_utwin_tof_data(data_file):
     """Convenience function to create a UTWinCScanReader instance and return the Time Of Flight data from data_file.
     Primarily intended for use in threading and multiprocessing."""
-    scan_reader = UTWinCscanReader(data_file)
-    return scan_reader.get_tof_data()
+    scan_reader = UTWinCScanDataFile(data_file)
+    scan_reader.read_tof_data()
+    return scan_reader.data['tof']
 
 def import_utwin_tof(data_file):
     """Convenience function to create a UTWinCScanReader instance and import the Time Of Flight data from data_file.
     Primarily intended for use in threading and multiprocessing."""
-    scan_reader = UTWinCscanReader(data_file)
-    scan_reader.import_tof()
+    scan_reader = UTWinCScanDataFile(data_file)
+    scan_reader.import_tof_data()
 
 def get_utwin_amp_data(data_file):
     """Convenience function to create a UTWinCScanReader instance and return the amplitude data from data_file.
     Primarily intended for use in threading and multiprocessing."""
-    scan_reader = UTWinCscanReader(data_file)
-    return scan_reader.get_amp_data()
+    scan_reader = UTWinCScanDataFile(data_file)
+    scan_reader.read_amplitude_data()
+    return scan_reader.data['amplitude']
 
 def import_utwin_amp(data_file):
     """Convenience function to create a UTWinCScanReader instance and import the amplitude data from data_file.
     Primarily intended for use in threading and multiprocessing."""
-    scan_reader = UTWinCscanReader(data_file)
-    scan_reader.import_amp()
+    scan_reader = UTWinCScanDataFile(data_file)
+    scan_reader.import_amplitude_data()
 
 def import_utwin(data_file):
     """Convenience function to create a UTWinCScanReader instance and import the Time Of Flight, amplitude, and waveform
     data from data_file.  Primarily intended for use in threading and multiprocessing."""
-    scan_reader = UTWinCscanReader(data_file)
-    scan_reader.import_amp()
-    scan_reader.import_tof()
-    scan_reader.import_waveform()
+    scan_reader = UTWinCScanDataFile(data_file)
+    scan_reader.import_data()
 
 def get_utwin_waveform_data(data_file):
     """Convenience function to create a UTWinCScanReader instance and return the waveform data from data_file.
     Primarily intended for use in threading and multiprocessing."""
-    scan_reader = UTWinCscanReader(data_file)
-    return scan_reader.get_waveform_data()
+    scan_reader = UTWinCScanDataFile(data_file)
+    scan_reader.read_waveform_data()
+    return scan_reader.data['waveform']
 
 def import_utwin_waveform(data_file):
     """Convenience function to create a UTWinCScanReader instance and import the waveform data from data_file.
     Primarily intended for use in threading and multiprocessing."""
-    scan_reader = UTWinCscanReader(data_file)
-    scan_reader.import_waveform()
+    scan_reader = UTWinCScanDataFile(data_file)
+    scan_reader.import_waveform_data()
 
 def get_utwin_data(data_file):
     """Convenience function to create a UTWinCScanReader instance and return all the data from data_file.
     Primarily intended for use in threading and multiprocessing."""
-    scan_reader = UTWinCscanReader(data_file)
-    return scan_reader.get_data()
+    scan_reader = UTWinCScanDataFile(data_file)
+    scan_reader.read_data()
+    return scan_reader.data
 
 def get_winspect_data(data_file):
     """Convenience function to create a WinspectReader instance and return the waveform data from data_file.
@@ -175,26 +177,39 @@ def import_winspect(data_file):
     scan_reader = WinspectReader(data_file)
     scan_reader.import_winspect()
 
+
 class UTWinCscanReader(object):
     """Handles reading UTWin CScan (.csc) files"""
 
     header_string_length = 15 # Length of header string in standard file
 
     # Identities of message IDs we're interested in
-    message_ids = {'CSCAN_DATA':2300,
-                   'WAVEFORM':2013,
-                   'UTSAVE_UTCD0':2010,
-                   'UTSAVE_UTCD1':2011,
-                   'UTSAVE_UTCD2':2012,
-                   'UTSAVE_UTCD3':2013,
-                   'UTSAVE_UTCD4':2014,
-                   'UTSAVE_UTPro0':253,
-                   'PROJECT':301}
+    message_ids = {'CSCAN_DATA': 2300,
+                   'WAVEFORM_pre240': 2013,
+                   'WAVEFORM_post240': 2303,
+                   'UTSAVE_UTCD0': 2010,
+                   'UTSAVE_UTCD1': 2011,
+                   'UTSAVE_UTCD2': 2012,
+                   'UTSAVE_UTCD4': 2014,
+                   'UTSAVE_UTPro0': 253,
+                   'PROJECT': 301,
+                   'UTSAVE_UTHead': 100,
+                   'UTSAVE_UTCScan0': 750,
+                   'UTSAVE_UTCD10': 2020,
+                   'UTSAVE_UTCScan3': 753}
 
-    def __init__(self, cscan_file):
-        self.file_name = cscan_file
+    # Converting between UTWin field sizes and NumPy equivalents
+    field_sizes = {'short': np.int16,
+                   'ushort': np.uint16,
+                   'int': np.int32,
+                   'uint': np.uint32,
+                   'float': np.float32,
+                   'double': np.float64,
+                   'long': np.int64,
+                   'ulong': np.uint64}
 
-    def msg_info(self, file_hdl):
+    @classmethod
+    def msg_info(cls, file_hdl):
         """Returns a tuple of message ID and message length read from the file.  Returns (None, 0) if ID and length
         were not found."""
         msg_id = None
@@ -210,158 +225,43 @@ class UTWinCscanReader(object):
             pass
         return msg_id, msg_len
 
-    def find_message(self, message_id):
+    @classmethod
+    def find_message(cls, file_name, message_id):
         """Returns the position in the UTWin file corresponding to the specified message ID.
         Returns -1 if message ID not found in the file."""
-        with open(self.file_name, "rb") as fidin:
-            fidin.seek(self.header_string_length)
-            msg_id, msg_len = self.msg_info(fidin)
+        with open(file_name, "rb") as fidin:
+            fidin.seek(cls.header_string_length)
+            msg_id, msg_len = cls.msg_info(fidin)
             while msg_id != message_id:
                 fidin.read(msg_len-4)
-                msg_id, msg_len = self.msg_info(fidin)
+                msg_id, msg_len = cls.msg_info(fidin)
                 if msg_id is None or msg_len == 0:
                     return -1
             return fidin.tell()
 
-    def read_utcd0(self):
-        """Returns a dict of the parameters read for the UTSAVE_UTCD0 message block.  Returns None if unable to read file.
+    @classmethod
+    def find_blocks(cls, file_name, message_id):
+        """Returns a list of the file positions found for the specified message ID."""
+        block_positions = []
+        file_size = os.stat(file_name).st_size
+        with open(file_name, "rb") as fidin:
+            fidin.seek(cls.header_string_length)
+            msg_id, msg_len = cls.msg_info(fidin)
+            while fidin.tell() != file_size:
+                if msg_id == message_id:
+                    block_positions.append(fidin.tell())
+                fidin.read(msg_len-4)
+                msg_id, msg_len = cls.msg_info(fidin)
+        return block_positions
 
-        Keynames and explanation:
-
-        n_width : Column number
-        n_height : Row number
-        rf_len : RF waveform length
-        rf_start : RF start position (microseconds)
-        rf_end : F end position (microseconds)
-        rf_dt : RF period (microseconds)
-        tof_res : TOF Resolution
-
-        """
-        start_pos = self.find_message(self.message_ids['UTSAVE_UTCD0'])
-        if start_pos != -1:
-            with open(self.file_name, "rb") as fidin:
-                fidin.seek(start_pos)
-                # Parameters of Cscan
-                n_width = np.fromfile(fidin, np.int32, 1)[0] # Column number
-                n_height = np.fromfile(fidin, np.int32, 1)[0] # Row number
-                rf_len = np.fromfile(fidin, np.int32, 1)[0] # RF waveform length
-                rf_start = np.fromfile(fidin, np.float32, 1)[0] # RF start position (microseconds)
-                rf_end = np.fromfile(fidin, np.float32, 1)[0] # RF end position (microseconds)
-                rf_dt = np.fromfile(fidin, np.float32, 1)[0] # RF period (microseconds)
-                tof_res = np.fromfile(fidin, np.float32, 1)[0] # TOF Resolution
-                return {'n_width':n_width,
-                        'n_height':n_height,
-                        'rf_len':rf_len,
-                        'rf_start':rf_start,
-                        'rf_end':rf_end,
-                        'rf_dt':rf_dt,
-                        'tof_res':tof_res}
-        return None
-
-    def read_utcd4(self):
-        """Returns a dict of the parameters read for the UTSAVE_UTCD4 message block, used to store information about
-        the amplitude scale.  Returns None if unable to read file.
-
-        Keynames and explanation:
-
-        amp_scale : Amplitude scale
-        amp_offset : Amplitude offset
-        adv_scale : ADV scale
-        avd_offset : ADV offset
-
-        """
-        start_pos = self.find_message(self.message_ids['UTSAVE_UTCD4'])
-        if start_pos != -1:
-            with open(self.file_name, "rb") as fidin:
-                fidin.seek(start_pos)
-                amp_scale = np.fromfile(fidin, np.float32, 1)[0]
-                amp_offset = np.fromfile(fidin, np.float32, 1)[0]
-                adv_scale = np.fromfile(fidin, np.float32, 1)[0]
-                adv_offset = np.fromfile(fidin, np.float32, 1)[0]
-                return {'amp_scale':amp_scale,
-                        'amp_offset':amp_offset,
-                        'adv_scale':adv_scale,
-                        'adv_offset':adv_offset}
-        return None
-
-    def get_data(self):
-        """Returns a dict of the data from the file"""
-        return {'tof':self.get_tof_data(),
-                'amplitude':self.get_amp_data(),
-                'waveform':self.get_waveform_data()}
-
-    def get_tof_data(self):
-        """Returns a NumPy array of the Time Of Flight data from the UTWin Cscan file file_name, or None if data could
-        not be read."""
-        tof_data = None
-        start_pos = self.find_message(self.message_ids['UTSAVE_UTCD1'])
-        scan_params = self.read_utcd0()
-        if start_pos != -1 and scan_params is not None:
-            with open(self.file_name, "rb") as file_hdl:
-                file_hdl.seek(start_pos)
-                gate = np.fromfile(file_hdl, np.uint16, 1)[0]
-                tof_start = np.fromfile(file_hdl, np.float32, 1)[0]
-                nsize = np.fromfile(file_hdl, np.int32, 1)[0]
-                tof_data = np.fromfile(file_hdl, count=nsize, dtype=np.uint16)
-                tof_data = np.reshape(tof_data, (scan_params['n_height'], scan_params['n_width']))
-        return tof_data
-
-    def import_tof(self):
-        """Reads the Time Of Flight data from the CScan file and saves as a new HDF5 file in the default data folder."""
-        tof_data = self.get_tof_data()
-        if tof_data is not None and tof_data.size > 0:
-            output_basename, ext = os.path.splitext(self.file_name)
-            output_fname = os.path.join(pathfinder.data_path(), os.path.basename(output_basename)+"_tofdata"+ext)
-            save_data(output_fname, tof_data)
-
-    def get_amp_data(self):
-        """Returns a NumPy array of the amplitude data from the UTWin Cscan file file_name, or None if data could not
-        be read."""
-        amp_data = None
-        start_pos = self.find_message(self.message_ids['UTSAVE_UTCD2'])
-        scan_params = self.read_utcd0()
-        if start_pos != -1 and scan_params is not None:
-            with open(self.file_name, "rb") as file_hdl:
-                file_hdl.seek(start_pos)
-                gate = np.fromfile(file_hdl, np.uint16, 1)[0]
-                nsize = np.fromfile(file_hdl, np.int32, 1)[0]
-                amp_data = np.fromfile(file_hdl, np.int16, count=nsize)
-                amp_data = np.reshape(amp_data, (scan_params['n_height'], scan_params['n_width']))
-        return amp_data
-
-    def import_amp(self):
-        """Reads the amplitude data from the CScan file and saves as a new HDF5 file in the default data folder."""
-        amp_data = self.get_amp_data()
-        if amp_data is not None and amp_data.size > 0:
-            output_basename, ext = os.path.splitext(self.file_name)
-            output_fname = os.path.join(pathfinder.data_path(), os.path.basename(output_basename)+"_ampdata"+ext)
-            save_data(output_fname, amp_data)
-
-    def get_waveform_data(self):
-        """Returns a NumPy array of the waveform data from the UTWin Cscan file file_name, or None if data could not
-        be read."""
-        waveform_data = None
-        start_pos = self.find_message(self.message_ids['WAVEFORM'])
-        scan_params = self.read_utcd0()
-        if start_pos != -1 and scan_params is not None:
-            with open(self.file_name, "rb") as file_hdl:
-                file_hdl.seek(start_pos)
-                rf_size = np.fromfile(file_hdl, np.int32, 1)
-                width = scan_params['n_width']
-                height = scan_params['n_height']
-                length = scan_params['rf_len']
-                assert rf_size==(width*height*length)
-                waveform_data = np.fromfile(file_hdl, np.int16, count=rf_size)
-                waveform_data = np.reshape(waveform_data, (width, height, length))
-        return waveform_data
-
-    def import_waveform(self):
-        """Reads the waveform data from the CScan file and saves as a new HDF5 file in the default data folder."""
-        waveform_data = self.get_waveform_data()
-        if waveform_data is not None and waveform_data.size > 0:
-            output_basename, ext = os.path.splitext(self.file_name)
-            output_fname = os.path.join(pathfinder.data_path(), os.path.basename(output_basename)+"_waveformdata"+ext)
-            save_data(output_fname, waveform_data)
+    @classmethod
+    def read_field(cls, file_hdl, message_size, num_blocks=1):
+        """Reads a field from the specified file handle.  Returns a single
+        element if num_blocks is 1 (default), or a list of elements if num_blocks >= 1."""
+        field = np.fromfile(file_hdl, message_size, num_blocks)
+        if num_blocks == 1:
+            field = field[0]
+        return field
 
     @classmethod
     def is_cscanfile(cls, file_name):
@@ -372,6 +272,408 @@ class UTWinCscanReader(object):
             if "UTCSCANFILE" in header_string:
                 is_cscan = True
         return is_cscan
+
+class UTWinCScanDataFile(object):
+    """Basic definition of a UTWin CScan data file"""
+
+    def __init__(self, data_file):
+        self.data_file = data_file
+        self._data = {'waveform':[], 'amplitude':[], 'tof':[]}
+        self.scan_properties = {}
+        self.read_scan_properties()
+        self.compression_properties = {}
+        self.read_compression_properties()
+
+    @property
+    def data(self):
+        return self._data
+
+    def get_scan_version(self):
+        """Returns the scan version of the data file, or -1 if unable to read."""
+        scan_version = -1
+        start_pos = UTWinCscanReader.find_message(self.data_file, UTWinCscanReader.message_ids['UTSAVE_UTHead'])
+        if start_pos != -1:
+            with open(self.data_file, "rb") as fidin:
+                fidin.seek(start_pos)
+                scan_version = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['ushort'])
+        return scan_version
+
+    def read_scan_properties(self):
+        """Compiles various properties of the scan required to properly read the datasets"""
+        start_pos = UTWinCscanReader.find_message(self.data_file, UTWinCscanReader.message_ids['UTSAVE_UTCD0'])
+        if start_pos != -1:
+            with open(self.data_file, "rb") as fidin:
+                fidin.seek(start_pos)
+                self.scan_properties['n_width'] = UTWinCscanReader.read_field(fidin,
+                                                                              UTWinCscanReader.field_sizes['int'])
+                self.scan_properties['n_height'] = UTWinCscanReader.read_field(fidin,
+                                                                               UTWinCscanReader.field_sizes['int'])
+                self.scan_properties['rf_length'] = UTWinCscanReader.read_field(fidin,
+                                                                                UTWinCscanReader.field_sizes['int'])
+                self.scan_properties['rf_start'] = UTWinCscanReader.read_field(fidin,
+                                                                               UTWinCscanReader.field_sizes['float'])
+                self.scan_properties['rf_end'] = UTWinCscanReader.read_field(fidin,
+                                                                             UTWinCscanReader.field_sizes['float'])
+                self.scan_properties['rf_dt'] = UTWinCscanReader.read_field(fidin,
+                                                                            UTWinCscanReader.field_sizes['float'])
+                self.scan_properties['tof_resolution'] = UTWinCscanReader.read_field(fidin,
+                                                                                     UTWinCscanReader.field_sizes['float'])
+        start_pos = UTWinCscanReader.find_message(self.data_file, UTWinCscanReader.message_ids['UTSAVE_UTCScan0'])
+        if start_pos != -1:
+            with open(self.data_file, "rb") as fidin:
+                fidin.seek(start_pos)
+                self.scan_properties['cs_scan_mode'] = UTWinCscanReader.read_field(fidin,
+                                                                                   UTWinCscanReader.field_sizes['short'])
+                self.scan_properties['cs_zscan_mode'] = UTWinCscanReader.read_field(fidin,
+                                                                                    UTWinCscanReader.field_sizes['short'])
+                self.scan_properties['cs_zindex_mode'] = UTWinCscanReader.read_field(fidin,
+                                                                                     UTWinCscanReader.field_sizes['short'])
+                self.scan_properties['cs_scan_length'] = UTWinCscanReader.read_field(fidin,
+                                                                                     UTWinCscanReader.field_sizes['double'])
+                self.scan_properties['cs_scan_resolution'] = UTWinCscanReader.read_field(fidin,
+                                                                                         UTWinCscanReader.field_sizes['double'])
+                self.scan_properties['cs_scan_speed'] = UTWinCscanReader.read_field(fidin,
+                                                                                    UTWinCscanReader.field_sizes['double'])
+                self.scan_properties['cs_index_length'] = UTWinCscanReader.read_field(fidin,
+                                                                                      UTWinCscanReader.field_sizes['double'])
+                self.scan_properties['cs_index_resolution'] = UTWinCscanReader.read_field(fidin,
+                                                                                          UTWinCscanReader.field_sizes['double'])
+                self.scan_properties['cs_index_speed'] = UTWinCscanReader.read_field(fidin,
+                                                                                     UTWinCscanReader.field_sizes['double'])
+                self.scan_properties['cs_jog_length'] = UTWinCscanReader.read_field(fidin,
+                                                                                    UTWinCscanReader.field_sizes['double'])
+                self.scan_properties['cs_jog_resolution'] = UTWinCscanReader.read_field(fidin,
+                                                                                        UTWinCscanReader.field_sizes['double'])
+                self.scan_properties['cs_jog_speed'] = UTWinCscanReader.read_field(fidin,
+                                                                                   UTWinCscanReader.field_sizes['double'])
+                self.scan_properties['num_axes'] = UTWinCscanReader.read_field(fidin,
+                                                                               UTWinCscanReader.field_sizes['ushort'])
+                self.scan_properties['axes'] = []
+                for i in range(self.scan_properties['num_axes']):
+                    axis_start_pos = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['double'])
+                    axis_start_sequence = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'])
+                    self.scan_properties['axes'].append({'start_pos':axis_start_pos,
+                                                         'start_sequence':axis_start_sequence})
+                self.scan_properties['num_channels'] = UTWinCscanReader.read_field(fidin,
+                                                                                   UTWinCscanReader.field_sizes['int'])
+                self.scan_properties['channel_active'] = []
+                for i in range(self.scan_properties['num_channels']):
+                    self.scan_properties['channel_active'].append(UTWinCscanReader.read_field(fidin,
+                                                                                              UTWinCscanReader.field_sizes['short']))
+
+    def read_compression_properties(self):
+        """Compiles various properties of the waveform compression required to properly read the datasets."""
+        start_pos = UTWinCscanReader.find_message(self.data_file, UTWinCscanReader.message_ids['UTSAVE_UTCD10'])
+        if start_pos != -1:
+            with open(self.data_file, "rb") as fidin:
+                fidin.seek(start_pos)
+                self.compression_properties['is_waveform_compressed'] = UTWinCscanReader.read_field(fidin,
+                                                                                                    UTWinCscanReader.field_sizes['short'])
+                self.compression_properties['is_8bit_data'] = UTWinCscanReader.read_field(fidin,
+                                                                                          UTWinCscanReader.field_sizes['short'])
+                self.compression_properties['compression_method'] = UTWinCscanReader.read_field(fidin,
+                                                                                                UTWinCscanReader.field_sizes['short'])
+                self.compression_properties['compression_ratio'] = UTWinCscanReader.read_field(fidin,
+                                                                                               UTWinCscanReader.field_sizes['double'])
+                self.compression_properties['compression_bit'] = UTWinCscanReader.read_field(fidin,
+                                                                                             UTWinCscanReader.field_sizes['int'])
+                self.compression_properties['compressed_rf_length'] = UTWinCscanReader.read_field(fidin,
+                                                                                                  UTWinCscanReader.field_sizes['int'])
+                self.compression_properties['is_threshold_compressed'] = self.read_compression_properties753()['is_threshold_compressed']
+
+    def read_compression_properties753(self):
+        """Reads additional compression properties from block #753"""
+        start_pos = UTWinCscanReader.find_message(self.data_file, UTWinCscanReader.message_ids['UTSAVE_UTCScan3'])
+        if start_pos != -1:
+            with open(self.data_file, "rb") as fidin:
+                fidin.seek(start_pos)
+                is_waveform_compressed = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'])
+                compression_method = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'])
+                compression_ratio = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['double'])
+                is_8bit_data = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'])
+                is_threshold_compressed = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'])
+                compression_width_1 = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'])
+                compression_width_2 = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'])
+                soft_backlash = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['double'])
+                compression_threshold = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['double'])
+                compression_offset_1 = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'])
+                compression_offset_2 = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'])
+                compressed_rf_length = self.calculate_compressed_waveform_size()
+                return {'is_waveform_compressed':is_waveform_compressed,
+                        'compression_method':compression_method,
+                        'compression_ratio':compression_ratio,
+                        'is_8bit_data':is_8bit_data,
+                        'is_threshold_compressed':is_threshold_compressed,
+                        'compression_width_1':compression_width_1,
+                        'compression_width_2':compression_width_2,
+                        'soft_backlash':soft_backlash,
+                        'compression_threshold':compression_threshold,
+                        'compression_offset_1':compression_offset_1,
+                        'compression_offset_2':compression_offset_2,
+                        'compressed_rf_length':compressed_rf_length}
+
+    def calculate_compressed_waveform_size(self):
+        """Calculates and returns the size of the compressed waveform"""
+        dk = int(self.compression_properties['compression_ratio'])
+        if dk <= 0 or self.compression_properties['compression_method'] == 0:
+            dk = 1
+        if self.compression_properties['is_8bit_data']:
+            compressed_waveform_length = int(float(self.scan_properties['rf_length']) / float(dk) / 2 + 0.5) + 2
+        else:
+            compressed_waveform_length = int(float(self.scan_properties['rf_length']) / float(dk) + 0.5) + 2
+        if compressed_waveform_length > self.scan_properties['rf_length']:
+            compressed_waveform_length = self.scan_properties['rf_length']
+        return compressed_waveform_length
+
+    def read_data(self):
+        """Reads the Time Of Flight (TOF), amplitude, and waveform datasets from the UTWin data file.
+        Populates the self._data dict with lists of the datasets:
+
+        self._data['tof']           : list of TOF datasets
+        self._data['amplitude']     : list of amplitude datasets
+        self._data['waveform']      : list of waveform datasets
+        """
+        self.read_tof_data()
+        self.read_amplitude_data()
+        self.read_waveform_data()
+
+    def import_data(self):
+        """Reads the Time Of Flight (TOF), amplitude, and waveform datasets from the UTWin data file, and
+        exports a copy of each dataset as an HDF5 file.
+        """
+        self.import_tof_data()
+        self.import_amplitude_data()
+        self.import_waveform_data()
+
+    def read_waveform_data(self):
+        """Reads the waveform datasets from the UTWin data file."""
+        if self.get_scan_version() >= 240:
+            # File format for waveform storage changed after UTWin v. 2.40
+            self.read_waveform_data_post240()
+        else:
+            self.read_waveform_data_pre240()
+
+    def read_waveform_data_post240(self):
+        """Reads the waveform datasets from UTWin files, version 2.40+"""
+        waveforms = []
+        waveform_positions = UTWinCscanReader.find_blocks(self.data_file, UTWinCscanReader.message_ids['WAVEFORM_post240'])
+        with open(self.data_file, "rb") as fidin:
+            for pos in waveform_positions:
+                fidin.seek(pos)
+                index = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['int'])
+                for idx in range(sum(self.scan_properties['channel_active'])):
+                    if self.scan_properties['channel_active'][idx] == 1:
+                        rf_line_length = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['int'])
+                        waveform_data = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'],
+                                                                    rf_line_length)
+                        if self.compression_properties['is_waveform_compressed']:
+                            waveform_data = self.unzip_waveform_data(waveform_data, 0,
+                                                                     self.scan_properties['n_width'] -1,
+                                                                     self.scan_properties['rf_length'])
+                        waveform_data = np.array(waveform_data)
+                        waveform_data = np.reshape(waveform_data, (1, self.scan_properties['n_width'],
+                                                                   self.scan_properties['rf_length']))
+                        waveforms.append(waveform_data)
+        if len(waveforms) > 0:
+            waveforms = np.vstack(waveforms)
+            self._data['waveform'].append(waveforms)
+
+    def read_waveform_data_pre240(self):
+        """Reads the waveform datasets from UTWin files for versions prior to 2.40"""
+        waveforms = []
+        waveform_positions = UTWinCscanReader.find_blocks(self.data_file, UTWinCscanReader.message_ids['WAVEFORM_pre240'])
+        with open(self.data_file, "rb") as fidin:
+            for pos in waveform_positions:
+                fidin.seek(pos)
+                rf_size = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['ushort'])
+                waveform_data = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'], rf_size)
+                waveform_data = np.reshape(waveform_data,
+                                           (1, self.scan_properties['n_width'], self.scan_properties['rf_length']))
+
+                waveforms.append(waveform_data)
+        if len(waveforms) > 0:
+            waveforms = np.vstack(waveforms)
+            self._data['waveform'].append(waveforms)
+
+    def import_waveform_data(self):
+        """Imports the waveform datasets into HDF5 files"""
+        if len(self._data['waveform']) == 0:
+            self.read_waveform_data()
+        for dataset_idx in range(len(self._data['waveform'])):
+            dataset = self._data['waveform'][dataset_idx]
+            if dataset.size > 0:
+                output_basename, ext = os.path.splitext(self.data_file)
+                output_fname = os.path.join(pathfinder.data_path(),
+                                            os.path.basename(output_basename) + "_waveformdata" + str(dataset_idx) + ext)
+                save_data(output_fname, dataset)
+
+    def read_amplitude_data(self):
+        """Reads the amplitude datasets in the UTWin data file"""
+        amplitude_positions = UTWinCscanReader.find_blocks(self.data_file, UTWinCscanReader.message_ids['UTSAVE_UTCD2'])
+        with open(self.data_file, "rb") as fidin:
+            for pos in amplitude_positions:
+                fidin.seek(pos)
+                gate = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['ushort'])
+                nsize = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['int'])
+                amp_data = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'], nsize)
+                self._data['amplitude'].append(np.reshape(amp_data,
+                                                          (self.scan_properties['n_height'],
+                                                           self.scan_properties['n_width'])))
+
+    def import_amplitude_data(self):
+        """Imports the amplitude datasets as HDF5 files"""
+        if len(self._data['amplitude']) == 0:
+            self.read_amplitude_data()
+        for dataset_idx in range(len(self._data['amplitude'])):
+            dataset = self._data['amplitude'][dataset_idx]
+            if dataset.size > 0:
+                output_basename, ext = os.path.splitext(self.data_file)
+                output_fname = os.path.join(pathfinder.data_path(),
+                                            os.path.basename(output_basename) + "_ampdata" + str(dataset_idx) + ext)
+                save_data(output_fname, dataset)
+
+    def read_tof_data(self):
+        """Reads the Time Of Flight (TOF) datasets from the UTWin data file"""
+        tof_positions = UTWinCscanReader.find_blocks(self.data_file, UTWinCscanReader.message_ids['UTSAVE_UTCD1'])
+        with open(self.data_file, "rb") as fidin:
+            for pos in tof_positions:
+                fidin.seek(pos)
+                gate = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['ushort'])
+                tof_start = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['float'])
+                nsize = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['int'])
+                tof_data = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['ushort'], nsize)
+                self._data['tof'].append(np.reshape(tof_data,
+                                                          (self.scan_properties['n_height'],
+                                                           self.scan_properties['n_width'])))
+
+    def import_tof_data(self):
+        """Converts the TOF datasets to HDF5"""
+        if len(self._data['tof']) == 0:
+            self.read_tof_data()
+        for dataset_idx in range(len(self._data['tof'])):
+            dataset = self._data['tof'][dataset_idx]
+            if dataset.size > 0:
+                output_basename, ext = os.path.splitext(self.data_file)
+                output_fname = os.path.join(pathfinder.data_path(),
+                                            os.path.basename(output_basename) + "_tofdata" + str(dataset_idx) + ext)
+                save_data(output_fname, dataset)
+
+    def unzip_waveform_data(self, compressed_waveform_data, start_pos, stop_pos, index, wave_size):
+        """Reverses run-length encoding compression on specified dataset."""
+        uncompressed_data = [0 for el in range(self.scan_properties['n_width']*self.scan_properties['rf_length'])]
+        dk = int(self.compression_properties['compression_ratio'])
+        i = 0
+        if dk <= 0 or self.compression_properties['compression_method'] == 0:
+            dk = 1
+        if self.compression_properties['is_threshold_compressed'] and\
+                        (stop_pos - start_pos + 1) == self.scan_properties['n_width']:
+            line_size = wave_size
+            uncompressed_data = self.unzip_threshold_data(compressed_waveform_data, line_size)
+        for n in range(start_pos, stop_pos+1):
+            j = 0
+            m = 0
+            u1 = 0
+            u2 = 0
+            p = n * self.scan_properties['rf_length']
+            d = n * self.compression_properties['compressed_rf_length']
+            for i in range(dk, self.scan_properties['rf_length'], dk):
+                if self.compression_properties['is_8bit_data']:
+                    if j % 2 == 1:
+                        z = compressed_waveform_data[d + m]
+                        u1 = z & 0x00ff
+                        u2 = (z & 0xff00) >> 8
+                        u1 = u1 << self.compression_properties['compression_bit']
+                        u2 = u2 << self.compression_properties['compression_bit']
+                        for k in range(i - dk, i):
+                            uncompressed_data[p + k] = u1
+                            uncompressed_data[p + k - dk] = u2
+                        m += 1
+                    j += 1
+                else:
+                    print(i, dk, n, start_pos, stop_pos, d, m, len(compressed_waveform_data))
+                    u1 = compressed_waveform_data[d + m]
+                    for k in range(i - dk, i):
+                        uncompressed_data[p + k] = u1
+                    m += 1
+            while i < self.scan_properties['rf_length']:
+                uncompressed_data[p + i] = u1
+                i += 1
+
+    def unzip_threshold_data(self, compressed_waveform_data, line_size):
+        """Uncompresses data with a compressed threshold"""
+        if self.compression_properties['is_8bit_data']:
+            return self.unzip_8bit_threshold_data(compressed_waveform_data, line_size)
+        else:
+            return self.unzip_16bit_threshold_data(compressed_waveform_data, line_size)
+
+    def unzip_8bit_threshold_data(self, compressed_waveform_data, line_size):
+        """Uncompresses 8-Bit data with a compressed threshold"""
+        uncompressed_data = [0 for el in range(self.scan_properties['n_width']*self.scan_properties['rf_length'])]
+        bzip = False
+        i = 0
+        if line_size > 0:
+            for j in range(0, line_size):
+                z = compressed_waveform_data[j]
+                for k in range(0, 2):
+                    if k == 1:
+                        a = z & 0x00ff
+                    else:
+                        a = (z & 0xff00) >> 8
+                    if a == 0:
+                        bzip = True
+                    if a == 1:
+                        if i % 2 == 0:
+                            uncompressed_data[i / 2] = uncompressed_data[i / 2] & 0x00ff
+                        else:
+                            uncompressed_data[i / 2] = uncompressed_data[i / 2] & 0xff00
+                        i += 1
+                    elif a > 1 and bzip:
+                        bzip = False
+                        for _z in range(0, a):
+                            if i % 2 == 0:
+                                uncompressed_data[i / 2] = uncompressed_data[i / 2] & 0x00ff
+                            else:
+                                uncompressed_data[i / 2] = uncompressed_data[i / 2] & 0xff00
+                                i += 1
+                    elif not bzip:
+                        if i % 2 == 0:
+                            uncompressed_data[i / 2] = uncompressed_data[i / 2] & 0x00ff
+                            u = a << 8
+                            uncompressed_data[i / 2] = uncompressed_data[i / 2] | (u & 0xff00)
+                        else:
+                            uncompressed_data[i / 2] = uncompressed_data[i / 2] & 0xff00
+                            uncompressed_data[i / 2] = uncompressed_data[i / 2] | (a & 0x00ff)
+                        i += 1
+                if i >= int(self.scan_properties['n_width'] * self.compression_properties['compressed_rf_length'] * 2):
+                    #i = self.scan_properties['n_width'] * self.compression_properties['compressed_rf_length'] * 2
+                    break
+        return uncompressed_data
+
+    def unzip_16bit_threshold_data(self, compressed_waveform_data, line_size):
+        """Uncompresses 16-Bit data with a compressed threshold"""
+        uncompressed_data = [0 for el in range(self.scan_properties['n_width']*self.scan_properties['rf_length'])]
+        bzip = False
+        i = 0
+        if line_size > 0:
+            for j in range(0, line_size):
+                a = compressed_waveform_data[j]
+                if a == 0:
+                    bzip = True
+                if a == 1:
+                    uncompressed_data[i] = 0
+                    i += 1
+                elif a > 1 and bzip:
+                    bzip = False
+                    for _z in range(0, a):
+                        uncompressed_data[i] = 0
+                        i += 1
+                elif not bzip:
+                    uncompressed_data[i] = a
+                    i += 1
+                if i >= self.scan_properties['n_width'] * self.compression_properties['compressed_rf_length']:
+                    #i = self.scan_properties['n_width'] * self.compression_properties['compressed_rf_length']
+                    break
+        return uncompressed_data
 
 class WinspectReader(object):
     """Handles reading Winspect 6, 7 data files. Currently only unidirectional scans are supported.

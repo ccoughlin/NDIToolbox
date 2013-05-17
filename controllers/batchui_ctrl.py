@@ -105,8 +105,10 @@ class BatchPluginAdapter(object):
             if self.filetype == 'dicom':
                 self._data = dataio.get_dicom_data(self.datafile)
             if self.filetype == 'utwin':
-                utwin_data = dataio.get_utwin_data(self.datafile)
-                self._data = {k:utwin_data[k] for k in utwin_data if utwin_data[k] is not None}
+                raw_data = dataio.get_utwin_data(self.datafile)
+                for k in raw_data.keys():
+                    for idx in range(len(raw_data[k])):
+                        self._data[k + str(idx)] = raw_data[k][idx]
 
     def run(self):
         """Executes the toolkit"""

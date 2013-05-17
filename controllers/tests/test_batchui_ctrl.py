@@ -112,7 +112,11 @@ class TestBatchPluginAdapter(unittest.TestCase):
         # Verify UTWin retrieval
         sample_utwin_file = os.path.join(sample_data_folder, 'CScanData.csc')
         utwin_adapter = self.create_adapter(sample_utwin_file)
-        expected_utwin_data = dataio.get_utwin_data(sample_utwin_file)
+        utwin_data = dataio.get_utwin_data(sample_utwin_file)
+        expected_utwin_data = {}
+        for data_type in utwin_data.keys():
+            for idx in range(len(utwin_data[data_type])):
+                expected_utwin_data[data_type + str(idx)] = utwin_data[data_type][idx]
         utwin_adapter.read_data()
         retrieved_utwin_data = utwin_adapter.data
         for dataset in expected_utwin_data:
@@ -163,7 +167,11 @@ class TestBatchPluginAdapter(unittest.TestCase):
         multiple datasets"""
         sample_data_folder = os.path.join(pathfinder.app_path(), 'models', 'tests', 'support_files')
         sample_utwin_file = os.path.join(sample_data_folder, 'CScanData.csc')
-        expected_utwin_data = dataio.get_utwin_data(sample_utwin_file)
+        utwin_data = dataio.get_utwin_data(sample_utwin_file)
+        expected_utwin_data = {}
+        for data_type in utwin_data.keys():
+            for idx in range(len(utwin_data[data_type])):
+                expected_utwin_data[data_type + str(idx)] = utwin_data[data_type][idx]
         output_fnames = []
         root, ext = os.path.splitext(os.path.basename(sample_utwin_file))
         for dataset in expected_utwin_data:
