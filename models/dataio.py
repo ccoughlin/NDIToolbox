@@ -543,9 +543,10 @@ class UTWinCScanDataFile(object):
                 tof_start = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['float'])
                 nsize = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['int'])
                 tof_data = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['ushort'], nsize)
-                self._data['tof'].append(np.reshape(tof_data,
-                                                          (self.scan_properties['n_height'],
-                                                           self.scan_properties['n_width'])))
+                tof_data = np.reshape(tof_data,
+                                      (self.scan_properties['n_height'], self.scan_properties['n_width'])) * \
+                           self.scan_properties['tof_resolution']
+                self._data['tof'].append(tof_data)
 
     def import_tof_data(self):
         """Converts the TOF datasets to HDF5"""

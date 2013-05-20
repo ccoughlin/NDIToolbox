@@ -11,6 +11,7 @@ from controllers import pathfinder
 from utils.skiptest import skipIfModuleNotInstalled
 import h5py
 import numpy as np
+import numpy.testing
 import scipy.misc
 import os
 import random
@@ -236,15 +237,18 @@ class TestDataIO(unittest.TestCase):
         """Verify retrieval of UTWin Time Of Flight data through convenience function"""
         sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData.csc')
         tof_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData_tofdata.npy')
+        tof_resolution = 0.01
         assert(os.path.exists(tof_data_file))
-        expected_tof_data = np.load(tof_data_file)
-        self.assertTrue(np.array_equal(expected_tof_data, dataio.get_utwin_tof_data(sample_data_file)[0]))
+        expected_tof_data = np.load(tof_data_file) * tof_resolution
+        returned_tof_data = dataio.get_utwin_tof_data(sample_data_file)[0]
+        numpy.testing.assert_array_almost_equal(expected_tof_data, returned_tof_data, decimal=3)
 
     def test_import_utwin_tof(self):
         """Verify import of UTWin Time Of Flight data through convenience function"""
         tof_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData_tofdata.npy')
         sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData.csc')
-        expected_tof_data = np.load(tof_data_file)
+        tof_resolution = 0.01
+        expected_tof_data = np.load(tof_data_file) * tof_resolution
         root, ext = os.path.splitext(os.path.basename(sample_data_file))
         dest_file = os.path.join(pathfinder.data_path(),
                                  os.path.basename(root) + "_tofdata0.csc.hdf5")
@@ -255,7 +259,7 @@ class TestDataIO(unittest.TestCase):
             for key in fidin.keys():
                 if key.startswith(root):
                     read_data = fidin[key][...]
-                    self.assertTrue(np.array_equal(expected_tof_data, read_data))
+                    numpy.testing.assert_array_almost_equal(expected_tof_data, read_data, decimal=3)
         try:
             if os.path.exists(dest_file):
                 os.remove(dest_file)
@@ -469,10 +473,11 @@ class TestUTWinCScanDataFile(unittest.TestCase):
         """Verify read_tof_data correctly reads Time Of Flight data"""
         # Verify one TOF dataset
         tof_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData_tofdata.npy')
+        tof_resolution = 0.01
         assert(os.path.exists(tof_data_file))
-        expected_tof_data = np.load(tof_data_file)
+        expected_tof_data = np.load(tof_data_file) * tof_resolution
         self.cscan_datafile.read_tof_data()
-        self.assertTrue(np.array_equal(expected_tof_data, self.cscan_datafile.data['tof'][0]))
+        numpy.testing.assert_array_almost_equal(expected_tof_data, self.cscan_datafile.data['tof'][0], decimal=3)
 
     def test_read_amplitude_data(self):
         """Verify read_amplitude_data correctly reads amplitude data"""
@@ -485,9 +490,10 @@ class TestUTWinCScanDataFile(unittest.TestCase):
     def test_import_tof(self):
         """Verify import of Time Of Flight data"""
         tof_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData_tofdata.npy')
+        tof_resolution = 0.01
         csc_data_file = os.path.join(os.path.dirname(__file__), 'support_files', 'CScanData')
         assert(os.path.exists(tof_data_file))
-        expected_tof_data = np.load(tof_data_file)
+        expected_tof_data = np.load(tof_data_file) * tof_resolution
         dest_file = os.path.join(pathfinder.data_path(),
                                  os.path.basename(csc_data_file) + "_tofdata0.csc.hdf5")
         self.cscan_datafile.import_tof_data()
@@ -497,7 +503,7 @@ class TestUTWinCScanDataFile(unittest.TestCase):
             for key in fidin.keys():
                 if key.startswith(root):
                     read_data = fidin[key][...]
-                    self.assertTrue(np.array_equal(expected_tof_data, read_data))
+                    numpy.testing.assert_array_almost_equal(expected_tof_data, read_data, decimal=3)
         try:
             if os.path.exists(dest_file):
                 os.remove(dest_file)
