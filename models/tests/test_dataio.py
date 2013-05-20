@@ -360,7 +360,7 @@ class TestUTWinCScanReader(unittest.TestCase):
         """Verify the basic parameters of the CSC file format are correct"""
         self.assertEqual(self.cscan_reader.header_string_length, 15)
         expected_message_ids = {'CSCAN_DATA': 2300,
-                                'WAVEFORM_pre240': 2013,
+                                'WAVEFORM_pre240': 2016,
                                 'WAVEFORM_post240': 2303,
                                 'UTSAVE_UTCD0': 2010,
                                 'UTSAVE_UTCD1': 2011,

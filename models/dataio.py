@@ -185,7 +185,7 @@ class UTWinCscanReader(object):
 
     # Identities of message IDs we're interested in
     message_ids = {'CSCAN_DATA': 2300,
-                   'WAVEFORM_pre240': 2013,
+                   'WAVEFORM_pre240': 2016,
                    'WAVEFORM_post240': 2303,
                    'UTSAVE_UTCD0': 2010,
                    'UTSAVE_UTCD1': 2011,
@@ -468,11 +468,12 @@ class UTWinCScanDataFile(object):
                                                                     rf_line_length)
                         if self.compression_properties['is_waveform_compressed']:
                             waveform_data = self.unzip_waveform_data(waveform_data, 0,
-                                                                     self.scan_properties['n_width'] -1,
+                                                                     self.scan_properties['n_width'] - 1,
+                                                                     index,
                                                                      self.scan_properties['rf_length'])
                         waveform_data = np.array(waveform_data)
-                        waveform_data = np.reshape(waveform_data, (1, self.scan_properties['n_width'],
-                                                                   self.scan_properties['rf_length']))
+                        waveform_data = np.reshape(waveform_data,
+                                                   (1, self.scan_properties['n_width'], self.scan_properties['rf_length']))
                         waveforms.append(waveform_data)
         if len(waveforms) > 0:
             waveforms = np.vstack(waveforms)
@@ -481,15 +482,15 @@ class UTWinCScanDataFile(object):
     def read_waveform_data_pre240(self):
         """Reads the waveform datasets from UTWin files for versions prior to 2.40"""
         waveforms = []
-        waveform_positions = UTWinCscanReader.find_blocks(self.data_file, UTWinCscanReader.message_ids['WAVEFORM_pre240'])
+        waveform_positions = UTWinCscanReader.find_blocks(self.data_file,
+                                                          UTWinCscanReader.message_ids['WAVEFORM_pre240'])
         with open(self.data_file, "rb") as fidin:
             for pos in waveform_positions:
                 fidin.seek(pos)
-                rf_size = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['ushort'])
+                rf_size = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['uint'])
                 waveform_data = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'], rf_size)
                 waveform_data = np.reshape(waveform_data,
-                                           (1, self.scan_properties['n_width'], self.scan_properties['rf_length']))
-
+                                           (self.scan_properties['n_height'], self.scan_properties['n_width'], -1))
                 waveforms.append(waveform_data)
         if len(waveforms) > 0:
             waveforms = np.vstack(waveforms)
@@ -590,7 +591,6 @@ class UTWinCScanDataFile(object):
                         m += 1
                     j += 1
                 else:
-                    print(i, dk, n, start_pos, stop_pos, d, m, len(compressed_waveform_data))
                     u1 = compressed_waveform_data[d + m]
                     for k in range(i - dk, i):
                         uncompressed_data[p + k] = u1
@@ -598,6 +598,7 @@ class UTWinCScanDataFile(object):
             while i < self.scan_properties['rf_length']:
                 uncompressed_data[p + i] = u1
                 i += 1
+        return uncompressed_data
 
     def unzip_threshold_data(self, compressed_waveform_data, line_size):
         """Uncompresses data with a compressed threshold"""
