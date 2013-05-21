@@ -171,6 +171,7 @@ class BasicPlotWindowController(object):
                     if not plugin_process.is_alive():
                         # Catch low-level exceptions thrown by multiprocessing, such as MemoryError
                         # exceptions raised when attempting to send data through the queue
+                        module_logger.error("Unknown error occurred during plugin execution, plugin terminated")
                         err_msg = ' '.join(["An unknown error has occurred running the plugin.",
                                             "Please ensure your system has sufficient memory and disk space to process this data.",
                                             "If the problem persists, please contact the plugin's author."])

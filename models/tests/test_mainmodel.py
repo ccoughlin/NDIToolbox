@@ -378,7 +378,7 @@ class TestMainModel(unittest.TestCase):
         new_win_size = [800, 1024]
         self.model.set_window_size(new_win_size)
         self.assertListEqual(new_win_size, self.model.get_window_size())
-        self.model.set_coords(original_win_size)
+        self.model.set_window_size(original_win_size)
 
     def test_get_loglevel(self):
         """Verify returning the log level from config"""
