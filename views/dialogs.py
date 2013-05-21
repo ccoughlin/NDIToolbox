@@ -492,7 +492,7 @@ class ConfigurePluginDialog(wx.Dialog):
         self.config_panel_sizer = wx.FlexGridSizer(cols=2)
         self.config_panel_sizer.AddGrowableCol(1)
         self.config_ctrls = self.populate_config()
-        for lbl, ctrl in self.config_ctrls.items():
+        for lbl, ctrl in sorted(self.config_ctrls.items()):
             opt_lbl = wx.StaticText(self.config_panel, wx.ID_ANY, lbl)
             self.config_panel_sizer.Add(opt_lbl, ui_defaults.lbl_pct,
                                         ui_defaults.lblsizer_flags,

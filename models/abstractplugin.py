@@ -103,7 +103,7 @@ class TRIPlugin(CompanyPlugin):
     authors = "TRI/Austin, Inc."
     version = "1.0"
     url = "www.tri-austin.com"
-    copyright = "Copyright (C) 2012 TRI/Austin, Inc.  All rights reserved."
+    copyright = "Copyright (C) 2013 TRI/Austin, Inc.  All rights reserved."
 
     def __init__(self, **kwargs):
         CompanyPlugin.__init__(self, **kwargs)
