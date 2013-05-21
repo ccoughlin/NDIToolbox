@@ -168,6 +168,18 @@ class BasicPlotWindowController(object):
                 wx.MilliSleep(125)
                 (keepGoing, skip) = progress_dlg.UpdatePulse()
                 try:
+                    if not plugin_process.is_alive():
+                        # Catch low-level exceptions thrown by multiprocessing, such as MemoryError
+                        # exceptions raised when attempting to send data through the queue
+                        err_msg = ' '.join(["An unknown error has occurred running the plugin.",
+                                            "Please ensure your system has sufficient memory and disk space to process this data.",
+                                            "If the problem persists, please contact the plugin's author."])
+                        err_dlg = wx.MessageDialog(self.view, message=err_msg,
+                                                   caption="Unable To Run Plugin",
+                                                   style=wx.ICON_ERROR)
+                        err_dlg.ShowModal()
+                        err_dlg.Destroy()
+                        break
                     exc_type, exc = exception_queue.get(block=False)
                     module_logger.error("Error occurred running plugin: {0}".format(exc))
                     err_msg = "An error occurred while running the plugin:\n{0}".format(exc)
