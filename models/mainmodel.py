@@ -9,6 +9,7 @@ from controllers import pathfinder
 from models import abstractplugin
 from models import config
 from models import dataio
+import matplotlib
 import numpy as np
 import gc
 import imp
@@ -214,6 +215,28 @@ def is_win2k():
         if major == 5 and minor == 0:
             retval = True
     return retval
+
+def init_matplotlib_defaults():
+    """Sets some basic matplotlib configuration parameters to sane defaults.  Configuration based on the default
+    matplotlibrc that ships with NDIToolbox.
+    """
+    matplotlib.rcParams['axes.formatter.limits'] = -4, 4
+    matplotlib.rcParams['font.family'] = 'sans-serif'
+    matplotlib.rcParams['font.size'] = 9
+    matplotlib.rcParams['axes.titlesize'] = 9
+    matplotlib.rcParams['axes.labelsize'] = 9
+    matplotlib.rcParams['axes.facecolor'] = 'eeeeee'
+    matplotlib.rcParams['axes.edgecolor'] = 'bcbcbc'
+    matplotlib.rcParams['axes.linewidth'] = 1
+    matplotlib.rcParams['axes.grid'] = True
+    matplotlib.rcParams['axes.titlesize'] = 'x-large'
+    matplotlib.rcParams['axes.labelsize'] = 'large'
+    matplotlib.rcParams['axes.labelcolor'] = '555555'
+    matplotlib.rcParams['axes.axisbelow'] = True
+    matplotlib.rcParams['axes.labelcolor'] = '555555'
+    matplotlib.rcParams['axes.color_cycle'] = '348ABD', '7A68A6', 'A60628', '467821', 'CF4457', '188487', 'E24A33'
+    matplotlib.rcParams['xtick.labelsize'] = 8
+    matplotlib.rcParams['ytick.labelsize'] = 8
 
 class MainModel(object):
     """Model for the main user interface"""

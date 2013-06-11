@@ -66,11 +66,7 @@ class BasicPlotWindowController(object):
     def init_plot_defaults(self):
         """Sets some basic matplotlib configuration parameters
         to sane defaults."""
-        matplotlib.rcParams['font.size'] = 14
-        matplotlib.rcParams['axes.titlesize'] = 12
-        matplotlib.rcParams['axes.labelsize'] = 12
-        matplotlib.rcParams['xtick.labelsize'] = 11
-        matplotlib.rcParams['ytick.labelsize'] = 11
+        mainmodel.init_matplotlib_defaults()
 
     @property
     def data(self):

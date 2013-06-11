@@ -4,3 +4,4 @@ syntax: glob
 .idea/*
 data/*
 projectBackupFiles/*
+test_report.pdf

@@ -6,7 +6,7 @@ Chris R. Coughlin (TRI/Austin, Inc.)
 __author__ = 'Chris R. Coughlin'
 
 from controllers import pathfinder
-from models import dataio
+from models import dataio, mainmodel
 import wx
 import matplotlib
 import matplotlib.cm as cm
@@ -19,12 +19,7 @@ import StringIO
 
 def create_plot(data, title, width, height):
     """Generates a matplotlib Figure instance of the specified data"""
-    matplotlib.rcParams['axes.formatter.limits'] = -4, 4
-    matplotlib.rcParams['font.size'] = 9
-    matplotlib.rcParams['axes.titlesize'] = 9
-    matplotlib.rcParams['axes.labelsize'] = 9
-    matplotlib.rcParams['xtick.labelsize'] = 8
-    matplotlib.rcParams['ytick.labelsize'] = 8
+    mainmodel.init_matplotlib_defaults()
     figure = Figure(figsize=(width, height))
     canvas = FigureCanvas(figure)
     axes = figure.gca()
