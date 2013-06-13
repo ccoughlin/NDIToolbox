@@ -59,8 +59,11 @@ class FetchPluginDialogController(object):
                 busy_dlg.close()
                 try:
                     exc_type, exc = exception_queue.get(block=False)
-                    module_logger.error("Unable to read archive: {0}".format(exc))
-                    err_msg = "An error occurred while reading the archive:\n{0}".format(exc)
+                    err_str = str(exc)
+                    if len(err_str) == 0:
+                        err_str = exc_type.__name__
+                    module_logger.error("Unable to read archive: {0}".format(err_str))
+                    err_msg = "An error occurred while reading the archive:\n{0}".format(err_str)
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                caption="Unable To Read Archive",
                                                style=wx.ICON_ERROR)

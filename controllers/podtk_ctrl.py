@@ -289,8 +289,11 @@ class PODWindowController(object):
             if not model_thd.is_alive():
                 try:
                     exc_type, exc = exception_queue.get(block=False)
-                    module_logger.error("Unable to run POD Model: {0}".format(exc))
-                    err_msg = "An error occurred while running the POD Model:\n{0}".format(exc)
+                    err_str = str(exc)
+                    if len(err_str) == 0:
+                        err_str = exc_type.__name__
+                    module_logger.error("Unable to run POD Model: {0}".format(err_str))
+                    err_msg = "An error occurred while running the POD Model:\n{0}".format(err_str)
                     err_dlg = wx.MessageDialog(self.view.parent, message=err_msg,
                                                caption="Error In POD Model Execution",
                                                style=wx.ICON_ERROR)

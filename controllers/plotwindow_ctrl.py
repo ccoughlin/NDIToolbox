@@ -178,8 +178,11 @@ class BasicPlotWindowController(object):
                         err_dlg.Destroy()
                         break
                     exc_type, exc = exception_queue.get(block=False)
-                    module_logger.error("Error occurred running plugin: {0}".format(exc))
-                    err_msg = "An error occurred while running the plugin:\n{0}".format(exc)
+                    err_str = str(exc)
+                    if len(err_str) == 0:
+                        err_str = exc_type.__name__
+                    module_logger.error("Error occurred running plugin: {0}".format(err_str))
+                    err_msg = "An error occurred while running the plugin:\n{0}".format(err_str)
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                caption="Unable To Run Plugin",
                                                style=wx.ICON_ERROR)

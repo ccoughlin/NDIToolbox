@@ -44,8 +44,11 @@ class PlotWindow(wx.Frame):
             if not data_thd.is_alive():
                 try:
                     exc_type, exc = exception_queue.get(block=False)
-                    module_logger.error("Unable to load data: {0}".format(exc))
-                    err_msg = "An error occurred while loading data:\n{0}".format(exc)
+                    err_str = str(exc)
+                    if len(err_str) == 0:
+                        err_str = exc_type.__name__
+                    module_logger.error("Unable to load data: {0}".format(err_str))
+                    err_msg = "An error occurred while loading data:\n{0}".format(err_str)
                     if len(err_msg) > 150:
                         # Truncate lengthy error messages
                         err_msg = ''.join([err_msg[:150], "\n(continued)"])

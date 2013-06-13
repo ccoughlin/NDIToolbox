@@ -390,8 +390,11 @@ class MainUIController(object):
             if not import_thd.is_alive():
                 try:
                     exc_type, exc = exception_queue.get(block=False)
-                    module_logger.error("Error importing text file: {0}".format(exc))
-                    err_msg = "An error occurred during import:\n{0}".format(exc)
+                    err_str = str(exc)
+                    if len(err_str) == 0:
+                        err_str = exc_type.__name__
+                    module_logger.error("Error importing text file: {0}".format(err_str))
+                    err_msg = "An error occurred during import:\n{0}".format(err_str)
                     err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                caption="Unable To Import File", style=wx.ICON_ERROR)
                     err_dlg.ShowModal()
@@ -461,8 +464,11 @@ class MainUIController(object):
                     if not export_text_thd.is_alive():
                         try:
                             exc_type, exc = exception_queue.get(block=False)
-                            module_logger.error("Error exporting to text file: {0}".format(exc))
-                            err_msg = "An error occurred during export:\n{0}".format(exc)
+                            err_str = str(exc)
+                            if len(err_str) == 0:
+                                err_str = exc_type.__name__
+                            module_logger.error("Error exporting to text file: {0}".format(err_str))
+                            err_msg = "An error occurred during export:\n{0}".format(err_str)
                             err_dlg = wx.MessageDialog(self.view, message=err_msg,
                                                        caption="Unable To Export File", style=wx.ICON_ERROR)
                             err_dlg.ShowModal()
