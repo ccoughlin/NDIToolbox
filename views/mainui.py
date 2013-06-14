@@ -11,6 +11,17 @@ import controllers.mainui_ctrl as ctrl
 import wx
 import wx.aui
 
+
+class FileDropTarget(wx.FileDropTarget):
+
+    def __init__(self, window):
+        super(FileDropTarget, self).__init__()
+        self.window = window
+
+    def OnDropFiles(self, x, y, filenames):
+        self.window.controller.select_import_function(filenames[0])
+
+
 class UI(wx.Frame):
     """Primary user interface"""
 
@@ -162,6 +173,8 @@ class UI(wx.Frame):
         """Creates the user interface"""
         self.init_tb()
         self.data_panel = datapanel.DataPanel(self)
+        file_drop_target = FileDropTarget(self)
+        self.data_panel.SetDropTarget(file_drop_target)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.controller.on_data_select,
                   self.data_panel.data_tree)
         self._mgr.AddPane(self.data_panel, wx.aui.AuiPaneInfo().

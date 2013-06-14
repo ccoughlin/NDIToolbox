@@ -35,6 +35,7 @@ NDIToolbox is a Python (<http://www.python.org>) application and should run on m
 * pydicom (<http://code.google.com/p/pydicom>)
 * HDF5 for Python (<http://code.google.com/p/h5py/>)
 * Python Imaging Library (<http://www.pythonware.com/products/pil/>) (only necessary if you need to import images)
+* ReportLab (<http://www.reportlab.com/>) and PyPdf (<http://pybrary.net/pyPdf/>) (only necessary if you need to generate PDFs)
 
 Requirements - Standalone Windows Binary
 ----------------------------------------
