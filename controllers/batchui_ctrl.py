@@ -34,6 +34,49 @@ def get_file_type(filename):
     return None
 
 
+def read_data(filename, filetype=None):
+    """Attempts to import the specified file based on the provided filetype, or automatically guesses the file format
+    based on the file extension if no filetype is given.  Returns the data as a NumPy array if successfully imported as
+    a NumPy array if the file contained a single dataset or as a dict if multiple datasets were found."""
+    tof_counter = 0
+    amp_counter = 0
+    waveform_counter = 0
+    data = {}
+    if filetype is None:
+        filetype = get_file_type(filename)
+    if filetype is not None and filetype in available_file_types():
+        if filetype == 'nditoolbox':
+            data = dataio.get_data(filename)
+        if filetype == 'winspect':
+            raw_data = dataio.get_winspect_data(filename)
+            # Handle any files that may have stored multiple datasets of
+            # a given type(s)
+            for dataset in raw_data:
+                dataset_key = os.path.basename(filename)
+                if dataset.data_type == 'waveform':
+                    dataset_key = 'waveform' + str(waveform_counter)
+                    waveform_counter +=1
+                elif dataset.data_type == 'amplitude':
+                    dataset_key = 'amplitude' + str(amp_counter)
+                    amp_counter += 1
+                elif dataset.data_type == 'tof': #TODO -confirm SDT files use tof
+                    dataset_key = 'tof' + str(tof_counter)
+                    tof_counter += 1
+                data[dataset_key] = dataset.data
+        if filetype == 'csv':
+            data = dataio.get_txt_data(filename)
+        if filetype == 'image':
+            data = dataio.get_img_data(filename, flatten=True)
+        if filetype == 'dicom':
+            data = dataio.get_dicom_data(filename)
+        if filetype == 'utwin':
+            raw_data = dataio.get_utwin_data(filename)
+            for k in raw_data.keys():
+                for idx in range(len(raw_data[k])):
+                    data[k + str(idx)] = raw_data[k][idx]
+    return data
+
+
 class BatchPluginAdapter(object):
     """Adapter class for running NDIToolbox plugins in batch mode"""
 
@@ -76,39 +119,7 @@ class BatchPluginAdapter(object):
     def read_data(self):
         """Reads the supplied data file based on the supplied/assumed filetype.  If filetype was
         not specified, assumes file format based on file's extension."""
-        tof_counter = 0
-        amp_counter = 0
-        waveform_counter = 0
-        if self.filetype is not None and self.filetype in available_file_types():
-            if self.filetype == 'nditoolbox':
-                self._data = dataio.get_data(self.datafile)
-            if self.filetype == 'winspect':
-                raw_data = dataio.get_winspect_data(self.datafile)
-                # Handle any files that may have stored multiple datasets of
-                # a given type(s)
-                for dataset in raw_data:
-                    dataset_key = os.path.basename(self.datafile)
-                    if dataset.data_type == 'waveform':
-                        dataset_key = 'waveform' + str(waveform_counter)
-                        waveform_counter +=1
-                    elif dataset.data_type == 'amplitude':
-                        dataset_key = 'amplitude' + str(amp_counter)
-                        amp_counter += 1
-                    elif dataset.data_type == 'tof': #TODO -confirm SDT files use tof
-                        dataset_key = 'tof' + str(tof_counter)
-                        tof_counter += 1
-                    self._data[dataset_key] = dataset.data
-            if self.filetype == 'csv':
-                self._data = dataio.get_txt_data(self.datafile)
-            if self.filetype == 'image':
-                self._data = dataio.get_img_data(self.datafile, flatten=True)
-            if self.filetype == 'dicom':
-                self._data = dataio.get_dicom_data(self.datafile)
-            if self.filetype == 'utwin':
-                raw_data = dataio.get_utwin_data(self.datafile)
-                for k in raw_data.keys():
-                    for idx in range(len(raw_data[k])):
-                        self._data[k + str(idx)] = raw_data[k][idx]
+        self._data = read_data(self.datafile, self.filetype)
 
     def run(self):
         """Executes the toolkit"""
@@ -154,3 +165,30 @@ def run_plugin(toolkit, input_file, toolkit_config=None, file_type=None, save_da
             root, ext = os.path.splitext(os.path.basename(input_file))
             output_fname = os.path.join(pathfinder.batchoutput_path(), root + ".hdf5")
             dataio.save_data(output_fname, batch_runner._data)
+
+
+def import_data(input_file, file_type=None):
+    """Convenience function for importing recognized file formats and saving the results to NDIToolbox data folder.
+    Primarily used for multiprocess pools.
+
+    input_file -        name of the input data file.  If file_type is not specified (default),
+                        type of file is assumed based on file extension.
+
+    file_type -         (optional) specify the file format.  Must be one of the file formats
+                        supported by NDIToolbox.  Currently supported: 'image', 'nditoolbox',
+                        'utwin', 'csv', 'winspect', 'dicom' (use the available_file_types
+                        function to retrieve a list of supported types).  If not specified,
+                        format is assumed based on file extension.
+    """
+    data = read_data(input_file, file_type)
+    if hasattr(data, "keys"):
+            # Handle multiple datasets
+            for dataset in data:
+                root, ext = os.path.splitext(os.path.basename(input_file))
+                output_fname = os.path.join(pathfinder.data_path(), root + "_" + dataset + ".hdf5")
+                dataio.save_data(output_fname, data[dataset])
+    else:
+        # Handle single dataset
+        root, ext = os.path.splitext(os.path.basename(input_file))
+        output_fname = os.path.join(pathfinder.data_path(), root + ".hdf5")
+        dataio.save_data(output_fname, data)

@@ -33,6 +33,31 @@ class TestBatchUIController(unittest.TestCase):
         unknown_fname = base_fname + ".qqq"
         self.assertIsNone(batchui_ctrl.get_file_type(unknown_fname))
 
+    def test_read_data(self):
+        """Verify returning converted data from various file formats"""
+        sample_data_folder = os.path.join(pathfinder.app_path(), 'models', 'tests', 'support_files')
+        # Verify Winspect 6/7 data retrieval
+        sample_winspect_file = os.path.join(sample_data_folder, 'sample_data.sdt')
+        expected_winspect_data = dataio.get_winspect_data(sample_winspect_file)
+        retrieved_winspect_data = batchui_ctrl.read_data(sample_winspect_file)
+        for dataset in expected_winspect_data:
+            self.assertTrue(np.array_equal(dataset.data, retrieved_winspect_data[dataset.data_type + "0"]))
+        # Verify bitmap retrieval
+        sample_img_file = os.path.join(sample_data_folder, 'austin_sky320x240.jpg')
+        expected_img_data = dataio.get_img_data(sample_img_file)
+        retrieved_img_data = batchui_ctrl.read_data(sample_img_file)
+        self.assertTrue(np.array_equal(expected_img_data, retrieved_img_data))
+        # Verify UTWin Retrieval
+        sample_utwin_file = os.path.join(sample_data_folder, "CScanData.csc")
+        utwin_data = dataio.get_utwin_data(sample_utwin_file)
+        retrieved_utwin_data = batchui_ctrl.read_data(sample_utwin_file)
+        expected_utwin_data = {}
+        for data_type in utwin_data.keys():
+            for idx in range(len(utwin_data[data_type])):
+                expected_utwin_data[data_type + str(idx)] = utwin_data[data_type][idx]
+        for dataset in expected_utwin_data:
+            if expected_utwin_data is not None:
+                self.assertTrue(np.array_equal(expected_utwin_data[dataset], retrieved_utwin_data[dataset]))
 
 class TestBatchPluginAdapter(unittest.TestCase):
     """Tests the BatchPluginAdapter class"""
@@ -196,6 +221,34 @@ class TestBatchPluginAdapter(unittest.TestCase):
                         returned_data = dataio.get_data(fname)
                         self.assertTrue(np.array_equal(expected_data, returned_data))
                         break
+        for fname in output_fnames:
+            try:
+                if os.path.exists(fname):
+                    os.remove(fname)
+            except WindowsError: # file in use (Windows)
+                pass
+            except OSError: # other OS error
+                pass
+
+    def test_import_data(self):
+        """Verify import_data successfully imports data"""
+        sample_data_folder = os.path.join(pathfinder.app_path(), 'models', 'tests', 'support_files')
+        sample_utwin_file = os.path.join(sample_data_folder, 'CScanData.csc')
+        utwin_data = dataio.get_utwin_data(sample_utwin_file)
+        expected_utwin_data = {}
+        for data_type in utwin_data.keys():
+            for idx in range(len(utwin_data[data_type])):
+                expected_utwin_data[data_type + str(idx)] = utwin_data[data_type][idx]
+        output_fnames = []
+        root, ext = os.path.splitext(os.path.basename(sample_utwin_file))
+        for dataset in expected_utwin_data:
+            output_fnames.append(os.path.join(pathfinder.data_path(), root + "_" + dataset + ".hdf5"))
+        batchui_ctrl.import_data(sample_utwin_file)
+        for dataset in expected_utwin_data:
+            if expected_utwin_data[dataset] is not None:
+                fname = os.path.join(pathfinder.data_path(), root + "_" + dataset + ".hdf5")
+                self.assertTrue(os.path.exists(fname))
+                self.assertTrue(np.array_equal(expected_utwin_data[dataset], dataio.get_data(fname)))
         for fname in output_fnames:
             try:
                 if os.path.exists(fname):

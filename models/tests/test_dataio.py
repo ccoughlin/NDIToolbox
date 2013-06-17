@@ -200,7 +200,6 @@ class TestDataIO(unittest.TestCase):
                     except WindowsError: # File in use
                         pass
 
-    @skipIfModuleNotInstalled("Image", "PIL")
     def test_get_img_data(self):
         """Verify retrieval of bitmap data"""
         sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files',
@@ -210,7 +209,6 @@ class TestDataIO(unittest.TestCase):
         retrieved_data = dataio.get_img_data(sample_data_file, flatten=True)
         self.assertTrue(np.array_equal(expected_data, retrieved_data))
 
-    @skipIfModuleNotInstalled("Image", "PIL")
     def test_import_img(self):
         """Verify import of images"""
         sample_data_file = os.path.join(os.path.dirname(__file__), 'support_files',

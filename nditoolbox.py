@@ -10,6 +10,7 @@ import sys
 
 module_logger = mainmodel.get_logger(__name__)
 
+
 def platform_config():
     """Performs any platform-specific configuration
     required for the application"""
@@ -40,37 +41,43 @@ if __name__ == "__main__":
         mainmodel.MainModel.check_user_path()
         available_plugins = mainmodel.load_plugins()
         available_plugins_names = [plugin[0] for plugin in available_plugins]
+        if args.toolkit and args.toolkit not in available_plugins_names:
+            print("** Unable to locate plugin '{0}'.  Available plugins:".format(args.toolkit))
+            for plugin_name in available_plugins_names:
+                print("\t{0}".format(plugin_name))
+            sys.exit(1)
         workers = multiprocessing.Pool()
         if args.multiprocess:
             print("Using multiprocessing mode, {0} simultaneous processes".format(multiprocessing.cpu_count()))
-        if args.toolkit and args.input_files:
-            if args.toolkit in available_plugins_names:
-                # TODO - more elegant way to handle specifying files whether the shell expands the wildcard or not - ?
-                for _f in args.input_files:
+        if args.input_files:
+            for _f in args.input_files:
                     paths = glob.glob(_f)
                     for _p in paths:
                         if not args.multiprocess:
-                            print("\tProcessing {0}...".format(_p))
-                            batchui_ctrl.run_plugin(toolkit=args.toolkit,
-                                                    input_file=_p,
-                                                    toolkit_config=args.toolkit_config,
-                                                    file_type=args.filetype,
-                                                    save_data=args.save_output)
+                            print("\nProcessing {0}...".format(_p))
+                            if args.toolkit:
+                                batchui_ctrl.run_plugin(toolkit=args.toolkit,
+                                                        input_file=_p,
+                                                        toolkit_config=args.toolkit_config,
+                                                        file_type=args.filetype,
+                                                        save_data=args.save_output)
+                            else:
+                                batchui_ctrl.import_data(input_file=_p, file_type=args.filetype)
                         else:
-                            print("\tAdding {0} to job list...".format(_p))
-                            workers.apply_async(batchui_ctrl.run_plugin,
-                                                kwds={'toolkit':args.toolkit,
-                                                      'input_file':_p,
-                                                      'toolkit_config':args.toolkit_config,
-                                                      'file_type':args.filetype,
-                                                      'save_data':args.save_output})
-                workers.close()
-                workers.join()
-                print("Analysis complete.")
-            else:
-                print("** Unable to locate plugin '{0}'.  Available plugins:".format(args.toolkit))
-                for plugin_name in available_plugins_names:
-                    print("\t{0}".format(plugin_name))
+                            print("\nAdding {0} to job list...".format(_p))
+                            if args.toolkit:
+                                workers.apply_async(batchui_ctrl.run_plugin,
+                                                    kwds={'toolkit':args.toolkit,
+                                                          'input_file':_p,
+                                                          'toolkit_config':args.toolkit_config,
+                                                          'file_type':args.filetype,
+                                                          'save_data':args.save_output})
+                            else:
+                                workers.apply_async(batchui_ctrl.import_data,
+                                                    kwds={'input_file':_p,
+                                                          'file_type':args.filetype})
+            workers.close()
+            workers.join()
     else:
         module_logger.info("Completed multiprocessing support.")
         platform_config()
