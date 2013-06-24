@@ -564,6 +564,10 @@ class UTWinCScanDataFile(object):
         """Reverses run-length encoding compression on specified dataset."""
         uncompressed_data = [0 for el in range(self.scan_properties['n_width']*self.scan_properties['rf_length'])]
         dk = int(self.compression_properties['compression_ratio'])
+        rf_length = self.scan_properties['rf_length']
+        compressed_rf_length = self.compression_properties['compressed_rf_length']
+        compression_bit = self.compression_properties['compression_bit']
+        is_8_bit_data = self.compression_properties['is_8bit_data']
         i = 0
         if dk <= 0 or self.compression_properties['compression_method'] == 0:
             dk = 1
@@ -576,16 +580,16 @@ class UTWinCScanDataFile(object):
             m = 0
             u1 = 0
             u2 = 0
-            p = n * self.scan_properties['rf_length']
-            d = n * self.compression_properties['compressed_rf_length']
-            for i in range(dk, self.scan_properties['rf_length'], dk):
-                if self.compression_properties['is_8bit_data']:
+            p = n * rf_length
+            d = n * compressed_rf_length
+            for i in range(dk, rf_length, dk):
+                if is_8_bit_data:
                     if j % 2 == 1:
                         z = compressed_waveform_data[d + m]
                         u1 = z & 0x00ff
                         u2 = (z & 0xff00) >> 8
-                        u1 = u1 << self.compression_properties['compression_bit']
-                        u2 = u2 << self.compression_properties['compression_bit']
+                        u1 = u1 << compression_bit
+                        u2 = u2 << compression_bit
                         for k in range(i - dk, i):
                             uncompressed_data[p + k] = u1
                             uncompressed_data[p + k - dk] = u2
@@ -596,7 +600,7 @@ class UTWinCScanDataFile(object):
                     for k in range(i - dk, i):
                         uncompressed_data[p + k] = u1
                     m += 1
-            while i < self.scan_properties['rf_length']:
+            while i < rf_length:
                 uncompressed_data[p + i] = u1
                 i += 1
         return uncompressed_data
