@@ -1,6 +1,9 @@
 syntax: glob
 *.pyc
 *.py~
+*.lib
+*.dll
+*.pyd
 .idea/*
 data/*
 projectBackupFiles/*

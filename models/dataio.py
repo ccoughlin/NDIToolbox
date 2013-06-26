@@ -467,11 +467,24 @@ class UTWinCScanDataFile(object):
                         waveform_data = UTWinCscanReader.read_field(fidin, UTWinCscanReader.field_sizes['short'],
                                                                     rf_line_length)
                         if self.compression_properties['is_waveform_compressed']:
-                            waveform_data = self.unzip_waveform_data(waveform_data, 0,
-                                                                     self.scan_properties['n_width'] - 1,
-                                                                     index,
-                                                                     self.scan_properties['rf_length'])
-                        waveform_data = np.array(waveform_data)
+                            try:
+                                import utwin_ext
+                                filesettings = utwin_ext.FileSettings(int(self.compression_properties['compressed_rf_length']),
+                                                                      float(self.compression_properties['compression_ratio']),
+                                                                      int(self.compression_properties['compression_method']),
+                                                                      int(self.compression_properties['is_threshold_compressed']),
+                                                                      int(self.compression_properties['is_8bit_data']),
+                                                                      int(self.compression_properties['compression_bit']),
+                                                                      int(self.scan_properties['n_width']),
+                                                                      int(self.scan_properties['n_height']),
+                                                                      int(self.scan_properties['rf_length']))
+                                waveform_data = utwin_ext.decompress_data(waveform_data.tolist(), filesettings, int(index))
+                            except ImportError: # C++ module not available, fall back to Python
+                                waveform_data = self.unzip_waveform_data(waveform_data, 0,
+                                                                         self.scan_properties['n_width'] - 1,
+                                                                         index,
+                                                                         self.scan_properties['rf_length'])
+                            waveform_data = np.array(waveform_data)
                         waveform_data = np.reshape(waveform_data,
                                                    (1, self.scan_properties['n_width'], self.scan_properties['rf_length']))
                         waveforms.append(waveform_data)
