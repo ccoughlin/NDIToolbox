@@ -11,6 +11,7 @@ from models import mainmodel
 from models import dataio
 from models import ndescanhandler
 import models.plotwindow_model as model
+import numpy as np
 import matplotlib
 import matplotlib.axes
 import wx
@@ -901,7 +902,7 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
             self.plot_hbscan(self.view.cscan_img.get_array()[ypos, :], slice_idx=self.slice_idx, ypos=ypos)
             self.plot_vbscan(self.view.cscan_img.get_array()[:, xpos], slice_idx=self.slice_idx, xpos=xpos)
         else:
-            self.plot_hbscan(self.scnr.hbscan_data(ypos), ypos)
+            self.plot_hbscan(self.scnr.hbscan_data(ypos).T, ypos)
             self.plot_vbscan(self.scnr.vbscan_data(xpos), xpos)
         if slice_idx is not None:
             self.slice_idx = slice_idx
