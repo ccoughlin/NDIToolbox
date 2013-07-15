@@ -11,7 +11,6 @@ from models import mainmodel
 from models import dataio
 from models import ndescanhandler
 import models.plotwindow_model as model
-import numpy as np
 import matplotlib
 import matplotlib.axes
 import wx
