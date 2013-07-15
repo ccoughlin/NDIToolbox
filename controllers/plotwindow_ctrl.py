@@ -235,7 +235,7 @@ class BasicPlotWindowController(object):
 
     def on_set_xlabel(self, evt):
         """Handles the set x-axis label event"""
-        label_dlg = wx.TextEntryDialog(parent=self.view.parent,
+        label_dlg = wx.TextEntryDialog(parent=self.view,
                                        message="Enter a new label for the X-Axis",
                                        caption="Set X Axis Label",
                                        defaultValue=self.get_titles()['x'])
@@ -244,7 +244,7 @@ class BasicPlotWindowController(object):
 
     def on_set_ylabel(self, evt):
         """Handles the set y-axis label event"""
-        label_dlg = wx.TextEntryDialog(parent=self.view.parent,
+        label_dlg = wx.TextEntryDialog(parent=self.view,
                                        message="Enter a new label for the Y-Axis",
                                        caption="Set Y Axis Label",
                                        defaultValue=self.get_titles()['y'])
@@ -253,7 +253,7 @@ class BasicPlotWindowController(object):
 
     def on_set_plottitle(self, evt):
         """Handles the set x-axis label event"""
-        label_dlg = wx.TextEntryDialog(parent=self.view.parent,
+        label_dlg = wx.TextEntryDialog(parent=self.view,
                                        message="Enter a new title for the plot",
                                        caption="Set Plot Title",
                                        defaultValue=self.get_titles()['plot'])
@@ -315,7 +315,7 @@ class BasicPlotWindowController(object):
         """Produces a ConfigurePlugin dialog to configure the
         selected plugin"""
         cfg = None
-        cfg_dlg = dialogs.ConfigurePluginDialog(self.view.parent, plugin_instance)
+        cfg_dlg = dialogs.ConfigurePluginDialog(self.view, plugin_instance)
         if cfg_dlg.ShowModal() == wx.ID_OK:
             cfg = cfg_dlg.get_config()
         cfg_dlg.Destroy()
@@ -449,7 +449,7 @@ class BasicImgPlotWindowController(BasicPlotWindowController):
     def on_set_cbarlbl(self, evt):
         """Sets the label for the imgplot's colorbar"""
         if self.colorbar is not None:
-            label_dlg = wx.TextEntryDialog(parent=self.view.parent,
+            label_dlg = wx.TextEntryDialog(parent=self.view,
                                            message="Enter a new label for the colorbar",
                                            caption="Set Colorbar Label",
                                            defaultValue=self.get_titles()['colorbar'])
@@ -509,7 +509,7 @@ class BasicImgPlotWindowController(BasicPlotWindowController):
         """Generates a list of available matplotlib colormaps and sets the plot's
         colormap to the user's choice."""
         colormaps = self.model.get_colormap_choices()
-        cmap_dlg = wx.lib.dialogs.singleChoiceDialog(self.view.parent, "Select Colormap",
+        cmap_dlg = wx.lib.dialogs.singleChoiceDialog(self.view, "Select Colormap",
                                                      "Please select a colormap for this plot.",
                                                      colormaps)
         if cmap_dlg.accepted is True:
@@ -747,7 +747,7 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
         """Handles the set x-axis label event"""
         axis = self.get_plot_choice()
         if axis is not None:
-            label_dlg = wx.TextEntryDialog(parent=self.view.parent,
+            label_dlg = wx.TextEntryDialog(parent=self.view,
                                            message="Enter a new label for the X-Axis",
                                            caption="Set X Axis Label",
                                            defaultValue=self.get_titles(axis)['x'])
@@ -759,7 +759,7 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
         """Handles the set y-axis label event"""
         axis = self.get_plot_choice()
         if axis is not None:
-            label_dlg = wx.TextEntryDialog(parent=self.view.parent,
+            label_dlg = wx.TextEntryDialog(parent=self.view,
                                            message="Enter a new label for the Y-Axis",
                                            caption="Set Y Axis Label",
                                            defaultValue=self.get_titles(axis)['y'])
@@ -771,7 +771,7 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
         """Handles the set x-axis label event"""
         axis = self.get_plot_choice()
         if axis is not None:
-            label_dlg = wx.TextEntryDialog(parent=self.view.parent,
+            label_dlg = wx.TextEntryDialog(parent=self.view,
                                            message="Enter a new title for the plot",
                                            caption="Set Plot Title",
                                            defaultValue=self.get_titles(axis)['plot'])
@@ -782,7 +782,7 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
     def on_set_cbarlbl(self, evt):
         """Sets the label for the imgplot's colorbar"""
         if self.use_colorbar and self.colorbar is not None:
-            label_dlg = wx.TextEntryDialog(parent=self.view.parent,
+            label_dlg = wx.TextEntryDialog(parent=self.view,
                                            message="Enter a new label for the colorbar",
                                            caption="Set Colorbar Label",
                                            defaultValue=self.colorbar._label)
@@ -923,7 +923,7 @@ class MegaPlotWindowController(BasicImgPlotWindowController, PlotWindowControlle
         """Generates a list of available matplotlib colormaps and sets the plot's
         colormap to the user's choice."""
         colormaps = self.model.get_colormap_choices()
-        cmap_dlg = wx.lib.dialogs.singleChoiceDialog(self.view.parent, "Select Colormap",
+        cmap_dlg = wx.lib.dialogs.singleChoiceDialog(self.view, "Select Colormap",
                                                      "Please select a colormap for this plot.",
                                                      colormaps)
         if cmap_dlg.accepted is True:

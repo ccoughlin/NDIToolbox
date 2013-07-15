@@ -442,7 +442,7 @@ class AboutDialog(wx.Dialog):
             self.sizer.Add(self.msg_lbl, ui_defaults.lbl_pct, ui_defaults.lblsizer_flags,
                            ui_defaults.widget_margin)
         self.SetSizerAndFit(self.sizer)
-        self.Centre()
+        self.Centre(wx.CENTER_ON_SCREEN)
 
     def get_bmp(self):
         """Loads the specified bitmap into the UI"""

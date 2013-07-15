@@ -239,7 +239,7 @@ class MainUIController(object):
         """Handles request to delete the application log."""
         log_path = pathfinder.log_path()
         if os.path.exists(log_path):
-            confirm_deletion_dlg = wx.MessageDialog(parent=self.view.parent,
+            confirm_deletion_dlg = wx.MessageDialog(parent=self.view,
                                                     caption="Delete Log?",
                                                     message="Are you sure you want to delete the log?",
                                                     style=wx.OK | wx.CANCEL)
@@ -292,7 +292,7 @@ class MainUIController(object):
         dicom_wildcard = "DICOM/DICONDE |*.dcm"
         wildcards = "|".join([default_wildcard, img_wildcards, txt_wildcards, winspect_wildcard,
                               utwin_wildcard, dicom_wildcard, allfiles_wildcard])
-        file_dlg = wx.FileDialog(parent=self.view.parent, message='Please specify a data file',
+        file_dlg = wx.FileDialog(parent=self.view, message='Please specify a data file',
                                  wildcard=wildcards, style=wx.FD_OPEN)
         if file_dlg.ShowModal() == wx.ID_OK:
             self.select_import_function(file_dlg.GetPath())
@@ -347,7 +347,7 @@ class MainUIController(object):
         """ Prompts user to set a default path for storing user data """
         try:
             current_user_path = pathfinder.user_path()
-            path_dlg = wx.DirDialog(parent=self.view.parent, message="Please specify a data folder",
+            path_dlg = wx.DirDialog(parent=self.view, message="Please specify a data folder",
                                     defaultPath=current_user_path)
             if path_dlg.ShowModal() == wx.ID_OK:
                 new_user_path = path_dlg.GetPath()
@@ -430,7 +430,7 @@ class MainUIController(object):
     def import_text(self, file_name):
         """Converts and imports the specified ASCII-delimited data file"""
         try:
-            import_dlg = dlg.ImportTextDialog(parent=self.view.parent)
+            import_dlg = dlg.ImportTextDialog(parent=self.view)
             if import_dlg.ShowModal() == wx.ID_OK:
                 read_parameters = import_dlg.get_import_parameters()
                 self.import_data(dataio.import_txt, args=(file_name,), kwargs=read_parameters)
@@ -452,7 +452,7 @@ class MainUIController(object):
         file_dlg = wx.FileDialog(parent=self.view, message="Please specify an output filename.",
                                  style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         if file_dlg.ShowModal() == wx.ID_OK:
-            exportfmt_dlg = dlg.ExportTextDialog(parent=self.view.parent)
+            exportfmt_dlg = dlg.ExportTextDialog(parent=self.view)
             if exportfmt_dlg.ShowModal() == wx.ID_OK:
                 wx.BeginBusyCursor()
                 export_params = exportfmt_dlg.get_export_parameters()
@@ -546,7 +546,7 @@ class MainUIController(object):
                 return
         flatten_img = True
         msg = "The image data should be converted to grayscale for data analysis.  Proceed?"
-        flatten_dlg = wx.MessageDialog(parent=self.view.parent,
+        flatten_dlg = wx.MessageDialog(parent=self.view,
                                        message=msg,
                                        caption="Flatten Palette?",
                                        style=wx.YES_NO | wx.YES_DEFAULT)
@@ -623,7 +623,7 @@ class MainUIController(object):
     def on_remove_data(self, evt):
         """Handles request to remove data from data folder"""
         if self.view.data_panel.data is not None:
-            confirm_deletion_dlg = wx.MessageDialog(parent=self.view.parent,
+            confirm_deletion_dlg = wx.MessageDialog(parent=self.view,
                                                     caption="Delete File?",
                                                     message="Are you sure you want to delete this"\
                                                             " file?",
