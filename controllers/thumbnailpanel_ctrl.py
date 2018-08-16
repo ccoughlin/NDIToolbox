@@ -22,8 +22,7 @@ class ThumbnailPanelController(object):
 
     def empty_bitmap(self, width, height):
         """Creates and returns an empty wxBitmap of the given width and height"""
-        fg_color = wx.NullColor
-        return wx.EmptyBitmapRGBA(width, height, fg_color.Red(), fg_color.Green(), fg_color.Blue())
+        return wx.Bitmap.FromRGBA(width, height)
 
     def plot_thumb(self, data_fname, width, height):
         """Creates (if necessary) and retrieves a matplotlib plot of the specified

@@ -13,7 +13,7 @@ import wx
 from matplotlib.figure import Figure
 from matplotlib.widgets import Cursor
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
-from matplotlib.backends.backend_wxagg import NavigationToolbar2Wx
+from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
 import os.path
 import Queue
 

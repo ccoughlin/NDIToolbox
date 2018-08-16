@@ -75,7 +75,7 @@ class MainUIController(object):
         """Returns a wx.Icon of the application's
         default icon"""
         if sys.platform != 'win32':
-            return wx.IconFromBitmap(self.get_icon_bmp())
+            return wx.Icon(self.get_icon_bmp())
         icon = wx.Icon(pathfinder.winicon_path(), wx.BITMAP_TYPE_ICO)
         return icon
 
@@ -134,7 +134,7 @@ class MainUIController(object):
     def on_quit(self, evt):
         """Handles the Quit event"""
         self.model.set_coords(list(self.view.GetPosition()))
-        self.model.set_window_size(list(self.view.GetClientSizeTuple()))
+        self.model.set_window_size(list(self.view.GetClientSize()))
         self.view._mgr.UnInit()
         self.view.Destroy()
 
@@ -359,7 +359,10 @@ class MainUIController(object):
     def on_choose_loglevel(self, evt):
         """Handles request to set the log level severity"""
         available_log_levels = mainmodel.available_log_levels
-        current_log_level_str = available_log_levels[0]
+#        available_log_levels is a hash keyed by strings; cannot use 0 as key
+#        'warning' log level chosen as default
+#        current_log_level_str = available_log_levels[0]
+        current_log_level_str = 'warning'
         log_level_strs = available_log_levels.keys()
         current_log_level = mainmodel.get_loglevel()
         for log_str, log_lvl in available_log_levels.iteritems():
