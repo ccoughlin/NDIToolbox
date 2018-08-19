@@ -42,33 +42,33 @@ class PODWindow(wx.Frame):
 
         self.file_mnu = wx.Menu() # File menu
         quit_mnui = wx.MenuItem(self.file_mnu, wx.ID_ANY, text="Close Window\tCTRL+W",
-                                help="Exits PODToolkit")
+                                helpString="Exits PODToolkit")
         self.file_mnu.AppendItem(quit_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_quit, quit_mnui)
         self.menubar.Append(self.file_mnu, "&File")
 
         self.models_mnu = wx.Menu() # Models menu
         #addmodel_mnui = wx.MenuItem(self.models_mnu, wx.ID_ANY, text="Add A Model\tCTRL+A",
-        #                            help="Adds a POD model to the available models")
+        #                            helpString="Adds a POD model to the available models")
         #self.Bind(wx.EVT_MENU, self.controller.on_add_model, addmodel_mnui)
         #self.models_mnu.AppendItem(addmodel_mnui)
 
         install_plugin_mnui = wx.MenuItem(self.models_mnu, wx.ID_ANY, text="Install Model...",
-                                          help="Install a local POD Model")
+                                          helpString="Install a local POD Model")
         self.Bind(wx.EVT_MENU, self.controller.on_install_model, id=install_plugin_mnui.GetId())
         self.models_mnu.AppendItem(install_plugin_mnui)
         download_plugin_mnui = wx.MenuItem(self.models_mnu, wx.ID_ANY, text="Download Model...",
-                                           help="Download and install a new POD Model")
+                                           helpString="Download and install a new POD Model")
         self.Bind(wx.EVT_MENU, self.controller.on_download_model, id=download_plugin_mnui.GetId())
         self.models_mnu.AppendItem(download_plugin_mnui)
 
         savemodel_mnui = wx.MenuItem(self.models_mnu, wx.ID_ANY,
                                      text="Save Model Configuration",
-                                     help="Saves the current model configuration to disk\tCTRL+W")
+                                     helpString="Saves the current model configuration to disk\tCTRL+W")
         self.Bind(wx.EVT_MENU, self.controller.on_save_model, savemodel_mnui)
         self.models_mnu.AppendItem(savemodel_mnui)
         #deletemodel_mnui = wx.MenuItem(self.models_mnu, wx.ID_ANY, text="Remove Current Model",
-        #                               help="Removes the currently selected POD model from the " \
+        #                               helpString="Removes the currently selected POD model from the " \
         #                                    "workspace")
         #self.Bind(wx.EVT_MENU, self.controller.on_delete_model, deletemodel_mnui)
         #self.models_mnu.AppendItem(deletemodel_mnui)
@@ -76,7 +76,7 @@ class PODWindow(wx.Frame):
 
         self.ops_mnu = wx.Menu() # Operations menu
         run_mnui = wx.MenuItem(self.ops_mnu, wx.ID_ANY, text="Run\tCTRL+R",
-                               help="Runs the current model")
+                               helpString="Runs the current model")
         self.ops_mnu.AppendItem(run_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_runmodel, run_mnui)
 
@@ -84,11 +84,11 @@ class PODWindow(wx.Frame):
 
         self.help_mnu = wx.Menu() # Basic Help menu
         about_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="About POD Toolkit",
-                                 help="About this program")
+                                 helpString="About this program")
         self.help_mnu.AppendItem(about_mnui)
         self.Bind(wx.EVT_MENU, self.controller.on_about, about_mnui)
         help_mnui = wx.MenuItem(self.help_mnu, wx.ID_ANY, text="Usage Basics",
-                                help="A rundown of how to use POD Toolkit to get you started")
+                                helpString="A rundown of how to use POD Toolkit to get you started")
         self.Bind(wx.EVT_MENU, self.controller.on_help, help_mnui)
         self.help_mnu.AppendItem(help_mnui)
         self.menubar.Append(self.help_mnu, "&Help")
@@ -213,7 +213,7 @@ class PODWindow(wx.Frame):
         self.modelprops_panel_sizer.Add(self.mp_lbl, ui_defaults.lbl_pct,
                                         ui_defaults.sizer_flags, ui_defaults.widget_margin)
         self.mp_grid = wxspreadsheet.Spreadsheet(self.modelprops_panel)
-        self.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.controller.on_property_change)
+        self.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.controller.on_property_change)
         self.mp_grid.SetNumberRows(1)
         self.mp_grid.SetNumberCols(2)
         self.mp_grid.SetRowLabelSize(1)
